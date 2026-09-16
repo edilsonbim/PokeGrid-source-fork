@@ -41,6 +41,7 @@ ipcMain.handle('errlog:open', () => {
   } catch {}
 });
 
+
 // Backups automaticos (config semanal e hunts que sairiam do limite de 150): grava em
 // userData/backups sem dialogo. Nome vem do renderer, entao e tratado como hostil: so o
 // basename, charset restrito, teto de 2MB, e no maximo 12 arquivos por prefixo.
@@ -48,7 +49,7 @@ ipcMain.handle('backup:save', (_e, nome, conteudo, cabecalho) => {
   try {
     if (typeof nome !== 'string' || typeof conteudo !== 'string') return false;
     nome = path.basename(nome);
-    if (!/^[\w.-]{1,60}$/.test(nome) || conteudo.length > 2e6) return false;
+    if (!/^[\w.-]{1,60}$/.test(nome) || conteudo.length + (typeof cabecalho === 'string' ? cabecalho.length : 0) > 2e6) return false;
     const dir = path.join(app.getPath('userData'), 'backups');
     fs.mkdirSync(dir, { recursive: true });
     const alvo = path.join(dir, nome);
@@ -63,6 +64,7 @@ ipcMain.handle('backup:save', (_e, nome, conteudo, cabecalho) => {
     return true;
   } catch (e) { try { logErro('backup', String(e && e.message).slice(0, 200)); } catch {} return false; }
 });
+
 // Limpa os dados do jogo de UMA conta (cookies, storage e cache da particao dela). Resolve conta
 // "bugada" sem mexer nas outras; a senha salva do treinador nao mora ai e sobrevive.
 ipcMain.handle('conta:limpar', async (_e, i) => {
@@ -76,6 +78,7 @@ ipcMain.handle('conta:limpar', async (_e, i) => {
     return true;
   } catch (e) { try { logErro('conta', 'limpar conta' + i + ': ' + String(e && e.message).slice(0, 150)); } catch {} return false; }
 });
+
 // Baixa userscript do GitHub (base: PR #4 do JulianoCLI). Guardas: so https, so github.com e
 // raw.githubusercontent.com, redirect revalidado pela mesma funcao, no maximo 3 saltos, 2MB e
 // timeouts. Conserto proprio: link /blob/ (o que se copia do navegador) vira raw, senao o app
@@ -145,7 +148,17 @@ if (!app.requestSingleInstanceLock()) app.quit();
 // Paineis presos ao dominio do jogo: nada de popup, e navegar o painel
 // (que carrega a sessao logada) para outro site abre no navegador de fora.
 const GAME = 'https://poke.idleworld.online';
-const abreFora = (url) => { if (/^https?:\/\//i.test(url)) shell.openExternal(url); };
+// Limite deslizante: a pagina do jogo (ou um XSS nela) pedia abrir link e o navegador do
+// usuario abria sem limite. 3 por 10s cobre o uso real (clicar num link) e corta enxurrada.
+let aberturas = [];
+const abreFora = (url) => {
+  if (!/^https?:\/\//i.test(url)) return;
+  const agora = Date.now();
+  aberturas = aberturas.filter((t) => agora - t < 10000);
+  if (aberturas.length >= 3) { try { logErro('painel', 'link externo descartado (limite de 3 por 10s): ' + String(url).slice(0, 120)); } catch {} return; }
+  aberturas.push(agora);
+  shell.openExternal(url);
+};
 app.on('web-contents-created', (_e, contents) => {
   if (contents.getType() !== 'webview') return;
   contents.setWindowOpenHandler(({ url }) => { abreFora(url); return { action: 'deny' }; });
@@ -207,14 +220,22 @@ ipcMain.handle('creds:load', () => {
 });
 
 ipcMain.handle('creds:save', (_e, accounts) => {
-  const json = JSON.stringify(accounts);
-  const data = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json)
-    : Buffer.from(json, 'utf8');
-  const f = credFile();
-  fs.writeFileSync(f + '.tmp', data);
-  fs.renameSync(f + '.tmp', f); // troca atomica: fechar o app no meio nao corrompe
-  return true;
+  try {
+    const json = JSON.stringify(accounts);
+    // sem cripto do sistema, gravar em texto puro seria quebrar a promessa do app calado:
+    // melhor recusar e dizer, que o renderer avisa e o relatorio de erros guarda o motivo
+    if (!safeStorage.isEncryptionAvailable()) { logErro('creds', 'sistema sem cripto (safeStorage indisponivel): as senhas NAO foram salvas'); return false; }
+    const data = safeStorage.encryptString(json);
+    const f = credFile();
+    fs.writeFileSync(f + '.tmp', data);
+    fs.renameSync(f + '.tmp', f); // troca atomica: fechar o app no meio nao corrompe
+    return true;
+  } catch (e) {
+    // disco cheio, antivirus segurando o .tmp (EPERM), pasta sem permissao: quem chamou precisa saber,
+    // senao o modal fecha como se tivesse salvo e a senha some no proximo boot
+    logErro('creds', 'falha ao salvar contas: ' + e.message);
+    return false;
+  }
 });
 
 // UA consistente pra passar na Cloudflare: remove o token "Electron/..." e
@@ -228,6 +249,8 @@ app.userAgentFallback = app.userAgentFallback
   .replace(/(Chrome\/\d+)[\d.]+/, '$1.0.0.0');
 
 // Notificacao do SO (alertas de queda e de sem pokebola).
+// versao do app pro badge do topo (sendSync: disponivel no load, mesmo com o preload em sandbox)
+ipcMain.on('app:version', (e) => { e.returnValue = app.getVersion(); });
 ipcMain.handle('notify', (_e, title, body) => {
   try { if (Notification.isSupported()) new Notification({ title, body }).show(); } catch {}
 });
@@ -284,14 +307,15 @@ ipcMain.handle('webhook:send', (_e, url, text) => {
     // parse: [] segue barrando @everyone/@here e cargos, mesmo se o nome de uma conta tentar.
     const ids = (String(text).match(/<@(\d{5,20})>/g) || []).map(x => x.replace(/\D/g, '')).slice(0, 5);
     const body = JSON.stringify({ content: String(text).slice(0, 1900), allowed_mentions: { parse: [], users: ids } });
-    const req = https.request(u, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res) => res.resume());
-    req.on('error', () => {});
-    req.setTimeout(8000, () => req.destroy());
-    req.end(body);
-    return true;
+    // resolve com o status de verdade: sem isso o botao Testar dava OK ate com webhook apagado
+    return new Promise((pronto) => {
+      const req = https.request(u, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res) => { res.resume(); pronto(res.statusCode < 300); });
+      req.on('error', () => pronto(false));
+      req.setTimeout(8000, () => { req.destroy(); pronto(false); });
+      req.end(body);
+    });
   } catch { return false; }
 });
-
 
 let tray; // referencia viva para o icone nao sumir (GC)
 
@@ -355,6 +379,9 @@ app.whenReady().then(() => {
   // travarem, o processo principal congela e a janela nunca abre (processo vivo, tela nenhuma).
   // Foi o que usuarios relataram na 1.5.5-1.5.7. Agora nada disso bloqueia a abertura.
   const prepararBandeja = () => {
+    // versao portatil movida de pasta deixa o atalho da Inicializar apontando pra um exe que nao
+    // existe mais, e o botao seguia dizendo "ligado": regrava quando o alvo mudou
+    try { if (autoStartOn() && shell.readShortcutLink(startupLnk()).target !== process.execPath) setAutoStart(true); } catch {}
     // limpeza do autostart antigo (chave Run, que abria com --hidden): uma unica vez na vida
     try {
       const marca = path.join(app.getPath('userData'), 'runkey-limpo');
@@ -388,6 +415,8 @@ app.whenReady().then(() => {
   // sem bandeja, esconder ao minimizar deixaria a janela inalcancavel: minimiza normal
   win.on('minimize', () => { if (minToTray && tray) win.hide(); });
   app.on('second-instance', () => mostrar());
+
+  // checa atualizacao (nao incomoda quem abriu escondido na bandeja pra farmar)
 });
 
 app.on('window-all-closed', () => app.quit());

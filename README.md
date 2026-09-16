@@ -67,13 +67,13 @@ Pronto. Entre ou crie uma conta em cada painel e, em "Treinadores", salve o logi
 
 ## O que ele faz
 
-- Rode 2, 3 ou 4 contas, você escolhe quantos painéis abrir.
+- Rode de 1 a 4 contas, você escolhe quantos painéis abrir.
 - Login automático, mesmo quando a sessão expira no meio do farm.
 - Modo Eco que segura o uso de CPU sem atrapalhar o progresso.
 - Esconde o chat e o menu de ícones do jogo pra sobrar tela.
-- Avisa por notificação quando uma conta cai ou fica sem pokébola.
+- Avisa quando aparece shiny, uma conta cai, para de farmar ou fica sem suprimento, no Windows e no Discord.
 - Liga e desliga cada painel, zoom, tela cheia e atalhos de teclado.
-- Bandeja, iniciar junto com o Windows e idioma português ou inglês.
+- Bandeja, iniciar junto com o Windows e idioma português, inglês ou espanhol.
 
 ## Segurança
 

@@ -42,7 +42,9 @@ git clone https://github.com/leodantas70/idle.git
 ```
 
 **3. Open the app**
-On Windows, double click the **iniciar.bat** file in the folder. The first time it installs what it needs and opens on its own; after that it opens right away.
+On Windows, double click **Abrir PokeGrid** (`.vbs`) in the folder. The first time it installs what it needs and opens on its own; after that it opens right away, with no black window. Want a shortcut? Right click it, **Send to: Desktop (create shortcut)**.
+
+You can also use **iniciar.bat**, but it keeps a black window open and closing that window closes the app.
 
 On macOS or Linux, open a terminal in the folder and run:
 
@@ -63,13 +65,13 @@ That is it. Log in or create an account in each panel and, under "Treinadores" (
 
 ## What it does
 
-- Run 2, 3 or 4 accounts, you choose how many panels to open.
+- Run 1 to 4 accounts, you choose how many panels to open.
 - Auto login, even when the session expires in the middle of a farm.
 - Eco mode that keeps CPU use down without hurting progress.
 - Hides the chat and the game icon menu to free up screen.
-- Notifies you when an account drops or runs out of Pokéballs.
+- Alerts on shiny, dropped account, stopped farming and low supplies, on Windows and on Discord.
 - Turn each panel on or off, zoom, full screen and keyboard shortcuts.
-- Tray, start with Windows, and Portuguese or English.
+- Tray, start with Windows, and Portuguese, English or Spanish.
 
 ## Security
 
