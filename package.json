@@ -6,7 +6,7 @@
   "author": "leodantas70",
   "scripts": {
     "start": "electron .",
-    "test": "node test/iv-math.test.js && node test/boot.test.js && node test/updater.test.js"
+    "test": "node test/iv-math.test.js && node test/boot.test.js && node test/teleport.test.js && node test/updater.test.js"
   },
   "keywords": [
     "electron",

@@ -1598,7 +1598,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     w.executeJavaScript(GO_TOWN).catch(() => false);
     s.timer = setTimeout(() => {
       if (!unstuckOn || off[i] || !webviews[i]) { resetUnstuck(i, xp); return; }
-      webviews[i].executeJavaScript(GOTO_HUNT_DOM(hunt.slug, hunt.name || hunt.slug)).catch(() => {});
+      webviews[i].executeJavaScript(GOTO_HUNT_CURRENT(hunt.slug, hunt.name || hunt.slug)).catch(() => {});
       resetUnstuck(i, xp);
     }, unstuckTownWait());
   }
@@ -3158,7 +3158,52 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }
   };
   const GOTO_HUNT = (slug, name) => `(async()=>{const slug=${JSON.stringify(slug)},name=${JSON.stringify(name)},P=window.__poke,shared=${JSON.stringify(huntTravelTemplate)};try{const T=(P&&P.travelTemplate)||shared;if(P&&P.sock&&P.sock.readyState===1&&T&&T.o){const old=T.slug;const swap=v=>{if(typeof v==='string')return v===old?slug:v.replace(old,slug);if(Array.isArray(v))return v.map(swap);if(v&&typeof v==='object'){const z={};Object.keys(v).forEach(k=>z[k]=swap(v[k]));return z;}return v;};P.sock.send(JSON.stringify(swap(T.o)));return true;}}catch(x){}const wait=n=>new Promise(r=>setTimeout(r,n));const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[_-]+/g,' ').replace(/\\s+/g,' ').trim();const keys=[norm(slug),norm(name)].filter(x=>x.length>2);const match=v=>{v=norm(v);return keys.some(k=>v===k||v.includes(k)||k.includes(v)&&v.length>3);};const reactInfo=e=>{try{for(const k of Object.keys(e)){if(!k.startsWith('__reactProps$'))continue;const p=e[k]||{},vals=[];const walk=(o,d)=>{if(d>3||o==null)return;if(typeof o==='string'||typeof o==='number'){vals.push(String(o));return;}if(typeof o!=='object')return;for(const q of Object.keys(o)){if(q==='children'||q==='hunt'||q==='marker'||q==='slug'||q==='name'||q==='title'||q==='field')walk(o[q],d+1);}};walk(p,0);if(vals.some(match))return p;}catch(x){}return null;};const find=()=>{const all=[...document.querySelectorAll('*')],scored=[];all.forEach(e=>{const ds=e.dataset||{},attrs=[ds.slug,ds.hunt,ds.field,e.getAttribute('href'),e.getAttribute('title'),e.getAttribute('aria-label'),e.getAttribute('alt')],txt=(e.textContent||'').trim(),rp=reactInfo(e);let score=attrs.some(match)?4:(txt.length<100&&match(txt)?3:rp?5:0);if(score)scored.push({e,rp,score:score+(e.matches('button,a,[role="button"],.leaflet-marker-icon')?2:0)});});scored.sort((a,b)=>b.score-a.score);return scored[0]||null;};const activate=h=>{try{if(h.rp&&typeof h.rp.onClick==='function'){h.rp.onClick({currentTarget:h.e,target:h.e,preventDefault(){},stopPropagation(){}});return true;}h.e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));return true;}catch(x){try{h.e.click();return true}catch(y){return false}}};let hit=find();if(hit&&activate(hit))return true;const controls=[...document.querySelectorAll('button,a,[role="button"],img')];const map=controls.find(e=>/map|mapa/i.test([e.textContent,e.title,e.getAttribute('aria-label'),e.getAttribute('alt'),e.getAttribute('src')].filter(Boolean).join(' ')));if(map)map.click();for(let n=0;n<24;n++){await wait(250);hit=find();if(hit&&activate(hit))return true;}return false;})()`;
-  const GOTO_HUNT_DOM = (slug, name) => `(async()=>{const slug=${JSON.stringify(slug)},name=${JSON.stringify(name)};const wait=n=>new Promise(r=>setTimeout(r,n));const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[_-]+/g,' ').replace(/\\s+/g,' ').trim();const wanted=[norm(slug),norm(name)].filter(Boolean);const findHunt=()=>{const exact=document.querySelector('[data-guide="hunt-'+CSS.escape(String(slug).toLowerCase())+'"]');if(exact)return exact;return [...document.querySelectorAll('button.hunt-marker')].find(b=>{const guide=String(b.dataset.guide||'').replace(/^hunt-/,'');const label=(b.querySelector('.hunt-name')||{}).textContent||b.title||'';return wanted.some(x=>norm(guide)===x||norm(label)===x);})||null;};const clickFound=()=>{const marker=findHunt();if(!marker)return false;marker.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));return true;};if(clickFound())return true;const map=document.querySelector('[data-guide="dock-map"]');if(!map)return false;map.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));for(let n=0;n<30;n++){await wait(150);if(clickFound())return true;if(document.querySelector('.map-areas'))break;}const allAreas=()=>[...document.querySelectorAll('button.map-area')];const areaName=b=>norm((b.querySelector('.map-area-name')||b).textContent);const switchArea=async area=>{if(!area||area.disabled)return false;const wantedArea=areaName(area);area.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));for(let n=0;n<30;n++){await wait(150);const active=allAreas().find(b=>b.classList.contains('on'));const title=norm((document.querySelector('.map-title')||{}).textContent);if((active&&areaName(active)===wantedArea)||title.includes(wantedArea))return true;}return false;};const outland=allAreas().find(b=>areaName(b)==='outland');if(outland&&!outland.classList.contains('on')){await switchArea(outland);for(let n=0;n<30;n++){await wait(150);if(clickFound())return true;}}const others=allAreas().filter(b=>!b.disabled&&!b.classList.contains('locked')&&!b.classList.contains('on')&&areaName(b)!=='outland');for(const area of others){await switchArea(area);for(let n=0;n<20;n++){await wait(150);if(clickFound())return true;}}return false;})()`;
+  // Compatível com as placas de região novas (map-plate) e as abas antigas (map-area).
+  // O retorno só é positivo depois de observar a mudança de hunt ou o marcador "aqui".
+  const GOTO_HUNT_CURRENT = (slug, name) => `(async()=>{
+    const slug=${JSON.stringify(slug)},name=${JSON.stringify(name)};
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[_-]+/g,' ').replace(/\\s+/g,' ').trim();
+    const wantedName=norm(name),wantedSlug=norm(slug);
+    const current=()=>String((window.__poke&&((window.__poke.ws&&window.__poke.ws['field-init']&&window.__poke.ws['field-init'].slug)||window.__poke.lastSlug))||'');
+    if(wantedSlug&&norm(current())===wantedSlug)return true;
+    const markers=()=>[...document.querySelectorAll('.map-window button.hunt-marker')];
+    const label=b=>norm((b.querySelector('.hunt-name')||{}).textContent||b.title||'');
+    const guide=b=>norm(String((b.dataset&&b.dataset.guide)||'').replace(/^hunt-/,''));
+    const find=()=>markers().find(b=>wantedName&&label(b)===wantedName)||markers().find(b=>wantedSlug&&(guide(b)===wantedSlug||label(b)===wantedSlug))||null;
+    const areas=()=>[...document.querySelectorAll('.map-areas button.map-plate,.map-areas button.map-area')];
+    const areaName=b=>norm((b.querySelector('img[alt]')||b.querySelector('.map-area-name')||{}).alt||(b.querySelector('.map-area-name')||{}).textContent||'');
+    const usable=b=>b&&!b.disabled&&!b.classList.contains('locked');
+    const clickHunt=async()=>{
+      const b=find();if(!b)return null;if(!usable(b))return false;
+      if(b.classList.contains('here'))return true;
+      const before=current();b.click();
+      for(let n=0;n<40;n++){
+        await wait(200);
+        const after=current();
+        if(after&&after!==before)return true;
+        if(b.isConnected&&b.classList.contains('here'))return true;
+      }
+      return false;
+    };
+    if(!document.querySelector('.map-window')){
+      const map=document.querySelector('[data-guide="dock-map"]');if(!map)return false;
+      map.click();
+      for(let n=0;n<30&&!document.querySelector('.map-window');n++)await wait(150);
+    }
+    if(!document.querySelector('.map-window'))return false;
+    let result=await clickHunt();if(result!==null)return result;
+    const available=areas().filter(usable);
+    available.sort((a,b)=>Number(areaName(b)==='outland')-Number(areaName(a)==='outland'));
+    for(const area of available){
+      if(area.classList.contains('on'))continue;
+      area.click();
+      for(let n=0;n<30&&!area.classList.contains('on');n++)await wait(150);
+      if(!area.classList.contains('on'))continue;
+      result=await clickHunt();if(result!==null)return result;
+    }
+    return false;
+  })()`;
   const BUY_1000_BALL = (name) => `(async()=>{const name=${JSON.stringify(name)};const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();const set=(el,v)=>{const p=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');p.set.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));};const qty=document.querySelector('.mk-window input.mk-qty');if(!qty)return {ok:false,reason:'shop'};set(qty,1000);const slider=document.querySelector('.mk-window input.mk-qtyslider');if(slider)set(slider,1000);await new Promise(r=>setTimeout(r,80));const row=[...document.querySelectorAll('.mk-window .mk-row')].find(r=>norm((r.querySelector('.mk-name')||{}).textContent)===norm(name));const buy=row&&row.querySelector('button.mk-buy');if(!buy)return {ok:false,reason:'item'};buy.click();return {ok:true};})()`;
   const BUY_1000_BALL_API = (id, name) => `(async()=>{const id=${JSON.stringify(id)},name=${JSON.stringify(name)};try{if(window.__pgAuth){const r=await fetch('/api/game/shop/buy',{method:'POST',headers:{Authorization:window.__pgAuth,'Content-Type':'application/json'},body:JSON.stringify({ballId:+id,qty:1000})});let j={};try{j=await r.json()}catch(x){}if(!r.ok)throw new Error(j.message||('HTTP '+r.status));try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,bought:j.bought||1000};}}catch(e){return {ok:false,reason:e.message||'api'};}const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();const set=(el,v)=>{const p=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');p.set.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));};const qty=document.querySelector('.mk-window input.mk-qty');if(!qty)return {ok:false,reason:'auth'};set(qty,1000);const slider=document.querySelector('.mk-window input.mk-qtyslider');if(slider)set(slider,1000);await new Promise(r=>setTimeout(r,80));const row=[...document.querySelectorAll('.mk-window .mk-row')].find(r=>norm((r.querySelector('.mk-name')||{}).textContent)===norm(name));const buy=row&&row.querySelector('button.mk-buy');if(!buy)return {ok:false,reason:'item'};buy.click();return {ok:true,bought:1000};})()`;
   const BUY_1000_BALL_V2 = (id) => `(async()=>{const id=${JSON.stringify(id)},key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};const post=token=>fetch('/api/game/shop/buy',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify({ballId:+id,qty:1000})});try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,bought:j.bought||1000};}catch(e){return {ok:false,reason:e.message||'Erro na compra'};}})()`;
@@ -3171,8 +3216,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   const SELL_SELECTED_STONES = ids => `(async()=>{const ids=${JSON.stringify(ids)},key='pokeweb:tokens',blocked=/boss|key|card|picture|strange\\s+pheromone/i;const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};const P=window.__poke,inv=(P&&P.ws&&P.ws.inventory&&P.ws.inventory.items)||[],doc=P&&P.api&&P.api['/game/items.json'],cat={};if(doc&&doc.items)doc.items.forEach(x=>cat[x.id]=x);const stones=inv.map(x=>({id:+x.itemId,qty:+x.quantity||0,item:cat[x.itemId]||{}})).filter(x=>ids.includes(String(x.id))&&x.qty>0&&String(x.item.category||'').toLowerCase()==='stone'&&!blocked.test(String(x.item.name||'')));if(!stones.length)return {ok:false,reason:'Nenhuma Stone permitida foi selecionada'};const post=(token,x)=>fetch('/api/game/flint/sell',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({itemId:x.id,qty:x.qty})});let sold=0,gold=0;for(const x of stones){let r=await post(tokens.accessToken,x);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken,x);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status),sold,gold};sold+=+j.sold||x.qty;gold+=+j.goldGained||0;}try{P.sock&&P.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,sold,gold,types:stones.length};}catch(e){return {ok:false,reason:e.message||'Erro na venda de Stones'};}})()`;
   function goToRecentHunt(i, slug, name) {
     const w = webviews[i]; if (!w || off[i]) return;
-    w.executeJavaScript(GOTO_HUNT_DOM(slug, name)).then(ok => {
-      if (!ok) { cardsOn = false; applyCards(); toggleExpand(i); }
+    w.executeJavaScript(GOTO_HUNT_CURRENT(slug, name)).then(ok => {
+      if (!ok) { cardsOn = false; applyCards(); toggleExpand(i); window.alert('Não foi possível ir para a hunt. Confira se a região está desbloqueada no mapa.'); }
     }).catch(() => { cardsOn = false; applyCards(); toggleExpand(i); });
   }
   function goAllToLastHunt(rows) {
@@ -3180,7 +3225,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (r.st !== 'on' || !r.cid) return;
       const last = (recentHunts[r.cid] || []).find(h => h && h.slug && h.slug !== r.huntSlug);
       const w = last && webviews[r.i];
-      if (w && !off[r.i]) w.executeJavaScript(GOTO_HUNT_DOM(last.slug, last.name || last.slug)).catch(() => {});
+      if (w && !off[r.i]) w.executeJavaScript(GOTO_HUNT_CURRENT(last.slug, last.name || last.slug)).catch(() => {});
     });
   }
   // Compra Ultra Ball em lotes de no máximo 1000, respeitando o mesmo limite usado
@@ -3269,13 +3314,15 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   function openCharacterMarket(i) {
     const w = webviews[i]; if (!w || off[i]) return;
     const openMarketHere = `(async()=>{
+      const wait=n=>new Promise(r=>setTimeout(r,n));
+      const marketOpen=()=>!!document.querySelector('[class*="mkt2-"]');
+      if(marketOpen())return {ok:true};
+      const npc=[...document.querySelectorAll('button.npc-plate-btn')].find(b=>/abrir\\s+market/i.test(b.textContent||'')&&!b.disabled&&b.getClientRects().length);
+      if(npc){npc.click();await wait(250);return {ok:true};}
       const root=document.querySelector('.game-root');
       if(!root)return {ok:false,reason:'tela do jogo não encontrada'};
       const fiberKey=Object.keys(root).find(k=>k.startsWith('__reactFiber$'));
       if(!fiberKey)return {ok:false,reason:'controle da tela não encontrado'};
-      const wait=n=>new Promise(r=>setTimeout(r,n));
-      const marketOpen=()=>!!document.querySelector('[class*="mkt2-"]');
-      if(marketOpen())return {ok:true};
       let fiber=root[fiberKey];
       while(fiber){
         const hooks=[];
@@ -3325,6 +3372,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if(depotOpen())return {ok:true};
       const direct=document.querySelector('#dock-btn-depot,[data-guide="dock-depot"]');
       if(direct){direct.click();await wait(100);if(depotOpen())return {ok:true};}
+      const npc=[...document.querySelectorAll('button.npc-plate-btn')].find(b=>/abrir\\s+depot|abrir\\s+ba[uú]/i.test(b.textContent||'')&&!b.disabled&&b.getClientRects().length);
+      if(npc){npc.click();await wait(250);return {ok:true};}
       const root=document.querySelector('.game-root');
       if(!root)return {ok:false,reason:'tela do jogo não encontrada'};
       const fiberKey=Object.keys(root).find(k=>k.startsWith('__reactFiber$')||k.startsWith('__reactInternalInstance$'));
@@ -3504,6 +3553,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     (C.analyzer?'.ha-window{border-radius:12px!important;max-height:88vh!important;overflow:auto!important}.ha-window .ha-card{padding:6px!important}.ha-window .ha-section{margin-top:6px!important;}':'')+
     (C.chat?'.chat-box{border-radius:12px!important;max-height:42vh!important}.chat-box .chat-messages{font-size:12px!important;}':'')+
     (C.map?'.map-window{width:820px!important;max-width:95vw!important;height:min(680px,92vh)!important;border-radius:14px!important;overflow:hidden!important}.map-window .map-viewport,.map-window .map-img,.map-window .map-zoom{display:none!important}.map-window .hunt-marker{opacity:0!important;position:absolute!important;pointer-events:none!important}.map-window .map-body{display:flex!important;flex-direction:column!important;overflow:hidden!important;width:100%!important;max-width:100%!important;background:#0b141c!important;padding:0 12px 12px!important}#__pgSimpleMap{flex:1;min-height:0;overflow:auto;padding:5px;display:flex;flex-direction:column;gap:7px}.pg-map-row{display:flex;align-items:center;gap:11px;padding:9px 12px;background:linear-gradient(135deg,#14222d,#101c25);border:1px solid #203746;border-left:4px solid #3d6075;border-radius:10px;color:#e2e8f0;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.18)}.pg-map-row:hover{background:linear-gradient(135deg,#1a3040,#142632);border-color:#3d637a;transform:translateX(3px)}.pg-map-row.here{background:linear-gradient(135deg,#163126,#10271d);border-color:#4caf50}.pg-map-row.locked{background:#25191d;border-color:#e05252;opacity:.72;cursor:not-allowed}.pg-map-sprite{width:42px;height:42px;min-width:42px;border-radius:50%;background:radial-gradient(circle,#294458,#152632);border:1px solid #35556a;display:flex;align-items:center;justify-content:center;overflow:hidden}.pg-map-info{flex:1}.pg-map-info b{color:#fff;font-size:13px}.pg-map-meta{display:block;font-size:11px;color:#9fb0bd;margin-top:4px}.pg-eff{display:inline-flex;align-items:center;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.2px;vertical-align:1px}.pg-eff.adv{color:#ffd27d;background:#4a3210;border:1px solid #b87918;box-shadow:0 0 9px rgba(242,178,62,.2)}.pg-eff.max{color:#7dff9a;background:#10391c;border:1px solid #39b958;box-shadow:0 0 11px rgba(63,220,100,.3)}.pg-map-tools{display:grid;grid-template-columns:1fr 180px;gap:8px;margin:8px 0;padding:9px;background:#101d27;border:1px solid #203544;border-radius:10px}.pg-map-tools input,.pg-map-tools select{padding:7px;background:#0d1a24;color:#e2e8f0;border:1px solid #263d4e;border-radius:7px;}':'');
+    if(C.map)st.textContent+='.pg-map-sprite i{display:block;flex:0 0 42px;width:42px;height:42px}';
     const old=document.getElementById('__pgSimpleMap'),tools=document.getElementById('__pgMapTools');if(!C.map){window.__pgLayoutRender=()=>{};old&&old.remove();tools&&tools.remove();return true;}
     const TC={normal:{rock:.5,ghost:0,steel:.5},fire:{grass:2,ice:2,bug:2,steel:2,fire:.5,water:.5,rock:.5,dragon:.5},water:{fire:2,ground:2,rock:2,water:.5,grass:.5,dragon:.5},electric:{water:2,flying:2,electric:.5,grass:.5,dragon:.5,ground:0},grass:{water:2,ground:2,rock:2,fire:.5,grass:.5,poison:.5,flying:.5,bug:.5,dragon:.5,steel:.5},ice:{grass:2,ground:2,flying:2,dragon:2,fire:.5,water:.5,ice:.5,steel:.5},fighting:{normal:2,ice:2,rock:2,dark:2,steel:2,poison:.5,flying:.5,psychic:.5,bug:.5,fairy:.5,ghost:0},poison:{grass:2,fairy:2,poison:.5,ground:.5,rock:.5,ghost:.5,steel:0},ground:{fire:2,electric:2,poison:2,rock:2,steel:2,grass:.5,bug:.5,flying:0},flying:{grass:2,fighting:2,bug:2,electric:.5,rock:.5,steel:.5},psychic:{fighting:2,poison:2,psychic:.5,steel:.5,dark:0},bug:{grass:2,psychic:2,dark:2,fire:.5,fighting:.5,poison:.5,flying:.5,ghost:.5,steel:.5,fairy:.5},rock:{fire:2,ice:2,flying:2,bug:2,fighting:.5,ground:.5,steel:.5},ghost:{psychic:2,ghost:2,dark:.5,normal:0},dragon:{dragon:2,steel:.5,fairy:0},dark:{psychic:2,ghost:2,fighting:.5,dark:.5,fairy:.5},steel:{ice:2,rock:2,fairy:2,fire:.5,water:.5,electric:.5,steel:.5},fairy:{fighting:2,dragon:2,dark:2,fire:.5,poison:.5,steel:.5}};
     const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\[.*?\\]|\\(.*?\\)/g,'').trim();
