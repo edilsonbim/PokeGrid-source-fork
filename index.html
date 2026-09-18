@@ -3351,12 +3351,52 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }
     return r;
   }
-  function sellSafePokes(i) {
-    const w = webviews[i]; if (!w || off[i]) return;
-    w.executeJavaScript(SELL_SAFE_POKES).then(r => {
-      if (!r || !r.ok) window.alert('Venda de Pokémon não realizada: ' + ((r && r.reason) || 'erro desconhecido'));
-      else { window.alert('Venda concluída: ' + nf(r.sold) + ' Pokémon · ' + nf(r.gold) + ' gold'); refreshCards(); }
-    }).catch(e => window.alert('Venda de Pokémon não realizada: ' + (e && e.message ? e.message : 'erro desconhecido')));
+  const sellPokesBusy = new Set();
+  async function sellSafePokes(i) {
+    const w = webviews[i]; if (!w || off[i] || sellPokesBusy.has(i)) return;
+    sellPokesBusy.add(i);
+    let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
+    try {
+      r = await w.executeJavaScript(SELL_SAFE_POKES);
+      const cityRequired = !r?.ok && /precisa estar na cidade|saia da hunt|must be in (?:the )?(?:city|town)/i.test(String(r?.reason || ''));
+      if (cityRequired) {
+        const state = await w.executeJavaScript(READ_STATE).catch(() => null);
+        const slug = String(state?.huntSlug || '').trim();
+        if (!slug || slug === 'cerulean') {
+          r = { ok:false, reason:'Não foi possível identificar a hunt atual para voltar depois da venda' };
+        } else {
+          let shouldReturn = false;
+          try {
+            let town;
+            try { town = await w.executeJavaScript(GO_TOWN_FOR_SALE); }
+            catch (e) { shouldReturn = true; throw e; }
+            shouldReturn = !!town?.moved;
+            if (!town?.ok) r = { ok:false, reason:town?.reason || 'não foi possível confirmar a chegada à cidade' };
+            else r = await w.executeJavaScript(SELL_SAFE_POKES);
+          } finally {
+            if (shouldReturn) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
+          }
+        }
+      }
+    } catch (e) {
+      r = { ok:false, reason:e?.message || 'erro desconhecido' };
+    } finally {
+      const label = tabNames[i] || stName(i);
+      if (!r?.ok || returnFailed) {
+        try { window.pokeAPI?.logError?.('venda-pokemon', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
+      }
+      sellPokesBusy.delete(i);
+      try {
+        if (r?.ok) refreshCards();
+        const status = (r?.ok ? 'Venda concluída' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
+        document.querySelectorAll('.cd-sell-pokes').forEach(btn => {
+          if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender Pokémon IV < 150'; btn.title = status; }
+        });
+        const statsSell = stBody.querySelector('#stSellPokes');
+        if (statsIdx === i && statsSell) { statsSell.disabled = false; statsSell.textContent = 'Vender Pokémon'; statsSell.title = status; }
+      } catch {}
+    }
+    return r;
   }
   function sellSelectedStones(i, cid) {
     const w = webviews[i]; if (!w || off[i]) return;
