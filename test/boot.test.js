@@ -122,7 +122,7 @@ ok(index.includes('300000 + Math.floor(Math.random() * 300001)') && index.includ
 ok(index.includes('[data-guide="dock-home"]') && index.includes('GOTO_HUNT_CURRENT(hunt.slug'), 'recuperacao vai para a cidade e retorna para a ultima hunt');
 ok(index.includes('id="protectItemsBtn"') && index.includes('id="protectOverlay"') && index.includes('id="protectFilter"'), 'topo abre painel grande de protecao com busca e filtros');
 ok(index.includes("localStorage.setItem('protectedItemIds'") && index.includes('protectedItemIds.add(id)') && index.includes('protectedItemIds.delete(id)'), 'itens marcados e desmarcados ficam salvos');
-ok(index.includes('!protectedIds.has(String(x.itemId))') && index.includes('SELL_SAFE_ITEMS_V2([...protectedItemIds])'), 'venda de itens exclui toda protecao personalizada');
+ok(index.includes('!protectedIds.has(String(x.itemId))') && index.includes('const selectedProtection = [...protectedItemIds]') && index.includes('SELL_SAFE_ITEMS_V2(selectedProtection)'), 'venda de itens exclui toda protecao personalizada');
 ok(index.includes("blocked=/boss|key|card|picture|strange\\\\s+pheromone/i") && index.includes("!['heal','revive','stone'].includes"), 'protecao personalizada preserva todas as regras antigas');
 ok(index.includes('id="layoutsBtn"') && index.includes('data-layout="map"') && index.includes("gameLayouts = { map:true"), 'Layouts fica ao lado de Opcoes e inicia com mapa simplificado selecionado');
 ok(index.includes("it.image || it.icon || it.sprite || it.img") && index.includes('protectFallbackIcon'), 'catalogo protegido usa todos os campos de imagem e fallback oficial');

@@ -25,11 +25,11 @@ function classes(...names) {
 
 async function simulate({ destination, locked = false, ignored = false, guide = 'hunt-' + destination.toLowerCase(), label = destination }) {
   let opened = false, active = 'Kanto', traveled = false;
-  const poke = { lastSlug: 'bulbasaur', ws: {} };
+  const poke = { lastSlug: 'bulbasaur', ws: { 'field-init': { slug: 'bulbasaur' } } };
   const marker = {
     dataset: { guide }, classList: classes(), disabled: false, isConnected: true,
     querySelector: selector => selector === '.hunt-name' ? { textContent: label } : null,
-    click() { traveled = true; if (!ignored) { poke.lastSlug = destination.toLowerCase(); this.classList.add('here'); } }
+    click() { traveled = true; if (!ignored) { poke.lastSlug = destination.toLowerCase(); poke.ws['field-init'] = { slug: poke.lastSlug }; this.classList.add('here'); } }
   };
   const areas = ['Kanto', 'Outland', 'Orre', 'Nightmare'].map(name => ({
     name, disabled: false, classList: classes(...(name === 'Kanto' ? ['on'] : []), ...(name === 'Nightmare' && locked ? ['locked'] : [])),
@@ -61,6 +61,10 @@ async function simulate({ destination, locked = false, ignored = false, guide = 
 
   const renamed = await simulate({ destination: 'Lavender', guide: 'hunt-pewter' });
   assert.equal(renamed.success, true, 'nome visível encontra hunt mesmo com guide antigo');
+
+  const stale = await simulate({ destination: 'Bulbasaur' });
+  assert.equal(stale.success, true);
+  assert.equal(stale.traveled, true, 'slug guardado não impede retorno da cidade à mesma hunt');
 
   const blocked = await simulate({ destination: 'Nightmare', locked: true });
   assert.equal(blocked.success, false, 'região bloqueada não é acionada');
