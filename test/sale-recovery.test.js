@@ -27,15 +27,16 @@ async function testCityArrival() {
 }
 
 const sellBody = extract('const sellItemsBusy =', 'function sellSafePokes');
-function makeSeller(webview, alerts, confirms) {
-  const build = new Function('webviews', 'off', 'protectedItemIds', 'SELL_SAFE_ITEMS_V2', 'window', 'tabNames', 'stName', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'nf', 'refreshCards', sellBody + '\nreturn sellSafeItems;');
+function makeSeller(webview, errors, button) {
+  const build = new Function('webviews', 'off', 'protectedItemIds', 'SELL_SAFE_ITEMS_V2', 'window', 'tabNames', 'stName', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'refreshCards', 'document', 'stBody', 'statsIdx', sellBody + '\nreturn sellSafeItems;');
   return build([webview], [false], new Set(['59195']), ids => 'sale:' + ids.join(','),
-    { alert: msg => alerts.push(msg), confirm: msg => { confirms.push(msg); return true; } },
-    ['Treinador 1'], () => 'Conta 1', 'state', 'town', slug => 'tp:' + slug, String, () => {});
+    { alert: () => { throw new Error('alert não permitido'); }, confirm: () => { throw new Error('confirm não permitido'); }, pokeAPI: { logError: (...args) => errors.push(args) } },
+    ['Treinador 1'], () => 'Conta 1', 'state', 'town', slug => 'tp:' + slug, () => {},
+    { querySelectorAll: () => [button] }, { querySelector: () => null }, 0);
 }
 
 async function testRetryOnlyAfterCity() {
-  const calls = [], alerts = [], confirms = [];
+  const calls = [], errors = [], button = { dataset:{ i:'0' }, disabled:true, textContent:'Vendendo…' };
   let sales = 0;
   const webview = { async executeJavaScript(script) {
     calls.push(script);
@@ -47,29 +48,91 @@ async function testRetryOnlyAfterCity() {
     if (script === 'tp:bulbasaur') return true;
     throw new Error('script inesperado: ' + script);
   } };
-  await makeSeller(webview, alerts, confirms)(0);
+  const result = await makeSeller(webview, errors, button)(0);
   assert.deepEqual(calls, ['sale:59195', 'state', 'town', 'sale:59195', 'tp:bulbasaur']);
-  assert.equal(confirms.length, 1);
-  assert.match(alerts[0], /Venda concluída/);
+  assert.equal(result.ok, true);
+  assert.equal(errors.length, 0);
+  assert.equal(button.disabled, false);
+  assert.equal(button.textContent, 'Vender todos os itens permitidos');
 }
 
 async function testNoRetryWithoutArrival() {
-  const calls = [], alerts = [], confirms = [];
+  const calls = [], errors = [], button = { dataset:{ i:'0' }, disabled:true, textContent:'Vendendo…' };
   const webview = { async executeJavaScript(script) {
     calls.push(script);
     if (script.startsWith('sale:')) return { ok:false, reason:'Você precisa estar na cidade para vender no Mark' };
     if (script === 'state') return { huntSlug:'bulbasaur' };
-    if (script === 'town') return { ok:false, reason:'cidade não confirmada' };
+    if (script === 'town') return { ok:false, moved:true, reason:'cidade não confirmada' };
+    if (script === 'tp:bulbasaur') return true;
     throw new Error('script inesperado');
   } };
-  await makeSeller(webview, alerts, confirms)(0);
-  assert.deepEqual(calls, ['sale:59195', 'state', 'town']);
-  assert.match(alerts[0], /cidade não confirmada/);
+  const result = await makeSeller(webview, errors, button)(0);
+  assert.deepEqual(calls, ['sale:59195', 'state', 'town', 'tp:bulbasaur']);
+  assert.equal(result.ok, false);
+  assert.match(errors[0][1], /cidade não confirmada/);
+  assert.equal(button.disabled, false);
+}
+
+async function testFailedSaleStillReturns() {
+  const calls = [], errors = [], button = { dataset:{ i:'0' }, disabled:true, textContent:'Vendendo…' };
+  let sales = 0;
+  const webview = { async executeJavaScript(script) {
+    calls.push(script);
+    if (script.startsWith('sale:')) {
+      if (++sales === 1) return { ok:false, reason:'Você precisa estar na cidade para vender no Mark' };
+      throw new Error('falha na venda da cidade');
+    }
+    if (script === 'state') return { huntSlug:'bulbasaur' };
+    if (script === 'town') return { ok:true, moved:true };
+    if (script === 'tp:bulbasaur') return false;
+    throw new Error('script inesperado');
+  } };
+  const result = await makeSeller(webview, errors, button)(0);
+  assert.deepEqual(calls, ['sale:59195', 'state', 'town', 'sale:59195', 'tp:bulbasaur']);
+  assert.equal(result.ok, false);
+  assert.match(errors[0][1], /falha na venda da cidade/);
+  assert.match(errors[0][1], /retorno à hunt não confirmado/);
+  assert.equal(button.disabled, false);
+}
+
+async function testUnknownHuntDoesNotMove() {
+  const calls = [], errors = [], button = { dataset:{ i:'0' }, disabled:true, textContent:'Vendendo…' };
+  const webview = { async executeJavaScript(script) {
+    calls.push(script);
+    if (script.startsWith('sale:')) return { ok:false, reason:'Você precisa estar na cidade para vender no Mark' };
+    if (script === 'state') return { huntSlug:'' };
+    throw new Error('personagem não deve sair da hunt sem destino de volta');
+  } };
+  const result = await makeSeller(webview, errors, button)(0);
+  assert.deepEqual(calls, ['sale:59195', 'state']);
+  assert.equal(result.ok, false);
+  assert.match(errors[0][1], /Não foi possível identificar a hunt atual/);
+  assert.equal(button.disabled, false);
+}
+
+async function testTownScriptFailureAttemptsReturn() {
+  const calls = [], errors = [], button = { dataset:{ i:'0' }, disabled:true, textContent:'Vendendo…' };
+  const webview = { async executeJavaScript(script) {
+    calls.push(script);
+    if (script.startsWith('sale:')) return { ok:false, reason:'Você precisa estar na cidade para vender no Mark' };
+    if (script === 'state') return { huntSlug:'bulbasaur' };
+    if (script === 'town') throw new Error('falha após clicar Casa');
+    if (script === 'tp:bulbasaur') return true;
+    throw new Error('script inesperado');
+  } };
+  const result = await makeSeller(webview, errors, button)(0);
+  assert.deepEqual(calls, ['sale:59195', 'state', 'town', 'tp:bulbasaur']);
+  assert.equal(result.ok, false);
+  assert.match(errors[0][1], /falha após clicar Casa/);
+  assert.equal(button.disabled, false);
 }
 
 (async () => {
   await testCityArrival();
   await testRetryOnlyAfterCity();
   await testNoRetryWithoutArrival();
-  console.log('Venda: chegada à cidade, retry único e proteções preservadas OK');
+  await testFailedSaleStillReturns();
+  await testUnknownHuntDoesNotMove();
+  await testTownScriptFailureAttemptsReturn();
+  console.log('Venda: sem janelas, retry único, retorno e proteções preservadas OK');
 })().catch(error => { console.error(error); process.exitCode = 1; });

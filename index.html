@@ -1594,7 +1594,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
       await new Promise(resolve=>setTimeout(resolve,200));
       if(inCity())return {ok:true,moved:true};
     }
-    return {ok:false,reason:'O personagem não chegou à cidade; a venda não foi repetida'};
+    return {ok:false,moved:true,reason:'O personagem não chegou à cidade; a venda não foi repetida'};
   })()`;
   function checkUnstuck(i, r) {
     if (!unstuckOn || !r || !r.live || !r.cid || !r.slug) { if (!r || !r.live) resetUnstuck(i, 0); return; }
@@ -3307,41 +3307,49 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   async function sellSafeItems(i) {
     const w = webviews[i]; if (!w || off[i] || sellItemsBusy.has(i)) return;
     sellItemsBusy.add(i);
+    let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
     try {
       const selectedProtection = [...protectedItemIds];
-      let r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
-      let returnFailed = false;
+      r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
       const cityRequired = !r?.ok && /precisa estar na cidade|saia da hunt|must be in (?:the )?(?:city|town)/i.test(String(r?.reason || ''));
       if (cityRequired) {
-        const label = tabNames[i] || stName(i);
-        if (!window.confirm(label + ' precisa sair da hunt para vender no Mark. Ir à cidade, vender os itens permitidos e voltar à hunt?')) return;
         const state = await w.executeJavaScript(READ_STATE).catch(() => null);
         const slug = String(state?.huntSlug || '').trim();
         if (!slug || slug === 'cerulean') {
-          window.alert('Não consegui identificar a hunt atual de ' + label + '. Use Casa, venda na cidade e escolha a hunt manualmente.');
-          return;
-        }
-        const town = await w.executeJavaScript(GO_TOWN_FOR_SALE);
-        if (!town?.ok) {
-          window.alert('Venda não realizada: ' + (town?.reason || 'não foi possível confirmar a chegada à cidade'));
-          return;
-        }
-        try {
-          r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
-        } catch (e) {
-          r = { ok:false, reason:e?.message || 'erro ao tentar vender na cidade' };
-        } finally {
-          if (town.moved) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
+          r = { ok:false, reason:'Não foi possível identificar a hunt atual para voltar depois da venda' };
+        } else {
+          let shouldReturn = false;
+          try {
+            let town;
+            try { town = await w.executeJavaScript(GO_TOWN_FOR_SALE); }
+            catch (e) { shouldReturn = true; throw e; }
+            shouldReturn = !!town?.moved;
+            if (!town?.ok) r = { ok:false, reason:town?.reason || 'não foi possível confirmar a chegada à cidade' };
+            else r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
+          } finally {
+            if (shouldReturn) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
+          }
         }
       }
-      const warning = returnFailed ? '\n\nAtenção: não consegui confirmar a volta à hunt; confira este personagem no mapa.' : '';
-      if (!r?.ok) window.alert('Venda não realizada: ' + (r?.reason || 'erro desconhecido') + warning);
-      else { window.alert('Venda concluída: ' + nf(r.sold) + ' tipos de item · ' + nf(r.gold) + ' gold' + warning); refreshCards(); }
     } catch (e) {
-      window.alert('Venda não realizada: ' + (e?.message || 'erro desconhecido'));
+      r = { ok:false, reason:e?.message || 'erro desconhecido' };
     } finally {
+      const label = tabNames[i] || stName(i);
+      if (!r?.ok || returnFailed) {
+        try { window.pokeAPI?.logError?.('venda-itens', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
+      }
       sellItemsBusy.delete(i);
+      try {
+        if (r?.ok) refreshCards();
+        const status = (r?.ok ? 'Venda concluída' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
+        document.querySelectorAll('.cd-sell-safe').forEach(btn => {
+          if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender todos os itens permitidos'; btn.title = status; }
+        });
+        const statsSell = stBody.querySelector('#stSellItems');
+        if (statsIdx === i && statsSell) { statsSell.disabled = false; statsSell.textContent = 'Vender itens'; statsSell.title = status; }
+      } catch {}
     }
+    return r;
   }
   function sellSafePokes(i) {
     const w = webviews[i]; if (!w || off[i]) return;
