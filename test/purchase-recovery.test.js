@@ -3,6 +3,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const index = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 function extract(start, end) {
@@ -143,6 +144,22 @@ async function testBulkPurchaseHasNoDialogs() {
   assert.deepEqual(buttons.map(b => [b.disabled, b.textContent]), [[false, '1k'], [false, '5k'], [false, '10k']]);
 }
 
+const configBallBody = extract('const BUY_CONFIG_BALL =', 'const SELL_SAFE_ITEMS =');
+const BUY_CONFIG_BALL = new Function(configBallBody + '\nreturn BUY_CONFIG_BALL;')();
+async function testOptionsPurchaseUsesCityAwarePayload() {
+  const calls = [];
+  const script = BUY_CONFIG_BALL(7, 1000);
+  const result = await vm.runInNewContext(script, {
+    fetch: async (url, options) => {
+      calls.push([url, JSON.parse(options.body), options.credentials]);
+      return { ok:true, status:200, json: async () => ({ bought:1000, gold:500 }) };
+    }
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(calls, [['/api/game/balls/buy', { ballId:7, qty:1000 }, 'include']]);
+  assert.match(index, /runMarkAction\(j, BUY_CONFIG_BALL\(ballId, qtd\)\)/);
+}
+
 (async () => {
   await testDirectPurchaseDoesNotMove();
   await testPurchaseGoesToTownAndReturns();
@@ -152,5 +169,6 @@ async function testBulkPurchaseHasNoDialogs() {
   await testFailedRetryStillReturns();
   await testIndividualPurchaseHasNoDialogs();
   await testBulkPurchaseHasNoDialogs();
-  console.log('Compras: individuais e em massa sem janelas, com cidade e retorno à hunt OK');
+  await testOptionsPurchaseUsesCityAwarePayload();
+  console.log('Compras: individuais, em massa e pelas opções com cidade e retorno à hunt OK');
 })().catch(error => { console.error(error); process.exitCode = 1; });

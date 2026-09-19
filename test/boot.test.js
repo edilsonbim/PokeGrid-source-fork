@@ -118,11 +118,14 @@ ok(index.includes("localStorage.setItem('favoritePokeHunts'") && index.includes(
 ok(index.includes('data-catch-alert=') && index.includes("lsSet('catchAlerts'") && index.includes('avisaCaptura(i, r, x)'), 'alerta de captura fica na Sessao, salvo e ligado apenas a capturas novas');
 ok(index.includes("window.pokeAPI.notify('PokeGrid', acc + ' ' + t('msgCatch')") && index.includes('function beepCapture()'), 'alerta de captura toca som e envia notificacao com o Pokemon');
 ok(index.includes('id="unstuck"') && index.includes("lsGet('unstuckFarm')") && index.includes('checkUnstuck(i, r)'), 'Opcoes permite ligar e desligar a recuperacao automatica do farm');
-ok(index.includes('300000 + Math.floor(Math.random() * 300001)') && index.includes('30000 + Math.floor(Math.random() * 90001)'), 'recuperacao usa espera aleatoria de 5–10 min sem XP e 30 s–2 min na cidade');
+ok(index.includes('120000 + Math.floor(Math.random() * 120001)') && index.includes('10000 + Math.floor(Math.random() * 20001)'), 'recuperacao usa espera aleatoria de 2–4 min sem XP e 10–30 s na cidade');
+ok(index.includes('executeJavaScript(GO_TOWN_FOR_SALE)).then') && index.includes('unstuckState[i] !== s'), 'recuperacao confirma chegada à cidade e cancela operacoes antigas com seguranca');
 ok(index.includes('[data-guide="dock-home"]') && index.includes('GOTO_HUNT_CURRENT(hunt.slug'), 'recuperacao vai para a cidade e retorna para a ultima hunt');
 ok(index.includes('id="protectItemsBtn"') && index.includes('id="protectOverlay"') && index.includes('id="protectFilter"'), 'topo abre painel grande de protecao com busca e filtros');
 ok(index.includes("localStorage.setItem('protectedItemIds'") && index.includes('protectedItemIds.add(id)') && index.includes('protectedItemIds.delete(id)'), 'itens marcados e desmarcados ficam salvos');
-ok(index.includes('!protectedIds.has(String(x.itemId))') && index.includes('const selectedProtection = [...protectedItemIds]') && index.includes('SELL_SAFE_ITEMS_V2(selectedProtection)'), 'venda de itens exclui toda protecao personalizada');
+ok(index.includes('!protectedIds.has(String(x.itemId))') && index.includes('const selectedProtection = [...protectedItemIds]') && index.includes('PREVIEW_SAFE_ITEMS(selectedProtection)') && index.includes('SELL_SAFE_ITEMS_SELECTED([...protectedItemIds], confirmedItems)'), 'venda de itens exclui toda protecao personalizada e pede confirmacao com snapshot');
+ok(index.includes('PREVIEW_SELECTED_STONES(ids)') && index.includes('SELL_SELECTED_STONES_SELECTED(ids, confirmed)') && index.includes('Clique em OK para vender.'), 'venda de Stones mostra a lista e confirma antes de vender');
+ok(index.includes('runMarkAction(j, BUY_CONFIG_BALL(ballId, qtd))'), 'compra pelas opcoes usa o mesmo retorno automatico para a cidade');
 ok(index.includes("blocked=/boss|key|card|picture|strange\\\\s+pheromone/i") && index.includes("!['heal','revive','stone'].includes"), 'protecao personalizada preserva todas as regras antigas');
 ok(index.includes('id="layoutsBtn"') && index.includes('data-layout="map"') && index.includes("gameLayouts = { map:true"), 'Layouts fica ao lado de Opcoes e inicia com mapa simplificado selecionado');
 ok(index.includes("it.image || it.icon || it.sprite || it.img") && index.includes('protectFallbackIcon'), 'catalogo protegido usa todos os campos de imagem e fallback oficial');
