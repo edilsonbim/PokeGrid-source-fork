@@ -1594,7 +1594,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
       await new Promise(resolve=>setTimeout(resolve,200));
       if(inCity())return {ok:true,moved:true};
     }
-    return {ok:false,moved:true,reason:'O personagem não chegou à cidade; a venda não foi repetida'};
+    return {ok:false,moved:true,reason:'O personagem não chegou à cidade; a operação não foi repetida'};
   })()`;
   function checkUnstuck(i, r) {
     if (!unstuckOn || !r || !r.live || !r.cid || !r.slug) { if (!r || !r.live) resetUnstuck(i, 0); return; }
@@ -2640,7 +2640,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   const a4c = (l, v, c) => '<div class="a4"><div class="a4v"' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</div><div class="a4l">' + l + '</div></div>';
   const sgrid = (n, inner) => '<div class="agg4" style="grid-template-columns:repeat(' + n + ',1fr)">' + inner + '</div>';
-  let ubAllBusy = false;
+  let ubAllBusy = false, ubAllLastStatus = '';
   async function renderAggregate() {
     let gph = 0, xph = 0, kph = 0, kills = 0, caps = 0, shF = 0, shC = 0, money = 0, dia = 0, balls = 0, pot = 0, rev = 0, lifeT = 0;
     let bossBronze = 0, bossSilver = 0, bossGold = 0, strangePheromone = 0, cards = '';
@@ -2678,7 +2678,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       + (canBackAll ? '' : ' disabled') + '>↩ Voltar todos para a última hunt</button>'
       + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px">'
       + '<span style="font-size:11px;color:#adbac7;font-weight:700;margin-right:auto">Comprar UB todos personagens:</span>'
-      + [1000, 5000, 10000].map(q => '<button class="st-buy-ub-all" data-qty="' + q + '" style="padding:7px 10px;border:1px solid #8b5cf6;border-radius:7px;background:#241744;color:#c4a7ff;font-weight:700;cursor:pointer"' + (canBuyUbAll && !ubAllBusy ? '' : ' disabled') + '>' + (ubAllBusy ? '…' : (q / 1000) + 'k') + '</button>').join('')
+      + [1000, 5000, 10000].map(q => '<button class="st-buy-ub-all" data-qty="' + q + '" title="' + esc(ubAllLastStatus) + '" style="padding:7px 10px;border:1px solid #8b5cf6;border-radius:7px;background:#241744;color:#c4a7ff;font-weight:700;cursor:pointer"' + (canBuyUbAll && !ubAllBusy ? '' : ' disabled') + '>' + (ubAllBusy ? '…' : (q / 1000) + 'k') + '</button>').join('')
       + '</div></div>';
     h += '<div style="padding:0 14px 16px">'
       + '<div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.07em;font-weight:700;padding:2px 0 7px">Contador de itens · todos os personagens</div>'
@@ -3274,6 +3274,42 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       return {ok:true,bought};
     }catch(e){return {ok:false,bought:0,reason:e.message||'Erro na compra'};}
   })()`;
+  const markActionBusy = new Set();
+  async function runMarkAction(i, script) {
+    const w = webviews[i];
+    if (!w || off[i]) return { r:{ ok:false, reason:'Painel indisponível' }, returnFailed:false };
+    if (markActionBusy.has(i)) return { r:{ ok:false, reason:'Outra operação no Mark já está em andamento' }, returnFailed:false };
+    markActionBusy.add(i);
+    let r = { ok:false, reason:'Operação não iniciada' }, returnFailed = false;
+    try {
+      r = await w.executeJavaScript(script);
+      const cityRequired = !r?.ok && !(Number.isFinite(+r?.bought) && +r.bought > 0) && /precisa estar na cidade|saia da hunt|must be in (?:the )?(?:city|town)/i.test(String(r?.reason || ''));
+      if (cityRequired) {
+        const state = await w.executeJavaScript(READ_STATE).catch(() => null);
+        const slug = String(state?.huntSlug || '').trim();
+        if (!slug || slug === 'cerulean') {
+          r = { ok:false, reason:'Não foi possível identificar a hunt atual para voltar depois da compra' };
+        } else {
+          let shouldReturn = false;
+          try {
+            let town;
+            try { town = await w.executeJavaScript(GO_TOWN_FOR_SALE); }
+            catch (e) { shouldReturn = true; throw e; }
+            shouldReturn = !!town?.moved;
+            if (!town?.ok) r = { ok:false, reason:town?.reason || 'não foi possível confirmar a chegada à cidade' };
+            else r = await w.executeJavaScript(script);
+          } finally {
+            if (shouldReturn) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
+          }
+        }
+      }
+    } catch (e) {
+      r = { ok:false, reason:e?.message || 'erro desconhecido' };
+    } finally {
+      markActionBusy.delete(i);
+    }
+    return { r, returnFailed };
+  }
   async function buyUbAllCharacters(qty) {
     if (![1000, 5000, 10000].includes(+qty) || ubAllBusy) return;
     ubAllBusy = true;
@@ -3281,27 +3317,46 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       const targets = [];
       for (let i = 0; i < count; i++) if (!off[i] && webviews[i]) targets.push({ i, w:webviews[i], name:tabNames[i] || stName(i) });
       const results = await Promise.all(targets.map(async x => {
-        try { return { ...x, r:await x.w.executeJavaScript(BUY_UB_BATCH(qty)) }; }
-        catch (e) { return { ...x, r:{ ok:false, bought:0, reason:(e && e.message) || 'erro no painel' } }; }
+        const out = await runMarkAction(x.i, BUY_UB_BATCH(qty));
+        return { ...x, ...out };
       }));
       const complete = results.filter(x => x.r && x.r.ok);
       const total = results.reduce((n, x) => n + (+((x.r && x.r.bought) || 0)), 0);
-      const failed = results.filter(x => !x.r || !x.r.ok);
-      let msg = 'Compra de Ultra Ball: ' + complete.length + '/' + targets.length + ' personagens concluídos · ' + nf(total) + ' UB compradas.';
-      if (failed.length) msg += '\n\nNão concluído:\n' + failed.map(x => '- ' + x.name + ': ' + ((x.r && x.r.reason) || 'erro desconhecido') + (+((x.r && x.r.bought) || 0) ? ' (' + nf(x.r.bought) + ' compradas antes do erro)' : '')).join('\n');
-      window.alert(msg);
+      ubAllLastStatus = 'Compra de Ultra Ball: ' + complete.length + '/' + targets.length + ' personagens · ' + nf(total) + ' UB compradas';
+      results.filter(x => !x.r?.ok || x.returnFailed).forEach(x => {
+        const detail = x.r?.ok ? 'compra concluída, mas retorno à hunt não confirmado' : x.r?.reason || 'erro desconhecido';
+        try { window.pokeAPI?.logError?.('compra-ub', x.name + ': ' + detail + (x.returnFailed && !x.r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
+      });
     } finally {
       ubAllBusy = false;
+      try {
+        stBody.querySelectorAll('.st-buy-ub-all').forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = ((+btn.dataset.qty || 0) / 1000) + 'k';
+          btn.title = ubAllLastStatus;
+        });
+      } catch {}
       refreshStats();
       if (cardsOn) refreshCards(true);
     }
   }
-  function buy1000Ball(i, kind, id, name) {
-    const w = webviews[i]; if (!w || off[i]) return;
-    w.executeJavaScript(BUY_1000_SUPPLY(kind, id)).then(r => {
-      if (!r || !r.ok) window.alert('Compra não realizada: ' + ((r && r.reason) || 'erro desconhecido'));
-      else refreshCards();
-    }).catch(e => window.alert('Compra não realizada: ' + (e && e.message ? e.message : 'erro desconhecido')));
+  async function buy1000Ball(i, kind, id, name) {
+    const label = tabNames[i] || stName(i);
+    const { r, returnFailed } = await runMarkAction(i, BUY_1000_SUPPLY(kind, id));
+    if (!r?.ok || returnFailed) {
+      const detail = r?.ok ? 'compra concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido';
+      try { window.pokeAPI?.logError?.('compra-mark', label + ' · ' + name + ': ' + detail + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
+    }
+    try {
+      const status = (r?.ok ? 'Compra concluída' : 'Compra não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
+      document.querySelectorAll('.cd-ball-buy').forEach(btn => {
+        if (+btn.dataset.i === i && btn.dataset.kind === kind && btn.dataset.id === String(id)) {
+          btn.disabled = false; btn.textContent = '+1000'; btn.title = status;
+        }
+      });
+      if (r?.ok) refreshCards();
+    } catch {}
+    return r;
   }
   const sellItemsBusy = new Set();
   async function sellSafeItems(i) {
