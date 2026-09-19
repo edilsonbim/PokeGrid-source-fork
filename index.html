@@ -3228,6 +3228,15 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     .replace("x.qty>0&&x.name&&", "x.qty>0&&x.name&&!protectedIds.has(String(x.itemId))&&!['heal','revive','stone'].includes(String((cat[x.itemId]||{}).category||''))&&");
   const SELL_SAFE_POKES = `(async()=>{const num=v=>{const m=String(v==null?'':v).match(/[0-9]+([.,][0-9]+)?/);return m?+m[0].replace(',','.'):NaN};const key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};const P=window.__poke,list=(P&&P.ws&&P.ws.pokes&&P.ws.pokes.list)||[];const safe=list.filter(p=>{const iv=num(p&&p.ivTotal),q=num(p&&p.quality);return p&&p.id&&!p.team&&!p.leader&&!p.starter&&!p.shiny&&!p.locked&&(+p.sellValue||0)>0&&Number.isFinite(iv)&&Number.isFinite(q)&&iv<150&&q<1.7;});if(!safe.length)return {ok:false,reason:'Nenhum Pokémon permitido para vender (IV menor que 150 e até Épico)'};const pokeIds=safe.map(p=>p.id);const post=token=>fetch('/api/game/pokemon/sell',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({pokeIds})});let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{P.sock&&P.sock.send(JSON.stringify({type:'pokes-get'}))}catch(x){}return {ok:true,sold:j.sold||pokeIds.length,gold:j.goldGained||0};}catch(e){return {ok:false,reason:e.message||'Erro na venda de Pokémon'};}})()`;
   const SELL_SELECTED_STONES = ids => `(async()=>{const ids=${JSON.stringify(ids)},key='pokeweb:tokens',blocked=/boss|key|card|picture|strange\\s+pheromone/i;const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};const P=window.__poke,inv=(P&&P.ws&&P.ws.inventory&&P.ws.inventory.items)||[],doc=P&&P.api&&P.api['/game/items.json'],cat={};if(doc&&doc.items)doc.items.forEach(x=>cat[x.id]=x);const stones=inv.map(x=>({id:+x.itemId,qty:+x.quantity||0,item:cat[x.itemId]||{}})).filter(x=>ids.includes(String(x.id))&&x.qty>0&&String(x.item.category||'').toLowerCase()==='stone'&&!blocked.test(String(x.item.name||'')));if(!stones.length)return {ok:false,reason:'Nenhuma Stone permitida foi selecionada'};const post=(token,x)=>fetch('/api/game/flint/sell',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({itemId:x.id,qty:x.qty})});let sold=0,gold=0;for(const x of stones){let r=await post(tokens.accessToken,x);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken,x);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status),sold,gold};sold+=+j.sold||x.qty;gold+=+j.goldGained||0;}try{P.sock&&P.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,sold,gold,types:stones.length};}catch(e){return {ok:false,reason:e.message||'Erro na venda de Stones'};}})()`;
+  // A prévia e a venda usam o mesmo filtro. O segundo passo recebe apenas o snapshot
+  // confirmado e revalida cada item/Pokémon antes de chamar a API.
+  const SAFE_ITEMS_ACTION_V3 = (protectedIds, selectedItems, preview) => `(async()=>{const protectedIds=new Set(${JSON.stringify((protectedIds||[]).map(String))}),selectedItems=${JSON.stringify(selectedItems||null)},preview=${preview?'true':'false'},key='pokeweb:tokens',blocked=/boss|key|card|picture|strange\\\\s+pheromone/i;const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};try{const P=window.__poke,inv=(P&&P.ws&&P.ws.inventory&&P.ws.inventory.items)||[],doc=P&&P.api&&P.api['/game/items.json'],cat={};if(doc&&doc.items)doc.items.forEach(x=>cat[x.id]=x);const candidates=inv.map(x=>{const it=cat[x.itemId]||{};return{itemId:+x.itemId,qty:+x.quantity||0,name:String(it.name||''),category:String(it.category||'').toLowerCase(),npcPrice:+it.npcPrice||0}}).filter(x=>x.qty>0&&x.name&&!protectedIds.has(String(x.itemId))&&!['heal','revive','stone'].includes(x.category)&&!blocked.test(x.name)&&x.npcPrice>0);const wanted=Array.isArray(selectedItems)?new Map(selectedItems.map(x=>[String(x.itemId),Math.max(0,+x.qty||0)])):null;const items=candidates.filter(x=>!wanted||wanted.has(String(x.itemId))).map(x=>({itemId:x.itemId,qty:wanted?Math.min(x.qty,wanted.get(String(x.itemId))||0):x.qty,name:x.name})).filter(x=>x.qty>0);if(!items.length)return {ok:false,reason:'Nenhum item permitido para vender'};if(preview)return {ok:true,items,types:items.length,totalQty:items.reduce((n,x)=>n+x.qty,0)};let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};const payload=items.map(({itemId,qty})=>({itemId,qty}));const post=token=>fetch('/api/game/shop/sell',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({items:payload})});let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{P.sock&&P.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,sold:j.soldCount||items.length,gold:j.goldGained||0};}catch(e){return {ok:false,reason:e.message||'Erro na venda'};}})()`;
+  const NORMALIZE_SAFE_ITEMS_SCRIPT = script => script.replace(String.raw`strange\\s+pheromone`, String.raw`strange\s+pheromone`);
+  const PREVIEW_SAFE_ITEMS = protectedIds => NORMALIZE_SAFE_ITEMS_SCRIPT(SAFE_ITEMS_ACTION_V3(protectedIds, null, true));
+  const SELL_SAFE_ITEMS_SELECTED = (protectedIds, selectedItems) => NORMALIZE_SAFE_ITEMS_SCRIPT(SAFE_ITEMS_ACTION_V3(protectedIds, selectedItems, false)).replace('if(!items.length)return', "if(wanted&&(items.length!==wanted.size||items.some(x=>x.qty!==(wanted.get(String(x.itemId))||0))))return {ok:false,reason:'A bolsa mudou depois da confirmação; confira a lista novamente'};if(!items.length)return");
+  const SAFE_POKES_ACTION_V2 = (selectedIds, preview) => `(async()=>{const selectedIds=${JSON.stringify(selectedIds||null)},preview=${preview?'true':'false'},num=v=>{const m=String(v==null?'':v).match(/[0-9]+([.,][0-9]+)?/);return m?+m[0].replace(',','.'):NaN},key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};try{const P=window.__poke,list=(P&&P.ws&&P.ws.pokes&&P.ws.pokes.list)||[],wanted=Array.isArray(selectedIds)?new Set(selectedIds.map(String)):null;const safe=list.filter(p=>{const iv=num(p&&p.ivTotal),q=num(p&&p.quality);return p&&p.id&&(!wanted||wanted.has(String(p.id)))&&!p.team&&!p.leader&&!p.starter&&!p.shiny&&!p.locked&&(+p.sellValue||0)>0&&Number.isFinite(iv)&&Number.isFinite(q)&&iv<150&&q<1.7;});if(!safe.length)return {ok:false,reason:'Nenhum Pokémon permitido para vender (IV menor que 150 e até Épico)'};const pokeIds=safe.map(p=>p.id);if(preview)return {ok:true,count:pokeIds.length,pokeIds};let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};const post=token=>fetch('/api/game/pokemon/sell',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({pokeIds})});let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{P.sock&&P.sock.send(JSON.stringify({type:'pokes-get'}))}catch(x){}return {ok:true,sold:j.sold||pokeIds.length,gold:j.goldGained||0};}catch(e){return {ok:false,reason:e.message||'Erro na venda de Pokémon'};}})()`;
+  const PREVIEW_SAFE_POKES = () => SAFE_POKES_ACTION_V2(null, true);
+  const SELL_SAFE_POKES_SELECTED = selectedIds => SAFE_POKES_ACTION_V2(selectedIds, false).replace('if(!safe.length)return', "if(wanted&&safe.length!==wanted.size)return {ok:false,reason:'A lista de Pokémon mudou depois da confirmação; confira novamente'};if(!safe.length)return");
   function goToRecentHunt(i, slug, name) {
     const w = webviews[i]; if (!w || off[i]) return;
     w.executeJavaScript(GOTO_HUNT_CURRENT(slug, name)).then(ok => {
@@ -3365,7 +3374,22 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
     try {
       const selectedProtection = [...protectedItemIds];
-      r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
+      const preview = await w.executeJavaScript(PREVIEW_SAFE_ITEMS(selectedProtection));
+      if (!preview?.ok || !Array.isArray(preview.items) || !preview.items.length) {
+        r = preview?.ok ? { ok:false, reason:'Nenhum item permitido para vender' } : (preview || { ok:false, reason:'Não foi possível montar a lista de itens' });
+        return r;
+      }
+      const cleanName = v => String(v || '').replace(/[\r\n]+/g, ' ').slice(0, 100);
+      const itemLines = preview.items.map(x => '- ' + nf(+x.qty || 0) + ' × ' + cleanName(x.name));
+      const label = tabNames[i] || stName(i);
+      const itemTotal = preview.items.reduce((n, x) => n + (+x.qty || 0), 0);
+      if (!window.confirm(label + '\n\nItens que serão vendidos:\n\n' + itemLines.join('\n') + '\n\nTotal: ' + nf(preview.items.length) + ' tipos · ' + nf(itemTotal) + ' unidades.\n\nClique em OK para vender.')) {
+        r = { ok:false, cancelled:true, reason:'Venda cancelada' };
+        return r;
+      }
+      const confirmedItems = preview.items.map(x => ({ itemId:+x.itemId, qty:+x.qty || 0 }));
+      const saleScript = () => SELL_SAFE_ITEMS_SELECTED([...protectedItemIds], confirmedItems);
+      r = await w.executeJavaScript(saleScript());
       const cityRequired = !r?.ok && /precisa estar na cidade|saia da hunt|must be in (?:the )?(?:city|town)/i.test(String(r?.reason || ''));
       if (cityRequired) {
         const state = await w.executeJavaScript(READ_STATE).catch(() => null);
@@ -3380,7 +3404,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
             catch (e) { shouldReturn = true; throw e; }
             shouldReturn = !!town?.moved;
             if (!town?.ok) r = { ok:false, reason:town?.reason || 'não foi possível confirmar a chegada à cidade' };
-            else r = await w.executeJavaScript(SELL_SAFE_ITEMS_V2(selectedProtection));
+            else r = await w.executeJavaScript(saleScript());
           } finally {
             if (shouldReturn) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
           }
@@ -3390,13 +3414,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       r = { ok:false, reason:e?.message || 'erro desconhecido' };
     } finally {
       const label = tabNames[i] || stName(i);
-      if (!r?.ok || returnFailed) {
+      if ((!r?.ok && !r?.cancelled) || returnFailed) {
         try { window.pokeAPI?.logError?.('venda-itens', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
       }
       sellItemsBusy.delete(i);
       try {
         if (r?.ok) refreshCards();
-        const status = (r?.ok ? 'Venda concluída' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
+        const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
         document.querySelectorAll('.cd-sell-safe').forEach(btn => {
           if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender todos os itens permitidos'; btn.title = status; }
         });
@@ -3412,7 +3436,24 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     sellPokesBusy.add(i);
     let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
     try {
-      r = await w.executeJavaScript(SELL_SAFE_POKES);
+      const preview = await w.executeJavaScript(PREVIEW_SAFE_POKES());
+      if (!preview?.ok || !Array.isArray(preview.pokeIds) || !preview.pokeIds.length) {
+        r = preview?.ok ? { ok:false, reason:'Nenhum Pokémon permitido para vender' } : (preview || { ok:false, reason:'Não foi possível calcular a quantidade de Pokémon' });
+        return r;
+      }
+      const confirmedPokeIds = preview.pokeIds.map(x => String(x || '')).filter(x => x && x.length <= 200);
+      if (confirmedPokeIds.length !== preview.pokeIds.length || new Set(confirmedPokeIds).size !== confirmedPokeIds.length) {
+        r = { ok:false, reason:'A lista de Pokémon para venda é inválida' };
+        return r;
+      }
+      const label = tabNames[i] || stName(i), qty = confirmedPokeIds.length;
+      const plural = qty === 1 ? 'Pokémon será vendido' : 'Pokémon serão vendidos';
+      if (!window.confirm(label + '\n\n' + nf(qty) + ' ' + plural + '.\n\nRegras mantidas: IV menor que 150, no máximo Épico; nunca vende Pokémon do time, líder, inicial, Shiny ou trancado.\n\nClique em OK para vender.')) {
+        r = { ok:false, cancelled:true, reason:'Venda cancelada' };
+        return r;
+      }
+      const saleScript = SELL_SAFE_POKES_SELECTED(confirmedPokeIds);
+      r = await w.executeJavaScript(saleScript);
       const cityRequired = !r?.ok && /precisa estar na cidade|saia da hunt|must be in (?:the )?(?:city|town)/i.test(String(r?.reason || ''));
       if (cityRequired) {
         const state = await w.executeJavaScript(READ_STATE).catch(() => null);
@@ -3427,7 +3468,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
             catch (e) { shouldReturn = true; throw e; }
             shouldReturn = !!town?.moved;
             if (!town?.ok) r = { ok:false, reason:town?.reason || 'não foi possível confirmar a chegada à cidade' };
-            else r = await w.executeJavaScript(SELL_SAFE_POKES);
+            else r = await w.executeJavaScript(saleScript);
           } finally {
             if (shouldReturn) returnFailed = !(await w.executeJavaScript(GOTO_HUNT_CURRENT(slug, state.hunt || slug)).catch(() => false));
           }
@@ -3437,13 +3478,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       r = { ok:false, reason:e?.message || 'erro desconhecido' };
     } finally {
       const label = tabNames[i] || stName(i);
-      if (!r?.ok || returnFailed) {
+      if ((!r?.ok && !r?.cancelled) || returnFailed) {
         try { window.pokeAPI?.logError?.('venda-pokemon', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
       }
       sellPokesBusy.delete(i);
       try {
         if (r?.ok) refreshCards();
-        const status = (r?.ok ? 'Venda concluída' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
+        const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
         document.querySelectorAll('.cd-sell-pokes').forEach(btn => {
           if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender Pokémon IV < 150'; btn.title = status; }
         });

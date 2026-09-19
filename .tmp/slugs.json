@@ -1,0 +1,2456 @@
+[
+  {
+    "pokeId": 1,
+    "name": "Bulbasaur",
+    "slug": "bulbasaur",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bulbasaur"
+  },
+  {
+    "pokeId": 2,
+    "name": "Ivysaur",
+    "slug": "ivysaur",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ivysaur"
+  },
+  {
+    "pokeId": 3,
+    "name": "Venusaur",
+    "slug": "venusaur",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/venusaur"
+  },
+  {
+    "pokeId": 4,
+    "name": "Charmander",
+    "slug": "charmander",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/charmander"
+  },
+  {
+    "pokeId": 5,
+    "name": "Charmeleon",
+    "slug": "charmeleon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/charmeleon"
+  },
+  {
+    "pokeId": 6,
+    "name": "Charizard",
+    "slug": "charizard",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/charizard"
+  },
+  {
+    "pokeId": 7,
+    "name": "Squirtle",
+    "slug": "squirtle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/squirtle"
+  },
+  {
+    "pokeId": 8,
+    "name": "Wartortle",
+    "slug": "wartortle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wartortle"
+  },
+  {
+    "pokeId": 9,
+    "name": "Blastoise",
+    "slug": "blastoise",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/blastoise"
+  },
+  {
+    "pokeId": 10,
+    "name": "Caterpie",
+    "slug": "caterpie",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/caterpie"
+  },
+  {
+    "pokeId": 11,
+    "name": "Metapod",
+    "slug": "metapod",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/metapod"
+  },
+  {
+    "pokeId": 12,
+    "name": "Butterfree",
+    "slug": "butterfree",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/butterfree"
+  },
+  {
+    "pokeId": 13,
+    "name": "Weedle",
+    "slug": "weedle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/weedle"
+  },
+  {
+    "pokeId": 14,
+    "name": "Kakuna",
+    "slug": "kakuna",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kakuna"
+  },
+  {
+    "pokeId": 15,
+    "name": "Beedrill",
+    "slug": "beedrill",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/beedrill"
+  },
+  {
+    "pokeId": 16,
+    "name": "Pidgey",
+    "slug": "pidgey",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pidgey"
+  },
+  {
+    "pokeId": 17,
+    "name": "Pidgeotto",
+    "slug": "pidgeotto",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pidgeotto"
+  },
+  {
+    "pokeId": 18,
+    "name": "Pidgeot",
+    "slug": "pidgeot",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pidgeot"
+  },
+  {
+    "pokeId": 19,
+    "name": "Rattata",
+    "slug": "rattata",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rattata"
+  },
+  {
+    "pokeId": 20,
+    "name": "Raticate",
+    "slug": "raticate",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/raticate"
+  },
+  {
+    "pokeId": 21,
+    "name": "Spearow",
+    "slug": "spearow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/spearow"
+  },
+  {
+    "pokeId": 22,
+    "name": "Fearow",
+    "slug": "fearow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/fearow"
+  },
+  {
+    "pokeId": 23,
+    "name": "Ekans",
+    "slug": "ekans",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ekans"
+  },
+  {
+    "pokeId": 24,
+    "name": "Arbok",
+    "slug": "arbok",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/arbok"
+  },
+  {
+    "pokeId": 25,
+    "name": "Pikachu",
+    "slug": "pikachu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pikachu"
+  },
+  {
+    "pokeId": 26,
+    "name": "Raichu",
+    "slug": "raichu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/raichu"
+  },
+  {
+    "pokeId": 27,
+    "name": "Sandshrew",
+    "slug": "sandshrew",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sandshrew"
+  },
+  {
+    "pokeId": 28,
+    "name": "Sandslash",
+    "slug": "sandslash",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sandslash"
+  },
+  {
+    "pokeId": 29,
+    "name": "Nidoran Female",
+    "slug": "nidoranfemale",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidoranfemale"
+  },
+  {
+    "pokeId": 30,
+    "name": "Nidorina",
+    "slug": "nidorina",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidorina"
+  },
+  {
+    "pokeId": 31,
+    "name": "Nidoqueen",
+    "slug": "nidoqueen",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidoqueen"
+  },
+  {
+    "pokeId": 32,
+    "name": "Nidoran Male",
+    "slug": "nidoranmale",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidoranmale"
+  },
+  {
+    "pokeId": 33,
+    "name": "Nidorino",
+    "slug": "nidorino",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidorino"
+  },
+  {
+    "pokeId": 34,
+    "name": "Nidoking",
+    "slug": "nidoking",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nidoking"
+  },
+  {
+    "pokeId": 35,
+    "name": "Clefairy",
+    "slug": "clefairy",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/clefairy"
+  },
+  {
+    "pokeId": 36,
+    "name": "Clefable",
+    "slug": "clefable",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/clefable"
+  },
+  {
+    "pokeId": 37,
+    "name": "Vulpix",
+    "slug": "vulpix",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vulpix"
+  },
+  {
+    "pokeId": 38,
+    "name": "Ninetales",
+    "slug": "ninetales",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ninetales"
+  },
+  {
+    "pokeId": 39,
+    "name": "Jigglypuff",
+    "slug": "jigglypuff",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/jigglypuff"
+  },
+  {
+    "pokeId": 40,
+    "name": "Wigglytuff",
+    "slug": "wigglytuff",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wigglytuff"
+  },
+  {
+    "pokeId": 41,
+    "name": "Zubat",
+    "slug": "zubat",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/zubat"
+  },
+  {
+    "pokeId": 42,
+    "name": "Golbat",
+    "slug": "golbat",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/golbat"
+  },
+  {
+    "pokeId": 43,
+    "name": "Oddish",
+    "slug": "oddish",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/oddish"
+  },
+  {
+    "pokeId": 44,
+    "name": "Gloom",
+    "slug": "gloom",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gloom"
+  },
+  {
+    "pokeId": 45,
+    "name": "Vileplume",
+    "slug": "vileplume",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vileplume"
+  },
+  {
+    "pokeId": 46,
+    "name": "Paras",
+    "slug": "paras",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/paras"
+  },
+  {
+    "pokeId": 47,
+    "name": "Parasect",
+    "slug": "parasect",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/parasect"
+  },
+  {
+    "pokeId": 48,
+    "name": "Venonat",
+    "slug": "venonat",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/venonat"
+  },
+  {
+    "pokeId": 49,
+    "name": "Venomoth",
+    "slug": "venomoth",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/venomoth"
+  },
+  {
+    "pokeId": 50,
+    "name": "Diglett",
+    "slug": "diglett",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/diglett"
+  },
+  {
+    "pokeId": 51,
+    "name": "Dugtrio",
+    "slug": "dugtrio",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dugtrio"
+  },
+  {
+    "pokeId": 52,
+    "name": "Meowth",
+    "slug": "meowth",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/meowth"
+  },
+  {
+    "pokeId": 53,
+    "name": "Persian",
+    "slug": "persian",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/persian"
+  },
+  {
+    "pokeId": 54,
+    "name": "Psyduck",
+    "slug": "psyduck",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/psyduck"
+  },
+  {
+    "pokeId": 55,
+    "name": "Golduck",
+    "slug": "golduck",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/golduck"
+  },
+  {
+    "pokeId": 56,
+    "name": "Mankey",
+    "slug": "mankey",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mankey"
+  },
+  {
+    "pokeId": 57,
+    "name": "Primeape",
+    "slug": "primeape",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/primeape"
+  },
+  {
+    "pokeId": 58,
+    "name": "Growlithe",
+    "slug": "growlithe",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/growlithe"
+  },
+  {
+    "pokeId": 59,
+    "name": "Arcanine",
+    "slug": "arcanine",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/arcanine"
+  },
+  {
+    "pokeId": 60,
+    "name": "Poliwag",
+    "slug": "poliwag",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/poliwag"
+  },
+  {
+    "pokeId": 61,
+    "name": "Poliwhirl",
+    "slug": "poliwhirl",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/poliwhirl"
+  },
+  {
+    "pokeId": 62,
+    "name": "Poliwrath",
+    "slug": "poliwrath",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/poliwrath"
+  },
+  {
+    "pokeId": 63,
+    "name": "Abra",
+    "slug": "abra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/abra"
+  },
+  {
+    "pokeId": 64,
+    "name": "Kadabra",
+    "slug": "kadabra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kadabra"
+  },
+  {
+    "pokeId": 65,
+    "name": "Alakazam",
+    "slug": "alakazam",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/alakazam"
+  },
+  {
+    "pokeId": 66,
+    "name": "Machop",
+    "slug": "machop",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/machop"
+  },
+  {
+    "pokeId": 67,
+    "name": "Machoke",
+    "slug": "machoke",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/machoke"
+  },
+  {
+    "pokeId": 68,
+    "name": "Machamp",
+    "slug": "machamp",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/machamp"
+  },
+  {
+    "pokeId": 69,
+    "name": "Bellsprout",
+    "slug": "bellsprout",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bellsprout"
+  },
+  {
+    "pokeId": 70,
+    "name": "Weepinbell",
+    "slug": "weepinbell",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/weepinbell"
+  },
+  {
+    "pokeId": 71,
+    "name": "Victreebel",
+    "slug": "victreebel",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/victreebel"
+  },
+  {
+    "pokeId": 72,
+    "name": "Tentacool",
+    "slug": "tentacool",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tentacool"
+  },
+  {
+    "pokeId": 73,
+    "name": "Tentacruel",
+    "slug": "tentacruel",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tentacruel"
+  },
+  {
+    "pokeId": 74,
+    "name": "Geodude",
+    "slug": "geodude",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/geodude"
+  },
+  {
+    "pokeId": 75,
+    "name": "Graveler",
+    "slug": "graveler",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/graveler"
+  },
+  {
+    "pokeId": 76,
+    "name": "Golem",
+    "slug": "golem",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/golem"
+  },
+  {
+    "pokeId": 77,
+    "name": "Ponyta",
+    "slug": "ponyta",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ponyta"
+  },
+  {
+    "pokeId": 78,
+    "name": "Rapidash",
+    "slug": "rapidash",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rapidash"
+  },
+  {
+    "pokeId": 79,
+    "name": "Slowpoke",
+    "slug": "slowpoke",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slowpoke"
+  },
+  {
+    "pokeId": 80,
+    "name": "Slowbro",
+    "slug": "slowbro",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slowbro"
+  },
+  {
+    "pokeId": 81,
+    "name": "Magnemite",
+    "slug": "magnemite",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magnemite"
+  },
+  {
+    "pokeId": 82,
+    "name": "Magneton",
+    "slug": "magneton",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magneton"
+  },
+  {
+    "pokeId": 83,
+    "name": "Farfetchd",
+    "slug": "farfetchd",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/farfetchd"
+  },
+  {
+    "pokeId": 84,
+    "name": "Doduo",
+    "slug": "doduo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/doduo"
+  },
+  {
+    "pokeId": 85,
+    "name": "Dodrio",
+    "slug": "dodrio",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dodrio"
+  },
+  {
+    "pokeId": 86,
+    "name": "Seel",
+    "slug": "seel",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/seel"
+  },
+  {
+    "pokeId": 87,
+    "name": "Dewgong",
+    "slug": "dewgong",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dewgong"
+  },
+  {
+    "pokeId": 88,
+    "name": "Grimer",
+    "slug": "grimer",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/grimer"
+  },
+  {
+    "pokeId": 89,
+    "name": "Muk",
+    "slug": "muk",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/muk"
+  },
+  {
+    "pokeId": 90,
+    "name": "Shellder",
+    "slug": "shellder",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shellder"
+  },
+  {
+    "pokeId": 91,
+    "name": "Cloyster",
+    "slug": "cloyster",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cloyster"
+  },
+  {
+    "pokeId": 92,
+    "name": "Gastly",
+    "slug": "gastly",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gastly"
+  },
+  {
+    "pokeId": 93,
+    "name": "Haunter",
+    "slug": "haunter",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/haunter"
+  },
+  {
+    "pokeId": 94,
+    "name": "Gengar",
+    "slug": "gengar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gengar"
+  },
+  {
+    "pokeId": 95,
+    "name": "Onix",
+    "slug": "onix",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/onix"
+  },
+  {
+    "pokeId": 96,
+    "name": "Drowzee",
+    "slug": "drowzee",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/drowzee"
+  },
+  {
+    "pokeId": 97,
+    "name": "Hypno",
+    "slug": "hypno",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hypno"
+  },
+  {
+    "pokeId": 98,
+    "name": "Krabby",
+    "slug": "krabby",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/krabby"
+  },
+  {
+    "pokeId": 99,
+    "name": "Kingler",
+    "slug": "kingler",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kingler"
+  },
+  {
+    "pokeId": 100,
+    "name": "Voltorb",
+    "slug": "voltorb",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/voltorb"
+  },
+  {
+    "pokeId": 101,
+    "name": "Electrode",
+    "slug": "electrode",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/electrode"
+  },
+  {
+    "pokeId": 102,
+    "name": "Exeggcute",
+    "slug": "exeggcute",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/exeggcute"
+  },
+  {
+    "pokeId": 103,
+    "name": "Exeggutor",
+    "slug": "exeggutor",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/exeggutor"
+  },
+  {
+    "pokeId": 104,
+    "name": "Cubone",
+    "slug": "cubone",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cubone"
+  },
+  {
+    "pokeId": 105,
+    "name": "Marowak",
+    "slug": "marowak",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/marowak"
+  },
+  {
+    "pokeId": 106,
+    "name": "Hitmonlee",
+    "slug": "hitmonlee",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hitmonlee"
+  },
+  {
+    "pokeId": 107,
+    "name": "Hitmonchan",
+    "slug": "hitmonchan",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hitmonchan"
+  },
+  {
+    "pokeId": 108,
+    "name": "Lickitung",
+    "slug": "lickitung",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lickitung"
+  },
+  {
+    "pokeId": 109,
+    "name": "Koffing",
+    "slug": "koffing",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/koffing"
+  },
+  {
+    "pokeId": 110,
+    "name": "Weezing",
+    "slug": "weezing",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/weezing"
+  },
+  {
+    "pokeId": 111,
+    "name": "Rhyhorn",
+    "slug": "rhyhorn",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rhyhorn"
+  },
+  {
+    "pokeId": 112,
+    "name": "Rhydon",
+    "slug": "rhydon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rhydon"
+  },
+  {
+    "pokeId": 113,
+    "name": "Chansey",
+    "slug": "chansey",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/chansey"
+  },
+  {
+    "pokeId": 114,
+    "name": "Tangela",
+    "slug": "tangela",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tangela"
+  },
+  {
+    "pokeId": 115,
+    "name": "Kangaskhan",
+    "slug": "kangaskhan",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kangaskhan"
+  },
+  {
+    "pokeId": 116,
+    "name": "Horsea",
+    "slug": "horsea",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/horsea"
+  },
+  {
+    "pokeId": 117,
+    "name": "Seadra",
+    "slug": "seadra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/seadra"
+  },
+  {
+    "pokeId": 118,
+    "name": "Goldeen",
+    "slug": "goldeen",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/goldeen"
+  },
+  {
+    "pokeId": 119,
+    "name": "Seaking",
+    "slug": "seaking",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/seaking"
+  },
+  {
+    "pokeId": 120,
+    "name": "Staryu",
+    "slug": "staryu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/staryu"
+  },
+  {
+    "pokeId": 121,
+    "name": "Starmie",
+    "slug": "starmie",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/starmie"
+  },
+  {
+    "pokeId": 122,
+    "name": "Mr. Mime",
+    "slug": "mrmime",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mrmime"
+  },
+  {
+    "pokeId": 123,
+    "name": "Scyther",
+    "slug": "scyther",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/scyther"
+  },
+  {
+    "pokeId": 124,
+    "name": "Jynx",
+    "slug": "jynx",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/jynx"
+  },
+  {
+    "pokeId": 125,
+    "name": "Electabuzz",
+    "slug": "electabuzz",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/electabuzz"
+  },
+  {
+    "pokeId": 126,
+    "name": "Magmar",
+    "slug": "magmar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magmar"
+  },
+  {
+    "pokeId": 127,
+    "name": "Pinsir",
+    "slug": "pinsir",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pinsir"
+  },
+  {
+    "pokeId": 128,
+    "name": "Tauros",
+    "slug": "tauros",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tauros"
+  },
+  {
+    "pokeId": 129,
+    "name": "Magikarp",
+    "slug": "magikarp",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magikarp"
+  },
+  {
+    "pokeId": 130,
+    "name": "Gyarados",
+    "slug": "gyarados",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gyarados"
+  },
+  {
+    "pokeId": 131,
+    "name": "Lapras",
+    "slug": "lapras",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lapras"
+  },
+  {
+    "pokeId": 132,
+    "name": "Ditto",
+    "slug": "ditto",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ditto"
+  },
+  {
+    "pokeId": 133,
+    "name": "Eevee",
+    "slug": "eevee",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/eevee"
+  },
+  {
+    "pokeId": 134,
+    "name": "Vaporeon",
+    "slug": "vaporeon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vaporeon"
+  },
+  {
+    "pokeId": 135,
+    "name": "Jolteon",
+    "slug": "jolteon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/jolteon"
+  },
+  {
+    "pokeId": 136,
+    "name": "Flareon",
+    "slug": "flareon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/flareon"
+  },
+  {
+    "pokeId": 137,
+    "name": "Porygon",
+    "slug": "porygon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/porygon"
+  },
+  {
+    "pokeId": 138,
+    "name": "Omanyte",
+    "slug": "omanyte",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/omanyte"
+  },
+  {
+    "pokeId": 139,
+    "name": "Omastar",
+    "slug": "omastar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/omastar"
+  },
+  {
+    "pokeId": 140,
+    "name": "Kabuto",
+    "slug": "kabuto",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kabuto"
+  },
+  {
+    "pokeId": 141,
+    "name": "Kabutops",
+    "slug": "kabutops",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kabutops"
+  },
+  {
+    "pokeId": 142,
+    "name": "Aerodactyl",
+    "slug": "aerodactyl",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/aerodactyl"
+  },
+  {
+    "pokeId": 143,
+    "name": "Snorlax",
+    "slug": "snorlax",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/snorlax"
+  },
+  {
+    "pokeId": 144,
+    "name": "Articuno",
+    "slug": "articuno",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/articuno"
+  },
+  {
+    "pokeId": 145,
+    "name": "Zapdos",
+    "slug": "zapdos",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/zapdos"
+  },
+  {
+    "pokeId": 146,
+    "name": "Moltres",
+    "slug": "moltres",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/moltres"
+  },
+  {
+    "pokeId": 147,
+    "name": "Dratini",
+    "slug": "dratini",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dratini"
+  },
+  {
+    "pokeId": 148,
+    "name": "Dragonair",
+    "slug": "dragonair",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dragonair"
+  },
+  {
+    "pokeId": 149,
+    "name": "Dragonite",
+    "slug": "dragonite",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dragonite"
+  },
+  {
+    "pokeId": 150,
+    "name": "Mewtwo",
+    "slug": "mewtwo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mewtwo"
+  },
+  {
+    "pokeId": 151,
+    "name": "Mew",
+    "slug": "mew",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mew"
+  },
+  {
+    "pokeId": 152,
+    "name": "Chikorita",
+    "slug": "chikorita",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/chikorita"
+  },
+  {
+    "pokeId": 153,
+    "name": "Bayleef",
+    "slug": "bayleef",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bayleef"
+  },
+  {
+    "pokeId": 154,
+    "name": "Meganium",
+    "slug": "meganium",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/meganium"
+  },
+  {
+    "pokeId": 155,
+    "name": "Cyndaquil",
+    "slug": "cyndaquil",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cyndaquil"
+  },
+  {
+    "pokeId": 156,
+    "name": "Quilava",
+    "slug": "quilava",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/quilava"
+  },
+  {
+    "pokeId": 157,
+    "name": "Typhlosion",
+    "slug": "typhlosion",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/typhlosion"
+  },
+  {
+    "pokeId": 158,
+    "name": "Totodile",
+    "slug": "totodile",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/totodile"
+  },
+  {
+    "pokeId": 159,
+    "name": "Croconaw",
+    "slug": "croconaw",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/croconaw"
+  },
+  {
+    "pokeId": 160,
+    "name": "Feraligatr",
+    "slug": "feraligatr",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/feraligatr"
+  },
+  {
+    "pokeId": 161,
+    "name": "Sentret",
+    "slug": "sentret",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sentret"
+  },
+  {
+    "pokeId": 162,
+    "name": "Furret",
+    "slug": "furret",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/furret"
+  },
+  {
+    "pokeId": 163,
+    "name": "Hoothoot",
+    "slug": "hoothoot",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hoothoot"
+  },
+  {
+    "pokeId": 164,
+    "name": "Noctowl",
+    "slug": "noctowl",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/noctowl"
+  },
+  {
+    "pokeId": 165,
+    "name": "Ledyba",
+    "slug": "ledyba",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ledyba"
+  },
+  {
+    "pokeId": 166,
+    "name": "Ledian",
+    "slug": "ledian",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ledian"
+  },
+  {
+    "pokeId": 167,
+    "name": "Spinarak",
+    "slug": "spinarak",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/spinarak"
+  },
+  {
+    "pokeId": 168,
+    "name": "Ariados",
+    "slug": "ariados",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ariados"
+  },
+  {
+    "pokeId": 169,
+    "name": "Crobat",
+    "slug": "crobat",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/crobat"
+  },
+  {
+    "pokeId": 170,
+    "name": "Chinchou",
+    "slug": "chinchou",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/chinchou"
+  },
+  {
+    "pokeId": 171,
+    "name": "Lanturn",
+    "slug": "lanturn",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lanturn"
+  },
+  {
+    "pokeId": 172,
+    "name": "Pichu",
+    "slug": "pichu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pichu"
+  },
+  {
+    "pokeId": 173,
+    "name": "Cleffa",
+    "slug": "cleffa",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cleffa"
+  },
+  {
+    "pokeId": 174,
+    "name": "Igglybuff",
+    "slug": "igglybuff",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/igglybuff"
+  },
+  {
+    "pokeId": 175,
+    "name": "Togepi",
+    "slug": "togepi",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/togepi"
+  },
+  {
+    "pokeId": 176,
+    "name": "Togetic",
+    "slug": "togetic",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/togetic"
+  },
+  {
+    "pokeId": 177,
+    "name": "Natu",
+    "slug": "natu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/natu"
+  },
+  {
+    "pokeId": 178,
+    "name": "Xatu",
+    "slug": "xatu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/xatu"
+  },
+  {
+    "pokeId": 179,
+    "name": "Mareep",
+    "slug": "mareep",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mareep"
+  },
+  {
+    "pokeId": 180,
+    "name": "Flaaffy",
+    "slug": "flaaffy",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/flaaffy"
+  },
+  {
+    "pokeId": 181,
+    "name": "Ampharos",
+    "slug": "ampharos",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ampharos"
+  },
+  {
+    "pokeId": 182,
+    "name": "Bellossom",
+    "slug": "bellossom",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bellossom"
+  },
+  {
+    "pokeId": 183,
+    "name": "Marill",
+    "slug": "marill",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/marill"
+  },
+  {
+    "pokeId": 184,
+    "name": "Azumarill",
+    "slug": "azumarill",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/azumarill"
+  },
+  {
+    "pokeId": 185,
+    "name": "Sudowoodo",
+    "slug": "sudowoodo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sudowoodo"
+  },
+  {
+    "pokeId": 186,
+    "name": "Politoed",
+    "slug": "politoed",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/politoed"
+  },
+  {
+    "pokeId": 187,
+    "name": "Hoppip",
+    "slug": "hoppip",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hoppip"
+  },
+  {
+    "pokeId": 188,
+    "name": "Skiploom",
+    "slug": "skiploom",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/skiploom"
+  },
+  {
+    "pokeId": 189,
+    "name": "Jumpluff",
+    "slug": "jumpluff",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/jumpluff"
+  },
+  {
+    "pokeId": 190,
+    "name": "Aipom",
+    "slug": "aipom",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/aipom"
+  },
+  {
+    "pokeId": 191,
+    "name": "Sunkern",
+    "slug": "sunkern",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sunkern"
+  },
+  {
+    "pokeId": 192,
+    "name": "Sunflora",
+    "slug": "sunflora",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sunflora"
+  },
+  {
+    "pokeId": 193,
+    "name": "Yanma",
+    "slug": "yanma",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/yanma"
+  },
+  {
+    "pokeId": 194,
+    "name": "Wooper",
+    "slug": "wooper",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wooper"
+  },
+  {
+    "pokeId": 195,
+    "name": "Quagsire",
+    "slug": "quagsire",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/quagsire"
+  },
+  {
+    "pokeId": 196,
+    "name": "Espeon",
+    "slug": "espeon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/espeon"
+  },
+  {
+    "pokeId": 197,
+    "name": "Umbreon",
+    "slug": "umbreon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/umbreon"
+  },
+  {
+    "pokeId": 198,
+    "name": "Murkrow",
+    "slug": "murkrow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/murkrow"
+  },
+  {
+    "pokeId": 199,
+    "name": "Slowking",
+    "slug": "slowking",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slowking"
+  },
+  {
+    "pokeId": 200,
+    "name": "Misdreavus",
+    "slug": "misdreavus",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/misdreavus"
+  },
+  {
+    "pokeId": 202,
+    "name": "Wobbuffet",
+    "slug": "wobbuffet",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wobbuffet"
+  },
+  {
+    "pokeId": 203,
+    "name": "Girafarig",
+    "slug": "girafarig",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/girafarig"
+  },
+  {
+    "pokeId": 204,
+    "name": "Pineco",
+    "slug": "pineco",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pineco"
+  },
+  {
+    "pokeId": 205,
+    "name": "Forretress",
+    "slug": "forretress",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/forretress"
+  },
+  {
+    "pokeId": 206,
+    "name": "Dunsparce",
+    "slug": "dunsparce",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dunsparce"
+  },
+  {
+    "pokeId": 207,
+    "name": "Gligar",
+    "slug": "gligar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gligar"
+  },
+  {
+    "pokeId": 208,
+    "name": "Steelix",
+    "slug": "steelix",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/steelix"
+  },
+  {
+    "pokeId": 209,
+    "name": "Snubbull",
+    "slug": "snubbull",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/snubbull"
+  },
+  {
+    "pokeId": 210,
+    "name": "Granbull",
+    "slug": "granbull",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/granbull"
+  },
+  {
+    "pokeId": 211,
+    "name": "Qwilfish",
+    "slug": "qwilfish",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/qwilfish"
+  },
+  {
+    "pokeId": 212,
+    "name": "Scizor",
+    "slug": "scizor",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/scizor"
+  },
+  {
+    "pokeId": 213,
+    "name": "Shuckle",
+    "slug": "shuckle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shuckle"
+  },
+  {
+    "pokeId": 214,
+    "name": "Heracross",
+    "slug": "heracross",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/heracross"
+  },
+  {
+    "pokeId": 215,
+    "name": "Sneasel",
+    "slug": "sneasel",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sneasel"
+  },
+  {
+    "pokeId": 216,
+    "name": "Teddiursa",
+    "slug": "teddiursa",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/teddiursa"
+  },
+  {
+    "pokeId": 217,
+    "name": "Ursaring",
+    "slug": "ursaring",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ursaring"
+  },
+  {
+    "pokeId": 218,
+    "name": "Slugma",
+    "slug": "slugma",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slugma"
+  },
+  {
+    "pokeId": 219,
+    "name": "Magcargo",
+    "slug": "magcargo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magcargo"
+  },
+  {
+    "pokeId": 220,
+    "name": "Swinub",
+    "slug": "swinub",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/swinub"
+  },
+  {
+    "pokeId": 221,
+    "name": "Piloswine",
+    "slug": "piloswine",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/piloswine"
+  },
+  {
+    "pokeId": 222,
+    "name": "Corsola",
+    "slug": "corsola",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/corsola"
+  },
+  {
+    "pokeId": 223,
+    "name": "Remoraid",
+    "slug": "remoraid",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/remoraid"
+  },
+  {
+    "pokeId": 224,
+    "name": "Octillery",
+    "slug": "octillery",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/octillery"
+  },
+  {
+    "pokeId": 225,
+    "name": "Delibird",
+    "slug": "delibird",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/delibird"
+  },
+  {
+    "pokeId": 226,
+    "name": "Mantine",
+    "slug": "mantine",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mantine"
+  },
+  {
+    "pokeId": 227,
+    "name": "Skarmory",
+    "slug": "skarmory",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/skarmory"
+  },
+  {
+    "pokeId": 228,
+    "name": "Houndour",
+    "slug": "houndour",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/houndour"
+  },
+  {
+    "pokeId": 229,
+    "name": "Houndoom",
+    "slug": "houndoom",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/houndoom"
+  },
+  {
+    "pokeId": 230,
+    "name": "Kingdra",
+    "slug": "kingdra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kingdra"
+  },
+  {
+    "pokeId": 231,
+    "name": "Phanpy",
+    "slug": "phanpy",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/phanpy"
+  },
+  {
+    "pokeId": 232,
+    "name": "Donphan",
+    "slug": "donphan",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/donphan"
+  },
+  {
+    "pokeId": 233,
+    "name": "Porygon2",
+    "slug": "porygon2",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/porygon2"
+  },
+  {
+    "pokeId": 234,
+    "name": "Stantler",
+    "slug": "stantler",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/stantler"
+  },
+  {
+    "pokeId": 235,
+    "name": "Smeargle",
+    "slug": "smeargle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/smeargle"
+  },
+  {
+    "pokeId": 236,
+    "name": "Tyrogue",
+    "slug": "tyrogue",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tyrogue"
+  },
+  {
+    "pokeId": 237,
+    "name": "Hitmontop",
+    "slug": "hitmontop",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hitmontop"
+  },
+  {
+    "pokeId": 238,
+    "name": "Smoochum",
+    "slug": "smoochum",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/smoochum"
+  },
+  {
+    "pokeId": 239,
+    "name": "Elekid",
+    "slug": "elekid",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/elekid"
+  },
+  {
+    "pokeId": 240,
+    "name": "Magby",
+    "slug": "magby",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magby"
+  },
+  {
+    "pokeId": 241,
+    "name": "Miltank",
+    "slug": "miltank",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/miltank"
+  },
+  {
+    "pokeId": 242,
+    "name": "Blissey",
+    "slug": "blissey",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/blissey"
+  },
+  {
+    "pokeId": 243,
+    "name": "Raikou",
+    "slug": "raikou",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/raikou"
+  },
+  {
+    "pokeId": 244,
+    "name": "Entei",
+    "slug": "entei",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/entei"
+  },
+  {
+    "pokeId": 245,
+    "name": "Suicune",
+    "slug": "suicune",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/suicune"
+  },
+  {
+    "pokeId": 246,
+    "name": "Larvitar",
+    "slug": "larvitar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/larvitar"
+  },
+  {
+    "pokeId": 247,
+    "name": "Pupitar",
+    "slug": "pupitar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pupitar"
+  },
+  {
+    "pokeId": 248,
+    "name": "Tyranitar",
+    "slug": "tyranitar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tyranitar"
+  },
+  {
+    "pokeId": 249,
+    "name": "Lugia",
+    "slug": "lugia",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lugia"
+  },
+  {
+    "pokeId": 250,
+    "name": "Ho-oh",
+    "slug": "hooh",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/hooh"
+  },
+  {
+    "pokeId": 251,
+    "name": "Celebi",
+    "slug": "celebi",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/celebi"
+  },
+  {
+    "pokeId": 252,
+    "name": "Treecko",
+    "slug": "treecko",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/treecko"
+  },
+  {
+    "pokeId": 253,
+    "name": "Grovyle",
+    "slug": "grovyle",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/grovyle"
+  },
+  {
+    "pokeId": 254,
+    "name": "Sceptile",
+    "slug": "sceptile",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sceptile"
+  },
+  {
+    "pokeId": 255,
+    "name": "Torchic",
+    "slug": "torchic",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/torchic"
+  },
+  {
+    "pokeId": 256,
+    "name": "Combusken",
+    "slug": "combusken",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/combusken"
+  },
+  {
+    "pokeId": 257,
+    "name": "Blaziken",
+    "slug": "blaziken",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/blaziken"
+  },
+  {
+    "pokeId": 258,
+    "name": "Mudkip",
+    "slug": "mudkip",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mudkip"
+  },
+  {
+    "pokeId": 259,
+    "name": "Marshtomp",
+    "slug": "marshtomp",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/marshtomp"
+  },
+  {
+    "pokeId": 260,
+    "name": "Swampert",
+    "slug": "swampert",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/swampert"
+  },
+  {
+    "pokeId": 261,
+    "name": "Poochyena",
+    "slug": "poochyena",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/poochyena"
+  },
+  {
+    "pokeId": 262,
+    "name": "Mightyena",
+    "slug": "mightyena",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mightyena"
+  },
+  {
+    "pokeId": 270,
+    "name": "Lotad",
+    "slug": "lotad",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lotad"
+  },
+  {
+    "pokeId": 271,
+    "name": "Lombre",
+    "slug": "lombre",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lombre"
+  },
+  {
+    "pokeId": 272,
+    "name": "Ludicolo",
+    "slug": "ludicolo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ludicolo"
+  },
+  {
+    "pokeId": 273,
+    "name": "Seedot",
+    "slug": "seedot",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/seedot"
+  },
+  {
+    "pokeId": 274,
+    "name": "Nuzleaf",
+    "slug": "nuzleaf",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/nuzleaf"
+  },
+  {
+    "pokeId": 275,
+    "name": "Shiftry",
+    "slug": "shiftry",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shiftry"
+  },
+  {
+    "pokeId": 276,
+    "name": "Taillow",
+    "slug": "taillow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/taillow"
+  },
+  {
+    "pokeId": 277,
+    "name": "Swellow",
+    "slug": "swellow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/swellow"
+  },
+  {
+    "pokeId": 278,
+    "name": "Wingull",
+    "slug": "wingull",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wingull"
+  },
+  {
+    "pokeId": 279,
+    "name": "Pelipper",
+    "slug": "pelipper",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pelipper"
+  },
+  {
+    "pokeId": 280,
+    "name": "Ralts",
+    "slug": "ralts",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/ralts"
+  },
+  {
+    "pokeId": 281,
+    "name": "Kirlia",
+    "slug": "kirlia",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/kirlia"
+  },
+  {
+    "pokeId": 282,
+    "name": "Gardevoir",
+    "slug": "gardevoir",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gardevoir"
+  },
+  {
+    "pokeId": 287,
+    "name": "Slakoth",
+    "slug": "slakoth",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slakoth"
+  },
+  {
+    "pokeId": 288,
+    "name": "Vigoroth",
+    "slug": "vigoroth",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vigoroth"
+  },
+  {
+    "pokeId": 289,
+    "name": "Slaking",
+    "slug": "slaking",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/slaking"
+  },
+  {
+    "pokeId": 293,
+    "name": "Whismur",
+    "slug": "whismur",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/whismur"
+  },
+  {
+    "pokeId": 294,
+    "name": "Loudred",
+    "slug": "loudred",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/loudred"
+  },
+  {
+    "pokeId": 295,
+    "name": "Exploud",
+    "slug": "exploud",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/exploud"
+  },
+  {
+    "pokeId": 296,
+    "name": "Makuhita",
+    "slug": "makuhita",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/makuhita"
+  },
+  {
+    "pokeId": 302,
+    "name": "Sableye",
+    "slug": "sableye",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sableye"
+  },
+  {
+    "pokeId": 303,
+    "name": "Mawile",
+    "slug": "mawile",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mawile"
+  },
+  {
+    "pokeId": 304,
+    "name": "Aron",
+    "slug": "aron",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/aron"
+  },
+  {
+    "pokeId": 305,
+    "name": "Lairon",
+    "slug": "lairon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lairon"
+  },
+  {
+    "pokeId": 306,
+    "name": "Aggron",
+    "slug": "aggron",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/aggron"
+  },
+  {
+    "pokeId": 307,
+    "name": "Meditite",
+    "slug": "meditite",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/meditite"
+  },
+  {
+    "pokeId": 308,
+    "name": "Medicham",
+    "slug": "medicham",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/medicham"
+  },
+  {
+    "pokeId": 309,
+    "name": "Electrike",
+    "slug": "electrike",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/electrike"
+  },
+  {
+    "pokeId": 310,
+    "name": "Manectric",
+    "slug": "manectric",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/manectric"
+  },
+  {
+    "pokeId": 318,
+    "name": "Carvanha",
+    "slug": "carvanha",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/carvanha"
+  },
+  {
+    "pokeId": 319,
+    "name": "Sharpedo",
+    "slug": "sharpedo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sharpedo"
+  },
+  {
+    "pokeId": 322,
+    "name": "Numel",
+    "slug": "numel",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/numel"
+  },
+  {
+    "pokeId": 323,
+    "name": "Camerupt",
+    "slug": "camerupt",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/camerupt"
+  },
+  {
+    "pokeId": 324,
+    "name": "Torkoal",
+    "slug": "torkoal",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/torkoal"
+  },
+  {
+    "pokeId": 325,
+    "name": "Spoink",
+    "slug": "spoink",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/spoink"
+  },
+  {
+    "pokeId": 326,
+    "name": "Grumpig",
+    "slug": "grumpig",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/grumpig"
+  },
+  {
+    "pokeId": 328,
+    "name": "Trapinch",
+    "slug": "trapinch",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/trapinch"
+  },
+  {
+    "pokeId": 329,
+    "name": "Vibrava",
+    "slug": "vibrava",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vibrava"
+  },
+  {
+    "pokeId": 330,
+    "name": "Flygon",
+    "slug": "flygon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/flygon"
+  },
+  {
+    "pokeId": 332,
+    "name": "Cacturne",
+    "slug": "cacturne",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cacturne"
+  },
+  {
+    "pokeId": 333,
+    "name": "Swablu",
+    "slug": "swablu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/swablu"
+  },
+  {
+    "pokeId": 334,
+    "name": "Altaria",
+    "slug": "altaria",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/altaria"
+  },
+  {
+    "pokeId": 335,
+    "name": "Zangoose",
+    "slug": "zangoose",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/zangoose"
+  },
+  {
+    "pokeId": 336,
+    "name": "Seviper",
+    "slug": "seviper",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/seviper"
+  },
+  {
+    "pokeId": 337,
+    "name": "Lunatone",
+    "slug": "lunatone",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lunatone"
+  },
+  {
+    "pokeId": 338,
+    "name": "Solrock",
+    "slug": "solrock",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/solrock"
+  },
+  {
+    "pokeId": 339,
+    "name": "Barboach",
+    "slug": "barboach",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/barboach"
+  },
+  {
+    "pokeId": 340,
+    "name": "Whiscash",
+    "slug": "whiscash",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/whiscash"
+  },
+  {
+    "pokeId": 341,
+    "name": "Corphish",
+    "slug": "corphish",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/corphish"
+  },
+  {
+    "pokeId": 342,
+    "name": "Crawdaunt",
+    "slug": "crawdaunt",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/crawdaunt"
+  },
+  {
+    "pokeId": 343,
+    "name": "Baltoy",
+    "slug": "baltoy",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/baltoy"
+  },
+  {
+    "pokeId": 344,
+    "name": "Claydol",
+    "slug": "claydol",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/claydol"
+  },
+  {
+    "pokeId": 349,
+    "name": "Feebas",
+    "slug": "feebas",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/feebas"
+  },
+  {
+    "pokeId": 350,
+    "name": "Milotic",
+    "slug": "milotic",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/milotic"
+  },
+  {
+    "pokeId": 353,
+    "name": "Shuppet",
+    "slug": "shuppet",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shuppet"
+  },
+  {
+    "pokeId": 354,
+    "name": "Banette",
+    "slug": "banette",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/banette"
+  },
+  {
+    "pokeId": 355,
+    "name": "Duskull",
+    "slug": "duskull",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/duskull"
+  },
+  {
+    "pokeId": 356,
+    "name": "Dusclops",
+    "slug": "dusclops",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dusclops"
+  },
+  {
+    "pokeId": 357,
+    "name": "Tropius",
+    "slug": "tropius",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tropius"
+  },
+  {
+    "pokeId": 359,
+    "name": "Absol",
+    "slug": "absol",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/absol"
+  },
+  {
+    "pokeId": 361,
+    "name": "Snorunt",
+    "slug": "snorunt",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/snorunt"
+  },
+  {
+    "pokeId": 362,
+    "name": "Glalie",
+    "slug": "glalie",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/glalie"
+  },
+  {
+    "pokeId": 363,
+    "name": "Spheal",
+    "slug": "spheal",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/spheal"
+  },
+  {
+    "pokeId": 364,
+    "name": "Sealeo",
+    "slug": "sealeo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sealeo"
+  },
+  {
+    "pokeId": 365,
+    "name": "Walrein",
+    "slug": "walrein",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/walrein"
+  },
+  {
+    "pokeId": 371,
+    "name": "Bagon",
+    "slug": "bagon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bagon"
+  },
+  {
+    "pokeId": 372,
+    "name": "Shelgon",
+    "slug": "shelgon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shelgon"
+  },
+  {
+    "pokeId": 373,
+    "name": "Salamence",
+    "slug": "salamence",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/salamence"
+  },
+  {
+    "pokeId": 374,
+    "name": "Beldum",
+    "slug": "beldum",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/beldum"
+  },
+  {
+    "pokeId": 375,
+    "name": "Metang",
+    "slug": "metang",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/metang"
+  },
+  {
+    "pokeId": 376,
+    "name": "Metagross",
+    "slug": "metagross",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/metagross"
+  },
+  {
+    "pokeId": 392,
+    "name": "Infernape",
+    "slug": "infernape",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/infernape"
+  },
+  {
+    "pokeId": 405,
+    "name": "Luxray",
+    "slug": "luxray",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/luxray"
+  },
+  {
+    "pokeId": 408,
+    "name": "Cranidos",
+    "slug": "cranidos",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/cranidos"
+  },
+  {
+    "pokeId": 409,
+    "name": "Rampardos",
+    "slug": "rampardos",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rampardos"
+  },
+  {
+    "pokeId": 410,
+    "name": "Shieldon",
+    "slug": "shieldon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/shieldon"
+  },
+  {
+    "pokeId": 411,
+    "name": "Bastiodon",
+    "slug": "bastiodon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/bastiodon"
+  },
+  {
+    "pokeId": 413,
+    "name": "Wormadam",
+    "slug": "wormadam",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/wormadam"
+  },
+  {
+    "pokeId": 416,
+    "name": "Vespiquen",
+    "slug": "vespiquen",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/vespiquen"
+  },
+  {
+    "pokeId": 417,
+    "name": "Pachirisu",
+    "slug": "pachirisu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pachirisu"
+  },
+  {
+    "pokeId": 428,
+    "name": "Lopunny",
+    "slug": "lopunny",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lopunny"
+  },
+  {
+    "pokeId": 443,
+    "name": "Gible",
+    "slug": "gible",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gible"
+  },
+  {
+    "pokeId": 444,
+    "name": "Gabite",
+    "slug": "gabite",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gabite"
+  },
+  {
+    "pokeId": 445,
+    "name": "Garchomp",
+    "slug": "garchomp",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/garchomp"
+  },
+  {
+    "pokeId": 447,
+    "name": "Riolu",
+    "slug": "riolu",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/riolu"
+  },
+  {
+    "pokeId": 448,
+    "name": "Lucario",
+    "slug": "lucario",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lucario"
+  },
+  {
+    "pokeId": 458,
+    "name": "Mantyke",
+    "slug": "mantyke",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/mantyke"
+  },
+  {
+    "pokeId": 460,
+    "name": "Abomasnow",
+    "slug": "abomasnow",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/abomasnow"
+  },
+  {
+    "pokeId": 461,
+    "name": "Weavile",
+    "slug": "weavile",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/weavile"
+  },
+  {
+    "pokeId": 462,
+    "name": "Magnezone",
+    "slug": "magnezone",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magnezone"
+  },
+  {
+    "pokeId": 464,
+    "name": "Rhyperior",
+    "slug": "rhyperior",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rhyperior"
+  },
+  {
+    "pokeId": 465,
+    "name": "Tangrowth",
+    "slug": "tangrowth",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tangrowth"
+  },
+  {
+    "pokeId": 466,
+    "name": "Electivire",
+    "slug": "electivire",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/electivire"
+  },
+  {
+    "pokeId": 467,
+    "name": "Magmortar",
+    "slug": "magmortar",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/magmortar"
+  },
+  {
+    "pokeId": 468,
+    "name": "Togekiss",
+    "slug": "togekiss",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/togekiss"
+  },
+  {
+    "pokeId": 470,
+    "name": "Leafeon",
+    "slug": "leafeon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/leafeon"
+  },
+  {
+    "pokeId": 471,
+    "name": "Glaceon",
+    "slug": "glaceon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/glaceon"
+  },
+  {
+    "pokeId": 472,
+    "name": "Gliscor",
+    "slug": "gliscor",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gliscor"
+  },
+  {
+    "pokeId": 475,
+    "name": "Gallade",
+    "slug": "gallade",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gallade"
+  },
+  {
+    "pokeId": 477,
+    "name": "Dusknoir",
+    "slug": "dusknoir",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dusknoir"
+  },
+  {
+    "pokeId": 514,
+    "name": "Simisear",
+    "slug": "simisear",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/simisear"
+  },
+  {
+    "pokeId": 538,
+    "name": "Throh",
+    "slug": "throh",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/throh"
+  },
+  {
+    "pokeId": 539,
+    "name": "Sawk",
+    "slug": "sawk",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sawk"
+  },
+  {
+    "pokeId": 543,
+    "name": "Venipede",
+    "slug": "venipede",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/venipede"
+  },
+  {
+    "pokeId": 545,
+    "name": "Scolipede",
+    "slug": "scolipede",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/scolipede"
+  },
+  {
+    "pokeId": 548,
+    "name": "Petilil",
+    "slug": "petilil",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/petilil"
+  },
+  {
+    "pokeId": 549,
+    "name": "Lilligant",
+    "slug": "lilligant",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lilligant"
+  },
+  {
+    "pokeId": 564,
+    "name": "Tirtouga",
+    "slug": "tirtouga",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tirtouga"
+  },
+  {
+    "pokeId": 565,
+    "name": "Carracosta",
+    "slug": "carracosta",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/carracosta"
+  },
+  {
+    "pokeId": 566,
+    "name": "Archen",
+    "slug": "archen",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/archen"
+  },
+  {
+    "pokeId": 567,
+    "name": "Archeops",
+    "slug": "archeops",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/archeops"
+  },
+  {
+    "pokeId": 571,
+    "name": "Zoroark",
+    "slug": "zoroark",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/zoroark"
+  },
+  {
+    "pokeId": 599,
+    "name": "Klink",
+    "slug": "klink",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/klink"
+  },
+  {
+    "pokeId": 600,
+    "name": "Klang",
+    "slug": "klang",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/klang"
+  },
+  {
+    "pokeId": 601,
+    "name": "Klinklang",
+    "slug": "klinklang",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/klinklang"
+  },
+  {
+    "pokeId": 602,
+    "name": "Tynamo",
+    "slug": "tynamo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/tynamo"
+  },
+  {
+    "pokeId": 603,
+    "name": "Eelektrik",
+    "slug": "eelektrik",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/eelektrik"
+  },
+  {
+    "pokeId": 604,
+    "name": "Eelektross",
+    "slug": "eelektross",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/eelektross"
+  },
+  {
+    "pokeId": 607,
+    "name": "Litwick",
+    "slug": "litwick",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/litwick"
+  },
+  {
+    "pokeId": 608,
+    "name": "Lampent",
+    "slug": "lampent",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/lampent"
+  },
+  {
+    "pokeId": 609,
+    "name": "Chandelure",
+    "slug": "chandelure",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/chandelure"
+  },
+  {
+    "pokeId": 627,
+    "name": "Rufflet",
+    "slug": "rufflet",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rufflet"
+  },
+  {
+    "pokeId": 628,
+    "name": "Braviary",
+    "slug": "braviary",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/braviary"
+  },
+  {
+    "pokeId": 636,
+    "name": "Larvesta",
+    "slug": "larvesta",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/larvesta"
+  },
+  {
+    "pokeId": 637,
+    "name": "Volcarona",
+    "slug": "volcarona",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/volcarona"
+  },
+  {
+    "pokeId": 667,
+    "name": "Litleo",
+    "slug": "litleo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/litleo"
+  },
+  {
+    "pokeId": 669,
+    "name": "Flabebe",
+    "slug": "flabebe",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/flabebe"
+  },
+  {
+    "pokeId": 670,
+    "name": "Floette",
+    "slug": "floette",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/floette"
+  },
+  {
+    "pokeId": 671,
+    "name": "Florges",
+    "slug": "florges",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/florges"
+  },
+  {
+    "pokeId": 672,
+    "name": "Skiddo",
+    "slug": "skiddo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/skiddo"
+  },
+  {
+    "pokeId": 673,
+    "name": "Gogoat",
+    "slug": "gogoat",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/gogoat"
+  },
+  {
+    "pokeId": 674,
+    "name": "Pancham",
+    "slug": "pancham",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pancham"
+  },
+  {
+    "pokeId": 675,
+    "name": "Pangoro",
+    "slug": "pangoro",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/pangoro"
+  },
+  {
+    "pokeId": 677,
+    "name": "Espurr",
+    "slug": "espurr",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/espurr"
+  },
+  {
+    "pokeId": 681,
+    "name": "Aegislash",
+    "slug": "aegislash",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/aegislash"
+  },
+  {
+    "pokeId": 690,
+    "name": "Skrelp",
+    "slug": "skrelp",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/skrelp"
+  },
+  {
+    "pokeId": 691,
+    "name": "Dragalge",
+    "slug": "dragalge",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/dragalge"
+  },
+  {
+    "pokeId": 700,
+    "name": "Sylveon",
+    "slug": "sylveon",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sylveon"
+  },
+  {
+    "pokeId": 704,
+    "name": "Goomy",
+    "slug": "goomy",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/goomy"
+  },
+  {
+    "pokeId": 705,
+    "name": "Sliggoo",
+    "slug": "sliggoo",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sliggoo"
+  },
+  {
+    "pokeId": 706,
+    "name": "Goodra",
+    "slug": "goodra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/goodra"
+  },
+  {
+    "pokeId": 744,
+    "name": "Rockruff",
+    "slug": "rockruff",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/rockruff"
+  },
+  {
+    "pokeId": 776,
+    "name": "Turtonator",
+    "slug": "turtonator",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/turtonator"
+  },
+  {
+    "pokeId": 780,
+    "name": "Drampa",
+    "slug": "drampa",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/drampa"
+  },
+  {
+    "pokeId": 842,
+    "name": "Appletun",
+    "slug": "appletun",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/appletun"
+  },
+  {
+    "pokeId": 843,
+    "name": "Silicobra",
+    "slug": "silicobra",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/silicobra"
+  },
+  {
+    "pokeId": 844,
+    "name": "Sandaconda",
+    "slug": "sandaconda",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sandaconda"
+  },
+  {
+    "pokeId": 865,
+    "name": "Sirfetch'd",
+    "slug": "sirfetchd",
+    "url": "https://poke.idleworld.online/pokepedia/pokemon/sirfetchd"
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "tm": "NORMAL",
+    "name": "Omega Clap",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "NORMAL",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "GHOST",
+    "name": "Untold Nightmare",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "GHOST",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "GRASS",
+    "name": "Petal Bloom",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "GRASS",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "POISON",
+    "name": "Toxic Deluge",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "POISON",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "FIRE",
+    "name": "Ignition Point",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "FIRE",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "FLYING",
+    "name": "Massive Hurricane",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "FLYING",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "WATER",
+    "name": "Cyclonic Tide",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "WATER",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "ELECTRIC",
+    "name": "Static Overload",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "ELECTRIC",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "PSYCHIC",
+    "name": "Mental Singularity",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "PSYCHIC",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "GROUND",
+    "name": "Crossing Fissure",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "GROUND",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "FIGHTING",
+    "name": "Meteor Fists",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "FIGHTING",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "ROCK",
+    "name": "Crumbling Rain",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "ROCK",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "ICE",
+    "name": "Ice Time",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "ICE",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "BUG",
+    "name": "Hive Crush",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "BUG",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "DARK",
+    "name": "Endless Hollow",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "DARK",
+    "category": "PHYSICAL"
+  },
+  {
+    "tm": "DRAGON",
+    "name": "Draconic Soul",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "DRAGON",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "FAIRY",
+    "name": "Lovely Expulsion",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "FAIRY",
+    "category": "SPECIAL"
+  },
+  {
+    "tm": "STEEL",
+    "name": "Steel Flare",
+    "power": 300,
+    "cooldownMs": 10000,
+    "type": "STEEL",
+    "category": "PHYSICAL"
+  }
+]
