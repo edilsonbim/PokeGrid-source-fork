@@ -7,7 +7,6 @@ const { applyOfficialUpdate } = require('./src/updater');
 // Silencia o spam do Chromium no terminal (ex.: STUN/WebRTC do jogo que a rede nao resolve).
 // E so log, nao afeta o app. Mantem so erros fatais.
 app.commandLine.appendSwitch('log-level', '3');
-
 // ===== Relatorio de erros: qualquer crash/travamento cai num arquivo que o usuario pode enviar =====
 const errFile = () => path.join(app.getPath('userData'), 'relatorio-de-erros.log');
 let errCabecalho = false;

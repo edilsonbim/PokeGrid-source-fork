@@ -3627,60 +3627,99 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       setTimeout(() => toggleExpand(i), 120);
     }).catch(e => window.alert('Não foi possível abrir o Market: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
   }
-  function openCharacterDepot(i) {
+  function openCharacterDepotLegacy(i) {
     const w = webviews[i]; if (!w || off[i]) return;
     const openDepot = `(async()=>{
       const wait=ms=>new Promise(r=>setTimeout(r,ms));
-      const depotOpen=()=>!!document.querySelector('.dep-window,[class~="dep-window"]');
-      if(depotOpen())return {ok:true};
-      const direct=document.querySelector('#dock-btn-depot,[data-guide="dock-depot"]');
-      if(direct){direct.click();await wait(100);if(depotOpen())return {ok:true};}
-      const npc=[...document.querySelectorAll('button.npc-plate-btn')].find(b=>/abrir\\s+depot|abrir\\s+ba[uú]/i.test(b.textContent||'')&&!b.disabled&&b.getClientRects().length);
-      if(npc){npc.click();await wait(250);return {ok:true};}
-      const root=document.querySelector('.game-root');
-      if(!root)return {ok:false,reason:'tela do jogo não encontrada'};
-      const fiberKey=Object.keys(root).find(k=>k.startsWith('__reactFiber$')||k.startsWith('__reactInternalInstance$'));
-      if(!fiberKey)return {ok:false,reason:'controle interno do jogo não encontrado'};
-      let fiber=root[fiberKey];
-      while(fiber){
-        const hooks=[];
-        let hook=fiber.memoizedState;
-        while(hook&&hooks.length<300){hooks.push(hook);hook=hook.next;}
-        for(let p=1;p<hooks.length;p++){
-          if(hooks[p].memoizedState!=='Mercado')continue;
-          let saved=0,marketSaved=0;
-          try{saved=+localStorage.getItem('__pgDepotHookOffset')||0;marketSaved=+localStorage.getItem('__pgMarketHookOffset')||0}catch(x){}
-          const offsets=[];
-          if(saved>0)offsets.push(saved);
-          if(marketSaved>0&&!offsets.includes(marketSaved+1))offsets.push(marketSaved+1);
-          for(let d=0;d<28;d++){
-            const a=10-d,b=10+d;
-            if(a>0&&!offsets.includes(a))offsets.push(a);
-            if(b>0&&!offsets.includes(b))offsets.push(b);
+      const trace=[];const mark=(stage,data)=>trace.push({stage,data:data==null?null:data});
+      mark('start',{url:location.href});
+      const visible=el=>{if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};
+      const depotOpen=()=>[...document.querySelectorAll('.dep-window,.depot-window,[class*="dep-window"],[class*="depot-window"]')].some(el=>visible(el));
+      const waitDepot=async()=>{for(let n=0;n<16;n++){if(depotOpen())return true;await wait(100)}return false};
+      const openFromNpcDialog=async()=>{
+        for(let n=0;n<16;n++){
+          const dialog=[...document.querySelectorAll('.npc-dialog')].find(el=>visible(el)&&/depot|depósito|deposito/i.test(String(el.innerText||el.textContent||'')));
+          if(dialog){
+            mark('npc-dialog',{className:String(dialog.className||''),text:String(dialog.innerText||dialog.textContent||'').replace(/\\s+/g,' ').slice(0,240)});
+            const controls=[...dialog.querySelectorAll('button,[role="button"],a,[tabindex]')].filter(el=>visible(el)&&!/^(?:×|✕|x|close|fechar)$/i.test(String(el.textContent||'').replace(/\s+/g,' ').trim()));
+            const action=controls.filter(el=>/abrir\s+(?:depot|depósito|deposito)|open\s+depot/i.test(String(el.textContent||'').replace(/\s+/g,' ').trim())).sort((a,b)=>String(a.textContent||'').length-String(b.textContent||'').length)[0]||((controls.length===1)?controls[0]:null);
+            mark('npc-action',action?{tag:action.tagName,text:String(action.textContent||'').replace(/\\s+/g,' ').trim(),className:String(action.className||'')}:null);
+            if(action){action.click();if(await waitDepot()){mark('storage-open');return true;}mark('storage-timeout');}
+            return false;
           }
-          for(const offSet of offsets){
-            const depotHook=hooks[p-offSet];
-            if(!depotHook||depotHook.memoizedState!==false||!depotHook.queue||typeof depotHook.queue.dispatch!=='function')continue;
-            depotHook.queue.dispatch(true);
-            await wait(80);
-            if(depotOpen()){
-              try{localStorage.setItem('__pgDepotHookOffset',String(offSet))}catch(x){}
-              return {ok:true};
-            }
-            depotHook.queue.dispatch(false);
-            await wait(35);
-          }
+          await wait(100);
         }
-        fiber=fiber.return;
+        mark('npc-dialog-timeout');return false;
+      };
+      if(depotOpen()){mark('already-open');return {ok:true,trace};}
+      if(await openFromNpcDialog())return {ok:true,trace};
+      const direct=document.querySelector('#dock-btn-depot,[data-guide="dock-depot"],[data-guide*="depot" i],[data-guide*="storage" i]');
+      if(direct){mark('direct-control',{text:String(direct.textContent||''),id:direct.id});direct.click();if(await waitDepot()){mark('storage-open-direct');return {ok:true,trace};}mark('direct-timeout');}
+      let depotControls=[];
+      for(let attempt=0;attempt<20&&!depotControls.length;attempt++){
+        depotControls=[...document.querySelectorAll('button,[role="button"],a,[tabindex],[data-guide],[aria-label],[title],[data-tooltip],[data-tooltip-content],[class*="npc" i],[class*="plate" i],[data-action*="depot" i],[data-action*="storage" i]')].filter(b=>{
+          const s=[b.textContent,b.getAttribute('aria-label'),b.getAttribute('title'),b.id,b.className,b.getAttribute('data-guide'),b.getAttribute('data-tooltip'),b.getAttribute('data-tooltip-content'),b.getAttribute('data-action')].map(v=>String(v||'')).join(' ');
+          const label=String(b.textContent||'').replace(/\\s+/g,' ').trim();
+          const cs=getComputedStyle(b), clickable=/^(BUTTON|A)$/.test(String(b.tagName||''))||b.getAttribute('role')==='button'||b.hasAttribute('tabindex')||/npc|plate|action|click|field/i.test(String(b.className||''))||cs.cursor==='pointer';
+          return clickable&&!b.disabled&&b.getClientRects().length&&label.length<160&&/(?:abrir|open)?\\s*(?:depot|depósito|deposito|ba[uú]|storage)/i.test(s);
+        }).sort((a,b)=>String(a.textContent||'').length-String(b.textContent||'').length);
+        if(!depotControls.length)await wait(100);
       }
-      return {ok:false,reason:'controle do Baú não encontrado nesta versão do jogo'};
+      const npc=depotControls.find(b=>b!==direct);
+      mark('candidate-control',npc?{tag:npc.tagName,text:String(npc.textContent||'').replace(/\\s+/g,' ').trim(),className:String(npc.className||'')}:null);
+      if(npc){
+        const chain=[];let target=npc;
+        for(let level=0;target&&level<5;level++,target=target.parentElement)chain.push({tag:target.tagName,className:String(target.className||''),text:String(target.textContent||'').replace(/\\s+/g,' ').trim().slice(0,120),cursor:getComputedStyle(target).cursor});
+        mark('candidate-chain',chain);
+        const fire=el=>{for(const type of ['pointerdown','mousedown','pointerup','mouseup','click']){try{el.dispatchEvent(new MouseEvent(type,{bubbles:true,cancelable:true,view:window}))}catch(x){}}try{el.click()}catch(x){}};
+        fire(npc);if(await waitDepot()){mark('storage-open-candidate');return {ok:true,trace};}if(await openFromNpcDialog()){mark('storage-open-candidate');return {ok:true,trace};}mark('candidate-timeout');
+      }
+      return {ok:false,reason:'controle do Baú não encontrado nesta versão do jogo',trace};
     })()`;
     w.executeJavaScript(openDepot).then(result => {
+      try { window.pokeAPI?.logError?.('depot-pipeline', JSON.stringify(result)); } catch {}
       if (!result || !result.ok) return window.alert('Não foi possível abrir o Baú: ' + ((result && result.reason) || 'erro desconhecido') + '.');
       cardsOn = false;
       applyCards();
       setTimeout(() => toggleExpand(i), 120);
     }).catch(e => window.alert('Não foi possível abrir o Baú: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
+  }
+  function openCharacterDepot(i) {
+    const w=webviews[i];if(!w||off[i])return;
+    const probe=`(()=>{
+      const vis=e=>{if(!e)return false;const s=getComputedStyle(e),r=e.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};
+      const rect=e=>{const r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}};
+      const depot=[...document.querySelectorAll('.dep-window,.depot-window,.dpt-window,[class*="dep-window"],[class*="depot-window"],[class*="dpt-window"]')].find(vis);
+      if(depot)return {kind:'open'};
+      const dialog=[...document.querySelectorAll('.npc-dialog')].find(e=>vis(e)&&/depot|depósito|deposito/i.test(String(e.innerText||e.textContent||'')));
+      if(dialog){
+        const cs=[...dialog.querySelectorAll('button,[role="button"],a,[tabindex]')].filter(e=>vis(e)&&!/^(?:×|✕|x|close|fechar)$/i.test(String(e.textContent||'').replace(/\\s+/g,' ').trim()));
+        const action=cs.filter(e=>/abrir\\s+(?:depot|depósito|deposito)|open\\s+depot/i.test(String(e.textContent||'').replace(/\\s+/g,' ').trim()))[0]|| (cs.length===1?cs[0]:null);
+        if(action)return {kind:'click',stage:'npc-action',click:rect(action),text:String(action.textContent||'').replace(/\\s+/g,' ').trim()};
+      }
+      const controls=[...document.querySelectorAll('button,[role="button"],a,[tabindex],[data-guide],[aria-label],[title],[data-tooltip],[data-tooltip-content],[class*="npc" i],[class*="plate" i],[data-action*="depot" i],[data-action*="storage" i]')].filter(e=>{
+        if(e.closest('.dpt-window,.dep-window,.depot-window,[class*="dpt-window"],[class*="dep-window"],[class*="depot-window"]'))return false;
+        const s=[e.textContent,e.getAttribute('aria-label'),e.getAttribute('title'),e.id,e.className,e.getAttribute('data-guide'),e.getAttribute('data-tooltip'),e.getAttribute('data-tooltip-content'),e.getAttribute('data-action')].map(v=>String(v||'')).join(' ');
+        return vis(e)&&!e.disabled&&String(e.textContent||'').trim().length<160&&/(?:abrir|open)?\\s*(?:depot|depósito|deposito|ba[uú]|storage)/i.test(s);
+      }).sort((a,b)=>String(a.textContent||'').length-String(b.textContent||'').length);
+      if(controls[0])return {kind:'click',stage:'depot-marker',click:rect(controls[0]),text:String(controls[0].textContent||'').replace(/\\s+/g,' ').trim(),className:String(controls[0].className||'')};
+      const context={url:location.href,buttons:[...document.querySelectorAll('button,[role="button"],a,[tabindex]')].filter(vis).slice(0,120).map(e=>({tag:e.tagName,text:String(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,100),id:String(e.id||''),className:String(e.className||'').slice(0,120),guide:e.getAttribute('data-guide'),aria:e.getAttribute('aria-label'),title:e.getAttribute('title')})),guides:[...document.querySelectorAll('[data-guide]')].filter(vis).map(e=>({guide:e.getAttribute('data-guide'),text:String(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,100),className:String(e.className||'').slice(0,120)})).slice(0,100)};
+      return {kind:'missing',context};
+    })()`;
+    const delay=ms=>new Promise(r=>setTimeout(r,ms));
+    const clickReal=async p=>{const x=Number(p.x),y=Number(p.y);await w.focus();await w.sendInputEvent({type:'mouseMove',x,y});await w.sendInputEvent({type:'mouseDown',x,y,button:'left',clickCount:1});await w.sendInputEvent({type:'mouseUp',x,y,button:'left',clickCount:1});};
+    const openByHook=async()=>{
+      const script=`(async()=>{const wait=n=>new Promise(r=>setTimeout(r,n));const open=()=>[...document.querySelectorAll('.dpt-window,.dep-window,.depot-window,[class*="dpt-window"],[class*="dep-window"],[class*="depot-window"]')].some(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0});if(open())return true;const root=document.querySelector('.game-root');if(!root)return false;const key=Object.keys(root).find(k=>k.startsWith('__reactFiber$')||k.startsWith('__reactInternalInstance$'));if(!key)return false;let fiber=root[key];while(fiber){const hooks=[];let h=fiber.memoizedState;while(h&&hooks.length<300){hooks.push(h);h=h.next;}for(let p=1;p<hooks.length;p++){if(hooks[p].memoizedState!=='Mercado')continue;let saved=0;try{saved=+localStorage.getItem('__pgDepotHookOffset')||0}catch(e){}const offsets=[];if(saved>0)offsets.push(saved);for(let d=0;d<24;d++){const a=9-d,b=9+d;if(a>0&&!offsets.includes(a))offsets.push(a);if(b>0&&!offsets.includes(b))offsets.push(b);}for(const offSet of offsets){const candidate=hooks[p-offSet];if(!candidate||candidate.memoizedState!==false||!candidate.queue||typeof candidate.queue.dispatch!=='function')continue;candidate.queue.dispatch(true);await wait(110);if(open()){try{localStorage.setItem('__pgDepotHookOffset',String(offSet))}catch(e){}return true;}candidate.queue.dispatch(false);await wait(45);}}fiber=fiber.return;}return false;})()`;
+      const ok=await w.executeJavaScript(script);try{window.pokeAPI?.logError?.('depot-hook',JSON.stringify({ok}))}catch{};return !!ok;
+    };
+    const run=async(attempt=0)=>{
+      const result=await w.executeJavaScript(probe);
+      try{window.pokeAPI?.logError?.('depot-input',JSON.stringify({attempt,result}))}catch{}
+      if(result&&result.kind==='open')return true;
+      if(!result||result.kind!=='click'||attempt>=4)return false;
+      await clickReal(result.click);await delay(220);return run(attempt+1);
+    };
+    openByHook().then(ok=>ok?true:run()).then(ok=>{if(!ok)return window.alert('Não foi possível abrir o Baú: o fluxo do Depot não foi concluído.');cardsOn=false;applyCards();setTimeout(()=>toggleExpand(i),120)}).catch(e=>window.alert('Não foi possível abrir o Baú: '+(e&&e.message?e.message:'erro desconhecido')+'.'));
   }
   // base medida por conta e hunt: media (EWMA) do que CADA conta realmente fez ali (gold/h, xp/h, capturas/h).
   // amostra a taxa acumulada da sessao (ja e uma media) quando a hunt rodou tempo suficiente pra estabilizar.

@@ -77,14 +77,14 @@ async function simulate({ destination, locked = false, ignored = false, guide = 
     ['openMarketHere', 'w.executeJavaScript(openMarketHere)', 'Abrir Market'],
     ['openDepot', 'w.executeJavaScript(openDepot)', 'Abrir Depot']
   ]) {
-    let clicked = false;
-    const button = { textContent: text, disabled: false, getClientRects: () => [1], click() { clicked = true; } };
+    let clicked = false, depotVisible = false;
+    const button = { tagName: 'BUTTON', textContent: text, className: '', disabled: false, getClientRects: () => [1], getAttribute: () => '', hasAttribute: () => false, click() { clicked = true; if (text === 'Abrir Depot') depotVisible = true; } };
     const document = {
-      querySelector: () => null,
-      querySelectorAll: selector => selector === 'button.npc-plate-btn' ? [button] : []
+      querySelector: selector => selector.includes('dep-window') && depotVisible ? { className: 'npc-dialog', innerText: 'Depot Abrir Depósito', getBoundingClientRect: () => ({ width: 300, height: 200 }) } : null,
+      querySelectorAll: selector => selector.includes('dep-window') && depotVisible ? [{ className: 'npc-dialog', innerText: 'Depot Abrir Depósito', getBoundingClientRect: () => ({ width: 300, height: 200 }) }] : (selector.includes('button') ? [button] : [])
     };
     const script = injectedScript(variable, next);
-    const result = await vm.runInNewContext(script, { document, setTimeout: callback => setTimeout(callback, 0), Promise });
+    const result = await vm.runInNewContext(script, { document, location: { href: 'https://poke.idleworld.online/play' }, getComputedStyle: () => ({ display: 'block', visibility: 'visible' }), setTimeout: callback => setTimeout(callback, 0), Promise });
     assert.equal(result.ok, true, text + ' direto funciona sem hook interno do jogo');
     assert.equal(clicked, true);
   }
