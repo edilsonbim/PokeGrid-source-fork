@@ -389,6 +389,9 @@
   .cd-row .rn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cd-row .rt { color: #6e7681; font-size: 11px; flex: none; }
   .cd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 2px; flex: none; }
+  .cd-team-col { min-width: 0; padding: 7px 8px 8px; border: 1px solid #293543; border-top: 3px solid var(--team-color, #3b82f6); border-radius: 9px; background: linear-gradient(160deg, #151d26, #10161d); box-shadow: 0 2px 7px rgba(0,0,0,.18); }
+  .cd-team-col .cd-h { margin-bottom: 5px; color: #c9d1d9; }
+  .cd-team-col .cd-row { padding: 5px 2px; }
   .cd-spark { width: 100%; height: 44px; display: block; }
   .cd-empty { color: #6e7681; font-size: 12px; padding: 8px 0; }
   .cd-h select { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: 10px; padding: 2px 6px; outline: none; }
@@ -407,6 +410,7 @@
   .cd-sh-n { font-size: 10px; color: #adbac7; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cd-sh-t { font-size: 12px; font-weight: 700; color: #f778ba; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .cd-sh-acc { font-size: 9px; color: #7d8590; margin-top: 4px; display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 7px; font-variant-numeric: tabular-nums; }
+  .cd-shared-poke, .cd-iv-poke { cursor: help; }
   .cd-sh-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 2px; vertical-align: middle; }
   .cd-top { display: flex; align-items: center; gap: 8px; }
   .cd-top .cd-tt { font-size: 11px; font-weight: 600; color: #7d8590; text-transform: uppercase; letter-spacing: .06em; }
@@ -423,6 +427,8 @@
   .cd-hunt-go:hover { border-color: #e3350d; color: #fff; }
   .cd-hunt-go.current { border-color: #238636; color: #7ee787; }
   .cd-ball-cell { display: flex; align-items: center; gap: 7px; }
+  .cd-item-price { display: block; margin-top: 2px; color: #f2c665; font-size: 9px; font-weight: 500; white-space: nowrap; }
+  .cd-account-gold { margin-left: 5px; color: #f2c665; font-size: 10px; white-space: nowrap; }
   .cd-ball-buy { background: #17351f; border: 1px solid #2ea043; border-radius: 5px; color: #7ee787; font-size: 10px; padding: 2px 6px; cursor: pointer; white-space: nowrap; }
   .cd-ball-buy:hover { background: #238636; color: #fff; }
   .cd-sell-safe { background: #3b1d20; border: 1px solid #da3633; border-radius: 6px; color: #ffb3ad; font-size: 11px; padding: 4px 9px; cursor: pointer; white-space: nowrap; }
@@ -447,10 +453,10 @@
   .cd-hide { flex: none; font-size: 11px; padding: 0 2px; }
   .cd-fav { flex: none; font-size: 13px; }
   #stats .st-vazio { padding: 3px 15px 7px; font-size: 10.5px; color: #6e7681; line-height: 1.5; }
-  #stats .team { display: flex; flex-direction: column; gap: 3px; padding: 4px 15px 6px; }
-  #stats .tm-row { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 6px; cursor: pointer; }
-  #stats .tm-row:hover { background: #161b22; }
-  #stats .tm-row.lead { background: #12171e; cursor: default; }
+  #stats .team { display: flex; flex-direction: column; gap: 5px; padding: 5px 15px 8px; }
+  #stats .tm-row { display: flex; align-items: center; gap: 8px; padding: 5px 7px; border: 1px solid #263241; border-left: 3px solid #3b82f6; border-radius: 8px; background: #101820; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.22); }
+  #stats .tm-row:hover { background: #172331; border-color: #388bfd; }
+  #stats .tm-row.lead { background: #171b21; border-color: #8b6f2b; border-left-color: #f2c665; cursor: default; }
   #stats .tm-row img { width: 26px; height: 26px; image-rendering: pixelated; flex: 0 0 26px; }
   #stats .tm-info { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 12px; min-width: 0; }
   #stats .tm-bar { display: block; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; }
@@ -905,8 +911,12 @@ const HOME_URL  = 'https://poke.idleworld.online/';
           try { const d = stSane(JSON.parse(m.slice(8))); if (d) stCache[i] = { t: Date.now(), d }; } catch {}
           return;
         }
-        if (m.lastIndexOf('__PGIV__', 0) !== 0) return;
-        try { ivRecebe(i, JSON.parse(m.slice(8))); } catch {}
+        const abreIv = m.lastIndexOf('__PGIVOPEN__', 0) === 0;
+        if (!abreIv && m.lastIndexOf('__PGIV__', 0) !== 0) return;
+        try {
+          if (abreIv) { ivAberto = true; try { lsSet('ivCardOpen', '1'); } catch {} ivRecebe(i, JSON.parse(m.slice(12))); }
+          else ivRecebe(i, JSON.parse(m.slice(8)));
+        } catch {}
       });
       let fails = 0, alertedDown = false; // watchdog: falhas de carga do painel e se ja avisou a queda
       let zoom = +(lsGet('zoom' + i) || 1); if (!Number.isFinite(zoom) || zoom < 0.5 || zoom > 2) zoom = 1;
@@ -1005,6 +1015,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     count = n;
     if (n < atual) { // remove os paineis do fim (remover do DOM ja destroi o webview)
       for (let i = atual - 1; i >= n; i--) {
+        disposePanelState(i);
         if (grid.children[i]) grid.children[i].remove();
         webviews.pop();
       }
@@ -1057,8 +1068,11 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
             const ii = [...document.querySelectorAll('input')];
             const uu = ii.find(i => i.autocomplete === 'username');
             const pp = ii.find(i => i.autocomplete === 'current-password');
-            if (uu && uu.value !== EMAIL) setVal(uu, EMAIL);
-            if (pp && pp.value !== SENHA) setVal(pp, SENHA);
+            // Se o usuario clicou no campo, deixa a edicao manual terminar. O watcher
+            // continua corrigindo campos abandonados, mas nao sobrescreve cada tecla.
+            const editando = document.activeElement === uu || document.activeElement === pp;
+            if (!editando && uu && uu.value !== EMAIL) setVal(uu, EMAIL);
+            if (!editando && pp && pp.value !== SENHA) setVal(pp, SENHA);
             return !!(uu && pp && uu.value === EMAIL && pp.value === SENHA);
           };
           preenche();
@@ -1575,6 +1589,18 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     if (old && old.timer) clearTimeout(old.timer);
     unstuckState[i] = { xp:+xp || 0, lastXpAt:Date.now(), limit:unstuckLimit(), busy:false, timer:null };
   }
+  function disposePanelState(i) {
+    const old = unstuckState[i];
+    if (old && old.timer) clearTimeout(old.timer);
+    unstuckState[i] = null;
+    lastLogin[i] = 0;
+    deadT[i] = 0;
+    alertedBalls[i] = false;
+    accountActionBusy.delete(i);
+    markActionBusy.delete(i);
+    sellItemsBusy.delete(i);
+    sellPokesBusy.delete(i);
+  }
   function applyUnstuck() {
     unstuckBtn.textContent = t(unstuckOn ? 'unstuckOn' : 'unstuckOff');
     unstuckBtn.title = t('unstuckTitle');
@@ -1602,31 +1628,34 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     let s = unstuckState[i];
     if (!s) { resetUnstuck(i, xp); return; }
     if (xp !== s.xp) { s.xp = xp; s.lastXpAt = now; s.limit = unstuckLimit(); return; }
-    if (s.busy || now - s.lastXpAt < s.limit) return;
+    if (s.busy || accountActionBusy.has(i) || now - s.lastXpAt < s.limit) return;
     const huntList = recentHunts[r.cid] || [];
     const hunt = huntList.find(h => h && h.slug === r.slug) || { slug:r.slug, name:r.slug };
     const w = webviews[i]; if (!w || off[i] || !hunt.slug) return;
     s.busy = true;
+    accountActionBusy.add(i);
     // Aguarda a chegada confirmada à cidade antes de iniciar a espera curta.
     // A identidade do estado evita que uma operação cancelada volte a uma hunt antiga.
     Promise.resolve().then(() => w.executeJavaScript(GO_TOWN_FOR_SALE)).then(town => {
-      if (unstuckState[i] !== s) return;
-      if (!unstuckOn || off[i] || !webviews[i]) { s.busy = false; s.timer = null; return; }
+      if (unstuckState[i] !== s) { accountActionBusy.delete(i); return; }
+      if (!unstuckOn || off[i] || !webviews[i]) { s.busy = false; s.timer = null; accountActionBusy.delete(i); return; }
       if (!town || !town.ok) {
-        s.busy = false; s.timer = null; s.lastXpAt = Date.now(); s.limit = unstuckLimit();
+        s.busy = false; s.timer = null; s.lastXpAt = Date.now(); s.limit = unstuckLimit(); accountActionBusy.delete(i);
         return;
       }
       s.timer = setTimeout(() => {
         s.timer = null;
-        if (unstuckState[i] !== s) return;
-        if (!unstuckOn || off[i] || !webviews[i]) { s.busy = false; return; }
+        if (unstuckState[i] !== s) { accountActionBusy.delete(i); return; }
+        if (!unstuckOn || off[i] || !webviews[i]) { s.busy = false; accountActionBusy.delete(i); return; }
         Promise.resolve().then(() => webviews[i].executeJavaScript(GOTO_HUNT_CURRENT(hunt.slug, hunt.name || hunt.slug)))
           .catch(() => false)
           .finally(() => {
+            accountActionBusy.delete(i);
             if (unstuckState[i] === s) { s.busy = false; s.lastXpAt = Date.now(); s.limit = unstuckLimit(); }
           });
       }, unstuckTownWait());
     }).catch(() => {
+      accountActionBusy.delete(i);
       if (unstuckState[i] === s) { s.busy = false; s.timer = null; s.lastXpAt = Date.now(); s.limit = unstuckLimit(); }
     });
   }
@@ -2261,9 +2290,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     bag.forEach(g => { if (g.label === 'Pokébolas') sBalls = g.total; else if (g.label === 'Heal') sPot = g.total; else if (g.label === 'Revive') sRev = g.total; });
     const invMap = {}; inv.forEach(it => invMap[it.itemId] = it.quantity);
     const ballMap = {}; if (bm && bm.counts) for (const bk in bm.counts) ballMap[bk] = bm.counts[bk];
-    const ballList = (bm && bm.catalog ? bm.catalog : []).map(b => ({ id:String(b.id), name:b.name||('#'+b.id), qty:+ballMap[b.id]||0 }));
+    const ballList = (bm && bm.catalog ? bm.catalog : []).map(b => ({ id:String(b.id), name:b.name||('#'+b.id), qty:+ballMap[b.id]||0, price:+b.priceGold||+b.price||0 }));
     const supplyNames = new Set(['hyper potion','ultimate potion','revive','max revive']);
-    const supplyList = (doc && doc.items ? doc.items : []).filter(it => supplyNames.has(String(it.name||'').toLowerCase())).map(it => ({ id:String(it.id), name:it.name, qty:+invMap[it.id]||0 }));
+    const supplyList = (doc && doc.items ? doc.items : []).filter(it => supplyNames.has(String(it.name||'').toLowerCase())).map(it => ({ id:String(it.id), name:it.name, qty:+invMap[it.id]||0, price:+it.npcPrice||+it.priceGold||+it.price||0 }));
     const stoneList = (doc && doc.items ? doc.items : []).filter(it => String(it.category||'').toLowerCase()==='stone' && (+invMap[it.id]||0)>0).map(it => ({ id:String(it.id), name:String(it.name||('#'+it.id)), qty:+invMap[it.id]||0 }));
     return { ok:true, cid: ch.id||'', name: ch.name||'', level: ch.level||0, gold: ch.gold||0, diamonds: ch.diamonds||0, vip: !!ch.isVip, clan: ch.clan||null, clanRank: ch.clanRank||0, shinyEnc: P.shinyEnc||0, usedList: P.usedList||[], catchLog: P.catchLog||[], shinyLog: P.shinyLog||[], chatShares: P.chatShares||[], travelTemplate:P.travelTemplate||null, balls: sBalls, potions: sPot, revives: sRev, ballPrice, invMap, ballMap, ballList,
       supplyList, stoneList, trackedItems, prof: ch.profession||'', profRank: ch.professionRank||0, catches: ch.catches||0, hunt, huntSlug, gifts: mail.gifts||0,
@@ -2508,6 +2537,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       + '<select id="stFavoriteHunt" class="st-fav-select" title="Selecione um Pokémon para salvar como favorito"' + ((!favoriteCid || !favoriteList.length) ? ' disabled' : '') + '>' + favoriteOptions + '</select>'
       + '<button id="stFavoriteTp" class="st-fav-go"' + (favoriteCurrent ? '' : ' disabled') + '>Dar TP</button>'
       + '</div></div></div>';
+    if (campoDigitacaoAtivo(stBody)) return;
     stBody.innerHTML = h;
     const market = stBody.querySelector('#stOpenMarket'); if (market) market.onclick = () => openCharacterMarket(statsIdx);
     const depot = stBody.querySelector('#stOpenDepot'); if (depot) depot.onclick = () => openCharacterDepot(statsIdx);
@@ -2700,6 +2730,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       + '<div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.07em;font-weight:700;padding:2px 0 7px">Contador de itens · todos os personagens</div>'
       + sgrid(2, a4c('Bronze Boss Token', nf(bossBronze), '#cd7f32') + a4c('Silver Boss Token', nf(bossSilver), '#c0c0c0') + a4c('Gold Boss Token', nf(bossGold), '#f2c665') + a4c('Strange Pheromone', nf(strangePheromone), '#c07bf5'))
       + '</div>';
+    if (campoDigitacaoAtivo(stBody)) return;
     stBody.innerHTML = h;
     const backAll = stBody.querySelector('#stBackAllHunts');
     if (backAll && canBackAll) backAll.onclick = () => {
@@ -2714,10 +2745,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     });
   }
 
+  const campoDigitacaoAtivo = (root) => {
+    const ae = document.activeElement;
+    return !!(ae && root && root.contains(ae) && (ae.isContentEditable ||
+      (/^(INPUT|TEXTAREA)$/.test(ae.tagName) && !/^(checkbox|radio|button|submit|reset|file|range|color|date|time|month|week)$/.test(ae.type || 'text'))));
+  };
   async function refreshStats() {
     if (!statsOpen || dragging) return;
-    const activeStatsControl = document.activeElement;
-    if (activeStatsControl && stBody.contains(activeStatsControl) && activeStatsControl.id === 'stFavoriteHunt') return;
+    if (campoDigitacaoAtivo(stBody)) return;
     if (stTabs.childElementCount !== count + 1) buildStatsTabs();
     if (statsIdx >= count) { statsIdx = 0; buildStatsTabs(); }
     if (statsIdx === -1) { await renderAggregate(); return; }
@@ -2725,9 +2760,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     if (off[statsIdx] || !w) { stBody.innerHTML = '<div class="st-empty">' + t('statsOff') + '</div>'; return; }
     try {
       const d = await w.executeJavaScript(READ_STATE);
+      if (campoDigitacaoAtivo(stBody)) return;
       renderStats(d);
       if (d && d.ok && d.name && tabNames[statsIdx] !== d.name) { tabNames[statsIdx] = d.name; buildStatsTabs(); }
-    } catch { stBody.innerHTML = '<div class="st-empty">' + t('statsWaiting') + '</div>'; }
+    } catch { if (!campoDigitacaoAtivo(stBody)) stBody.innerHTML = '<div class="st-empty">' + t('statsWaiting') + '</div>'; }
   }
   async function trocaLider(row) {
     if (row.dataset.ld === '1') return; // ja e o lider
@@ -3327,19 +3363,24 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         }
         const j=await r.json().catch(()=>({}));
         if(!r.ok)return {ok:false,bought,reason:j.message||('HTTP '+r.status)};
-        bought+=Number.isFinite(+j.bought)&&+j.bought>0?+j.bought:batch;
-        remaining-=batch;
+        const effective=Math.min(batch, Math.max(0, Number.isFinite(+j.bought)?+j.bought:batch));
+        if(effective<=0)return {ok:false,bought,reason:'A API não confirmou nenhuma Ultra Ball comprada'};
+        bought+=effective;
+        remaining-=effective;
       }
       try{P&&P.sock&&P.sock.readyState===1&&P.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}
       return {ok:true,bought};
     }catch(e){return {ok:false,bought:0,reason:e.message||'Erro na compra'};}
   })()`;
+  const accountActionBusy = new Set();
   const markActionBusy = new Set();
-  async function runMarkAction(i, script) {
+  async function runMarkAction(i, script, lockAlreadyHeld = false) {
     const w = webviews[i];
     if (!w || off[i]) return { r:{ ok:false, reason:'Painel indisponível' }, returnFailed:false };
+    if (!lockAlreadyHeld && accountActionBusy.has(i)) return { r:{ ok:false, reason:'Outra operação já está em andamento nesta conta' }, returnFailed:false };
     if (markActionBusy.has(i)) return { r:{ ok:false, reason:'Outra operação no Mark já está em andamento' }, returnFailed:false };
     markActionBusy.add(i);
+    if (!lockAlreadyHeld) accountActionBusy.add(i);
     let r = { ok:false, reason:'Operação não iniciada' }, returnFailed = false;
     try {
       r = await w.executeJavaScript(script);
@@ -3367,6 +3408,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       r = { ok:false, reason:e?.message || 'erro desconhecido' };
     } finally {
       markActionBusy.delete(i);
+      if (!lockAlreadyHeld) accountActionBusy.delete(i);
     }
     return { r, returnFailed };
   }
@@ -3420,8 +3462,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   const sellItemsBusy = new Set();
   async function sellSafeItems(i) {
-    const w = webviews[i]; if (!w || off[i] || sellItemsBusy.has(i)) return;
+    const w = webviews[i]; if (!w || off[i] || sellItemsBusy.has(i) || accountActionBusy.has(i)) return;
     sellItemsBusy.add(i);
+    accountActionBusy.add(i);
     let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
     try {
       const selectedProtection = [...protectedItemIds];
@@ -3469,6 +3512,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         try { window.pokeAPI?.logError?.('venda-itens', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
       }
       sellItemsBusy.delete(i);
+      accountActionBusy.delete(i);
       try {
         if (r?.ok) refreshCards();
         const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
@@ -3483,8 +3527,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   const sellPokesBusy = new Set();
   async function sellSafePokes(i) {
-    const w = webviews[i]; if (!w || off[i] || sellPokesBusy.has(i)) return;
+    const w = webviews[i]; if (!w || off[i] || sellPokesBusy.has(i) || accountActionBusy.has(i)) return;
     sellPokesBusy.add(i);
+    accountActionBusy.add(i);
     let r = { ok:false, reason:'Venda não iniciada' }, returnFailed = false;
     try {
       const preview = await w.executeJavaScript(PREVIEW_SAFE_POKES());
@@ -3533,6 +3578,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         try { window.pokeAPI?.logError?.('venda-pokemon', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido') + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
       }
       sellPokesBusy.delete(i);
+      accountActionBusy.delete(i);
       try {
         if (r?.ok) refreshCards();
         const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
@@ -3547,9 +3593,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   async function sellSelectedStones(i, cid) {
     const resetStoneButton = () => { try { document.querySelectorAll('.cd-sell-stones').forEach(btn => { if (+btn.dataset.i === i && btn.dataset.cid === String(cid)) { btn.disabled = false; btn.textContent = 'Vender Stones selecionadas'; } }); } catch {} };
-    const w = webviews[i]; if (!w || off[i] || markActionBusy.has(i)) { resetStoneButton(); return; }
+    const w = webviews[i]; if (!w || off[i] || accountActionBusy.has(i)) { resetStoneButton(); return; }
+    accountActionBusy.add(i);
     const ids = Object.keys(stoneSelected[cid] || {}).filter(id => stoneSelected[cid][id]);
-    if (!ids.length) { resetStoneButton(); return; }
+    if (!ids.length) { accountActionBusy.delete(i); resetStoneButton(); return; }
     let r = { ok:false, reason:'Nenhuma Stone permitida foi selecionada' }, returnFailed = false;
     try {
       const preview = await w.executeJavaScript(PREVIEW_SELECTED_STONES(ids));
@@ -3560,13 +3607,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       const label = tabNames[i] || stName(i);
       if (!window.confirm(label + '\n\nStones que serão vendidas:\n\n' + lines.join('\n') + '\n\nTotal: ' + nf(total) + ' unidades.\n\nClique em OK para vender.')) { r = { ok:false, cancelled:true, reason:'Venda cancelada' }; return r; }
       const confirmed = preview.stones.map(x => ({ id:+x.id, qty:+x.qty || 0 }));
-      const out = await runMarkAction(i, SELL_SELECTED_STONES_SELECTED(ids, confirmed));
+      const out = await runMarkAction(i, SELL_SELECTED_STONES_SELECTED(ids, confirmed), true);
       r = out.r; returnFailed = out.returnFailed;
       if (r?.ok) { stoneSelected[cid] = {}; try { localStorage.setItem('stoneSelected', JSON.stringify(stoneSelected)); } catch {} refreshCards(); }
     } catch (e) { r = { ok:false, reason:e?.message || 'erro desconhecido' }; }
     finally {
       const label = tabNames[i] || stName(i);
       if ((!r?.ok && !r?.cancelled) || returnFailed) { try { window.pokeAPI?.logError?.('venda-stones', label + ': ' + (r?.ok ? 'venda concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido')); } catch {} }
+      accountActionBusy.delete(i);
       try {
         const status = r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido');
         document.querySelectorAll('.cd-sell-stones').forEach(btn => { if (+btn.dataset.i === i && btn.dataset.cid === String(cid)) { btn.disabled = false; btn.textContent = 'Vender Stones selecionadas'; btn.title = status; } });
@@ -4040,8 +4088,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     // Guarda do tick: com foco num campo do painel, o redesenho passivo espera (nao apagar o que
     // o usuario digita). Mudou um select/checkbox, o handler chama com force: sem ele, o foco
     // que fica no campo segurava o redesenho pra sempre (bug do "filtro nao aplica").
-    const ae = document.activeElement;
-    if (!force && ae && cardsEl.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+    if (campoDigitacaoAtivo(cardsEl)) return;
     if (dexAccSel >= count || dexAccSel < -1) dexAccSel = -1;
     depColeta(); // depot e assincrono e cacheado; a proxima passada ja pinta com ele
     const rows = []; let sumG = 0, sumX = 0, sumK = 0, sumC = 0, sumSF = 0, sumSC = 0, ativos = 0; const shinyTried = {};
@@ -4080,7 +4127,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         }
       });
       if (d.usedList && d.usedList.length) (utBase[i] || (utBase[i] = { init: 0 })).init = 1; // a partir daqui, especie inedita = tentativa da sessao
-      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
+      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, gold: +d.gold || 0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
     }
     dhist.push({ t: Date.now(), g: sumG, x: sumX });
     dhist = dhist.filter(p => p.t > Date.now() - 3600e3);
@@ -4159,20 +4206,20 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       on.forEach(r => {
         (r.balls || []).forEach(b => {
           if (/master\s*ball/i.test(b.name || '')) return;
-          const key = 'ball:' + b.id; if (!seen[key]) { seen[key] = 1; types.push({ kind:'ball', key, id:String(b.id), name:b.name || ('#' + b.id) }); }
+          const key = 'ball:' + b.id; if (!seen[key]) { seen[key] = 1; types.push({ kind:'ball', key, id:String(b.id), name:b.name || ('#' + b.id), price:+b.price||0 }); }
         });
         (r.supplies || []).forEach(b => {
-          const key = 'item:' + b.id; if (!seen[key]) { seen[key] = 1; types.push({ kind:'item', key, id:String(b.id), name:b.name || ('#' + b.id) }); }
+          const key = 'item:' + b.id; if (!seen[key]) { seen[key] = 1; types.push({ kind:'item', key, id:String(b.id), name:b.name || ('#' + b.id), price:+b.price||0 }); }
         });
       });
       let s = '<div class="cd-sec"><div class="cd-h">Pokébolas e curas por personagem · +1000 compra para a conta da linha</div>';
       if (!types.length) return s + '<div class="cd-empty">' + t('cdWaiting') + '</div></div>';
       s += '<table class="cd-table"><thead><tr><th>Personagem</th>'
-        + types.map(b => '<th>' + esc(b.name) + '</th>').join('')
+        + types.map(b => '<th>' + esc(b.name) + (b.price > 0 ? '<span class="cd-item-price">×1000: $' + nf(b.price * 1000) + '</span>' : '') + '</th>').join('')
         + '</tr></thead><tbody>';
       rows.forEach(r => {
         const qty = {}; (r.balls || []).forEach(b => qty['ball:' + b.id] = +b.qty || 0); (r.supplies || []).forEach(b => qty['item:' + b.id] = +b.qty || 0);
-        s += '<tr data-i="' + r.i + '"><td><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + '</td>'
+        s += '<tr data-i="' + r.i + '"><td><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + (r.st === 'on' ? '<span class="cd-account-gold">$' + nf(r.gold) + '</span>' : '') + '</td>'
           + types.map(b => '<td style="color:' + (r.st === 'on' && qty[b.key] === 0 ? '#f0883e' : '#e6edf3') + '">' + (r.st === 'on' ? '<span class="cd-ball-cell"><span>' + nf(qty[b.key] || 0) + '</span><button class="cd-ball-buy" data-i="' + r.i + '" data-kind="' + b.kind + '" data-id="' + esc(b.id) + '" data-name="' + esc(b.name) + '" title="Comprar 1000 ' + esc(b.name) + ' para ' + esc(r.name) + '">+1000</button></span>' : '—') + '</td>').join('')
           + '</tr>';
       });
@@ -4199,7 +4246,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         r.bagPokes.forEach(p => {
           const rare = RARO(+p.quality || 0), rank = p.classificacao ? [p.classificacao.texto || '', p.classificacao.cor || '#8b949e'] : rating(p.ivTotal, p.percentual), ivs = p.ivs || {}, mx = +p.ivMaxInd || 32;
           const ivCell = k => '<span style="color:' + ((IVST.find(x => x[0] === k) || [0, '#e6edf3'])[1]) + '"><b>' + (+ivs[k] || 0).toFixed(1).replace('.0','') + '</b><span style="color:#6e7681">/' + mx + '</span></span>';
-          s += '<tr><td>' + (p.shiny ? '✨ ' : '') + esc(p.name) + (p.team ? ' <span title="No time" style="color:#f2c665">★</span>' : '') + (p.locked ? ' <span title="Trancado">🔒</span>' : '') + '</td>'
+          s += '<tr class="cd-iv-poke" data-iv-source="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivTotal || 0) + '" data-shared-quality="' + (+p.quality || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Passe o mouse para ver este Pokémon na calculadora de IV"><td>' + (p.shiny ? '✨ ' : '') + esc(p.name) + (p.team ? ' <span title="No time" style="color:#f2c665">★</span>' : '') + (p.locked ? ' <span title="Trancado">🔒</span>' : '') + '</td>'
             + '<td>' + nf(p.level) + '</td><td style="color:' + rare[1] + '">' + rare[0] + ' ×' + (+p.quality || 0).toFixed(2) + '</td>'
             + '<td style="color:#55e6d3"><b>' + nf(p.ivTotal) + '</b>/192</td>'
             + '<td>' + ivCell('hp') + '</td><td>' + ivCell('atk') + '</td><td>' + ivCell('def') + '</td><td>' + ivCell('spa') + '</td><td>' + ivCell('spd') + '</td><td>' + ivCell('vel') + '</td>'
@@ -4278,10 +4325,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         try { return { agora: M.projectPokemon({ level: +p.level, quality: +p.q, ivTotal: +p.ivt, species: sp }, +p.level).power, proj: M.projectPokemon({ level: +p.level, quality: +p.q, ivTotal: +p.ivt, species: sp }, alvo).power }; } catch { return null; }
       };
       const inner = cols.length ? '<div style="display:grid;grid-template-columns:repeat(' + Math.min(4, cols.length) + ',1fr);gap:12px">' + cols.map(r =>
-        '<div><div class="cd-h" style="margin-bottom:4px"><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + '</div>'
+        '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-h" style="margin-bottom:4px"><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + '</div>'
         + (r.team || []).map(p => {
           const pw = poder(p);
-          return '<div class="cd-row" style="flex-wrap:wrap"><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
+          return '<div class="cd-row cd-iv-poke" data-iv-source="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivt || 0) + '" data-shared-quality="' + (+p.q || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Passe o mouse para ver este Pokémon na calculadora de IV" style="flex-wrap:wrap"><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
             + (p.ivt != null ? '<span style="color:#55e6d3">' + nf(p.ivt) + '/192</span>' : '')
             + (+p.q ? '<span style="color:#f2c665">×' + (+p.q).toFixed(2) + '</span>' : '')
             + (pw ? '<span style="color:#3fb950" title="' + t('ivcPower') + '">' + nf(pw.agora) + '</span><span style="color:#8ab4ff" title="Lv' + alvo + '">→' + nf(pw.proj) + '</span>' : '')
@@ -4412,7 +4459,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       rows.forEach(r => (r.shares || []).forEach(x2 => { shMap[x2.fr + '|' + x2.n + '|' + x2.iv + '|' + x2.lv] = x2; }));
       const shList = Object.values(shMap).sort((p, q) => q.t - p.t).slice(0, 8);
       return '<div class="cd-sec"><div class="cd-h">' + t('cdShared') + '</div>'
-        + (shList.length ? shList.map(x2 => '<div class="cd-row"><span class="rn">' + (x2.sh ? '✨ ' : '') + '<b style="color:' + RARO(+x2.q || 1)[1] + '">' + esc(x2.n) + '</b>' + (+x2.lv ? ' <span style="color:#7d8590">Lv ' + (+x2.lv || 0) + '</span>' : '') + ' <span style="color:#7d8590">· ' + esc(x2.fr || '?') + '</span></span>' + (+x2.iv ? '<span style="color:#55e6d3">' + (+x2.iv || 0) + '/192</span>' : '') + (+x2.q ? '<span style="color:#f2c665">×' + (+x2.q).toFixed(2) + '</span>' : '') + '<span class="rt">' + fmtHM(x2.t) + '</span></div>').join('') : '<div class="cd-empty">' + t('cdNone') + '</div>') + '</div>';
+        + (shList.length ? shList.map(x2 => '<div class="cd-row cd-shared-poke" data-shared-name="' + esc(x2.n) + '" data-shared-level="' + (+x2.lv || 0) + '" data-shared-iv="' + (+x2.iv || 0) + '" data-shared-quality="' + (+x2.q || 1) + '" data-shared-power="' + (+x2.pw || 0) + '" data-shared-shiny="' + (x2.sh ? '1' : '0') + '" title="Passe o mouse para ver este Pokémon na calculadora de IV"><span class="rn">' + (x2.sh ? '✨ ' : '') + '<b style="color:' + RARO(+x2.q || 1)[1] + '">' + esc(x2.n) + '</b>' + (+x2.lv ? ' <span style="color:#7d8590">Lv ' + (+x2.lv || 0) + '</span>' : '') + ' <span style="color:#7d8590">· ' + esc(x2.fr || '?') + '</span></span>' + (+x2.iv ? '<span style="color:#55e6d3">' + (+x2.iv || 0) + '/192</span>' : '') + (+x2.q ? '<span style="color:#f2c665">×' + (+x2.q).toFixed(2) + '</span>' : '') + '<span class="rt">' + fmtHM(x2.t) + '</span></div>').join('') : '<div class="cd-empty">' + t('cdNone') + '</div>') + '</div>';
     };
     SB.pokedexTp = () => {
       const selectedRow = rows.find(r => r.i === dexAccSel);
@@ -4463,6 +4510,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     // guarda a rolagem antes de reconstruir: a de fora e a de dentro de cada secao (secao com
     // altura ajustada rola por dentro, e sem isso o refresh de 4s jogava tudo pro topo)
     if (h === cdHtmlAnt) return; // mesma tela: nao destroi e recria o DOM a toa
+    // A leitura dos webviews acima e assincrona: o usuario pode ter clicado num
+    // campo enquanto ela rodava. Rechecar aqui evita destruir o campo focado.
+    if (campoDigitacaoAtivo(cardsEl)) return;
     cdHtmlAnt = h;
     const st0 = cardsEl.scrollTop, rolagem = {};
     cardsEl.querySelectorAll('.cd-it').forEach(it => {
@@ -4471,6 +4521,17 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     });
     cardsEl.innerHTML = h;
     cardsEl.scrollTop = st0;
+
+    // O menu Simples tambem alimenta o mesmo card de IV do chat original.
+    cardsEl.querySelectorAll('.cd-shared-poke, .cd-iv-poke').forEach(el => {
+      el.addEventListener('mouseenter', () => ivRecebeSimples(el));
+      el.addEventListener('mousedown', e => {
+        ivMouseButtons |= e.button === 0 ? 1 : e.button === 2 ? 2 : 0;
+        if (ivMouseButtons === 3) { e.preventDefault(); ivRecebeSimples(el, true); }
+      });
+      el.addEventListener('mouseup', e => { ivMouseButtons &= e.button === 0 ? ~1 : e.button === 2 ? ~2 : ~0; });
+      el.addEventListener('contextmenu', e => { if (ivMouseButtons === 3) e.preventDefault(); });
+    });
 
     // config: engrenagem, checkboxes e arraste pra reordenar seções
     const gear = cardsEl.querySelector('#cdGear'); if (gear) gear.onclick = () => { cardsCfgOpen = !cardsCfgOpen; refreshCards(true); };
@@ -4704,6 +4765,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   async function atualizaScript(id, btn) {
     const sc = userScripts.find(x => x.id === id); if (!sc || !sc.url) return;
+    if (!window.confirm(t('scTrust'))) return;
     if (btn) { btn.disabled = true; btn.textContent = '\u23f3'; }
     let r; try { r = await window.pokeAPI.fetchUserScript(sc.url); } catch { r = null; }
     if (!r || !r.ok) { window.alert((r && r.error) || t('scFalhou')); renderScriptsList(); return; }
@@ -4949,6 +5011,36 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     if (!d) return;
     ivDados = d; ivFonte = i;
     if (ivAberto) ivRender();
+  }
+  let ivSimplesSeq = 0, ivMouseButtons = 0;
+  function ivRecebeSimples(el, abrir) {
+    if (!el || !el.dataset.sharedName) return;
+    if (abrir && !ivAberto) { ivAberto = true; try { lsSet('ivCardOpen', '1'); } catch {} }
+    if (!ivAberto) return;
+    const seq = ++ivSimplesSeq;
+    let fonte = +(el.dataset.ivSource);
+    if (!Number.isInteger(fonte) || fonte < 0 || !webviews[fonte] || off[fonte]) fonte = webviews.findIndex((w, i) => w && !off[i]);
+    const nome = String(el.dataset.sharedName || '').slice(0, 80);
+    const nivel = +el.dataset.sharedLevel || 0;
+    const ivAtual = +el.dataset.sharedIv || 0;
+    const qualidade = +el.dataset.sharedQuality || 1;
+    const poder = +el.dataset.sharedPower || 0;
+    const pokemon = { nome, nivel, ivAtual, poder, qualidade: 'x' + qualidade.toFixed(2), multiplicadorQualidade: qualidade, tipos: [] };
+    const fallback = () => {
+      if (seq !== ivSimplesSeq || !ivAberto) return;
+      const d = ivSane({ nome, nivel, qualidade, ivTotal: ivAtual, poder, poderJogo: poder, pokemon });
+      if (d) { ivDados = d; ivFonte = fonte; ivRender(); }
+    };
+    const w = fonte >= 0 ? webviews[fonte] : null;
+    if (!w) { fallback(); return; }
+    try {
+      w.executeJavaScript('window.__pgIv && window.__pgIv.calc(' + JSON.stringify({ pokemon }) + ')').then(r => {
+        if (seq !== ivSimplesSeq || !ivAberto) return;
+        const d = ivSane(r);
+        if (d) { ivDados = d; ivFonte = fonte; ivRender(); }
+        else fallback();
+      }).catch(fallback);
+    } catch { fallback(); }
   }
   ivsBtn.onclick = () => { ivAberto = !ivAberto; ivRender(); };
 

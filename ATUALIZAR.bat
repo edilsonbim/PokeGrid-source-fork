@@ -42,7 +42,7 @@ set "PG_FONTE_TXT=%TEMP%\pokegrid-leo-fonte-%RANDOM%-%RANDOM%.txt"
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue';" ^
-  "Invoke-WebRequest -UseBasicParsing 'https://github.com/leodantas70/idle/archive/refs/heads/master.zip' -OutFile $env:PG_ZIP;" ^
+  "Invoke-WebRequest -UseBasicParsing 'https://github.com/leodantas70/idle/archive/refs/heads/main.zip' -OutFile $env:PG_ZIP;" ^
   "Expand-Archive -LiteralPath $env:PG_ZIP -DestinationPath $env:PG_TMP -Force;" ^
   "$src=(Get-ChildItem -LiteralPath $env:PG_TMP -Directory | Select-Object -First 1).FullName;" ^
   "if(-not $src){throw 'Conteudo da atualizacao nao encontrado'};" ^
@@ -55,8 +55,9 @@ if not exist "%PG_FONTE%\package.json" goto :erro
 
 echo.
 echo Substituindo os arquivos pela versao do GitHub...
-rem .git e node_modules sao preservados; todo o restante e espelhado do GitHub.
-robocopy "%PG_FONTE%" "%PG_ALVO%" /MIR /R:2 /W:1 /XD ".git" "node_modules" /NFL /NDL /NJH /NJS /NP
+rem .git, node_modules, dados gerados e arquivos locais sao preservados.
+rem O atualizador interno do app e o caminho recomendado por oferecer backup e rollback.
+robocopy "%PG_FONTE%" "%PG_ALVO%" /E /COPY:DAT /R:2 /W:1 /XD ".git" "node_modules" ".tmp" "outputs" /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 goto :erro
 
 echo.

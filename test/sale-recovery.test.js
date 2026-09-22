@@ -28,11 +28,11 @@ async function testCityArrival() {
 
 const sellBody = extract('const sellItemsBusy =', 'const sellPokesBusy =');
 function makeSeller(webview, errors, button, confirms = [], confirmResult = true) {
-  const build = new Function('webviews', 'off', 'protectedItemIds', 'PREVIEW_SAFE_ITEMS', 'SELL_SAFE_ITEMS_SELECTED', 'window', 'tabNames', 'stName', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'refreshCards', 'document', 'stBody', 'statsIdx', 'nf', sellBody + '\nreturn sellSafeItems;');
+  const build = new Function('webviews', 'off', 'protectedItemIds', 'PREVIEW_SAFE_ITEMS', 'SELL_SAFE_ITEMS_SELECTED', 'window', 'tabNames', 'stName', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'refreshCards', 'document', 'stBody', 'statsIdx', 'nf', 'accountActionBusy', sellBody + '\nreturn sellSafeItems;');
   return build([webview], [false], new Set(['59195']), ids => 'preview', (ids, items) => 'sale',
     { alert: () => { throw new Error('alert não permitido'); }, confirm: msg => { confirms.push(msg); return confirmResult; }, pokeAPI: { logError: (...args) => errors.push(args) } },
     ['Treinador 1'], () => 'Conta 1', 'state', 'town', slug => 'tp:' + slug, () => {},
-    { querySelectorAll: () => [button] }, { querySelector: () => null }, 0, value => String(value));
+    { querySelectorAll: () => [button] }, { querySelector: () => null }, 0, value => String(value), new Set());
 }
 
 async function testRetryOnlyAfterCity() {
@@ -137,11 +137,11 @@ async function testTownScriptFailureAttemptsReturn() {
 
 const pokeSellBody = extract('const sellPokesBusy =', 'async function sellSelectedStones');
 function makePokeSeller(webview, errors, button, confirms = [], confirmResult = true) {
-  const build = new Function('webviews', 'off', 'PREVIEW_SAFE_POKES', 'SELL_SAFE_POKES_SELECTED', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'tabNames', 'stName', 'window', 'refreshCards', 'document', 'stBody', 'statsIdx', 'nf', pokeSellBody + '\nreturn sellSafePokes;');
+  const build = new Function('webviews', 'off', 'PREVIEW_SAFE_POKES', 'SELL_SAFE_POKES_SELECTED', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'tabNames', 'stName', 'window', 'refreshCards', 'document', 'stBody', 'statsIdx', 'nf', 'accountActionBusy', pokeSellBody + '\nreturn sellSafePokes;');
   return build([webview], [false], () => 'poke-preview', ids => 'poke-sale', 'state', 'town', slug => 'tp:' + slug,
     ['Treinador 1'], () => 'Conta 1',
     { alert: () => { throw new Error('alert não permitido'); }, confirm: msg => { confirms.push(msg); return confirmResult; }, pokeAPI: { logError: (...args) => errors.push(args) } },
-    () => {}, { querySelectorAll: () => [button] }, { querySelector: () => null }, 0, value => String(value));
+    () => {}, { querySelectorAll: () => [button] }, { querySelector: () => null }, 0, value => String(value), new Set());
 }
 
 async function testCancelledItemSaleDoesNotCallApi() {
@@ -178,7 +178,7 @@ async function testPokeSaleDirectDoesNotMove() {
 
 const stoneSellBody = extract('async function sellSelectedStones', 'function openCharacterMarket');
 function makeStoneSeller(webview, errors, button, confirms = [], confirmResult = true) {
-  const build = new Function('webviews', 'off', 'markActionBusy', 'stoneSelected', 'PREVIEW_SELECTED_STONES', 'SELL_SELECTED_STONES_SELECTED', 'runMarkAction', 'tabNames', 'stName', 'nf', 'window', 'localStorage', 'refreshCards', 'document', 'stoneBody', stoneSellBody + '\nreturn sellSelectedStones;');
+  const build = new Function('webviews', 'off', 'markActionBusy', 'accountActionBusy', 'stoneSelected', 'PREVIEW_SELECTED_STONES', 'SELL_SELECTED_STONES_SELECTED', 'runMarkAction', 'tabNames', 'stName', 'nf', 'window', 'localStorage', 'refreshCards', 'document', 'stBody', stoneSellBody + '\nreturn sellSelectedStones;');
   const recover = async (i, script) => {
     let r = await webview.executeJavaScript(script);
     if (!r?.ok && /precisa estar na cidade|saia da hunt/i.test(String(r?.reason || ''))) {
@@ -189,10 +189,10 @@ function makeStoneSeller(webview, errors, button, confirms = [], confirmResult =
     }
     return { r, returnFailed:false };
   };
-  return build([webview], [false], new Set(), { bag1:{ stone1:true } }, ids => 'stone-preview', (ids, selected) => 'stone-sale', recover,
+  return build([webview], [false], new Set(), new Set(), { bag1:{ stone1:true } }, ids => 'stone-preview', (ids, selected) => 'stone-sale', recover,
     ['Treinador 1'], () => 'Conta 1', value => String(value),
     { confirm: msg => { confirms.push(msg); return confirmResult; }, pokeAPI: { logError: (...args) => errors.push(args) } },
-    { setItem() {} }, () => {}, { querySelectorAll: () => [button] }, stoneSellBody);
+    { setItem() {} }, () => {}, { querySelectorAll: () => [button] }, { querySelector: () => null }, stoneSellBody);
 }
 
 async function testStoneSaleShowsListAndRecoversCity() {

@@ -5587,10 +5587,27 @@
             };
         },
         // avisa o app: o canal e o console do painel, que o app escuta (sem ficar consultando)
-        async reportar() {
-            try { const r = await window.__pgIv.calc(); if (r) console.log("__PGIV__" + JSON.stringify(r)); } catch (x) {}
+        async reportar(abrir) {
+            try { const r = await window.__pgIv.calc(); if (r) console.log((abrir ? "__PGIVOPEN__" : "__PGIV__") + JSON.stringify(r)); } catch (x) {}
         }
     };
+
+    // Gesto opcional no jogo: os dois botoes juntos abrem o card do PokeGrid.
+    // A pagina continua no mesmo estado; nenhum controle de maximizar/minimizar e acionado.
+    let __pgIvButtons = 0;
+    document.addEventListener('mousedown', (e) => {
+        __pgIvButtons |= e.button === 0 ? 1 : e.button === 2 ? 2 : 0;
+        if (__pgIvButtons === 3 && window.__pgIv && ultimoPokemon) {
+            e.preventDefault();
+            try { window.__pgIv.reportar(true); } catch (x) {}
+        }
+    }, true);
+    document.addEventListener('mouseup', (e) => {
+        __pgIvButtons &= e.button === 0 ? ~1 : e.button === 2 ? ~2 : ~0;
+    }, true);
+    document.addEventListener('contextmenu', (e) => {
+        if (__pgIvButtons === 3 && ultimoPokemon) e.preventDefault();
+    }, true);
 
     // Deposito da familia (e qualquer lista com linhas "Nome · Nv N · IV N · Q N.NN"): essas
     // janelas nao abrem o tooltip do jogo, entao o card ficava mudo nelas. No hover da linha,

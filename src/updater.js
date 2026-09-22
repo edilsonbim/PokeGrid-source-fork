@@ -104,6 +104,12 @@ async function validateMergedProject(projectRoot) {
     if (fs.existsSync(path.join(projectRoot, file))) checks.push(['node', ['--check', file]]);
   }
   if (fs.existsSync(path.join(projectRoot, 'test', 'boot.test.js'))) checks.push(['node', ['test/boot.test.js']]);
+  let hasFullSuite = false;
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+    hasFullSuite = !!(pkg.scripts && typeof pkg.scripts.test === 'string' && pkg.scripts.test.trim());
+  } catch {}
+  if (hasFullSuite) checks.push([process.platform === 'win32' ? 'npm.cmd' : 'npm', ['test']]);
   for (const [command, args] of checks) {
     const result = await runProgram(projectRoot, command, args, 120000);
     if (!result.ok) return { ok:false, detail:(result.stderr || result.stdout || result.error).slice(0, 3000) };
@@ -112,7 +118,7 @@ async function validateMergedProject(projectRoot) {
 }
 
 function copyBackupTree(source, destination) {
-  const ignoredDirs = new Set(['.git', 'node_modules', 'dist', '.teste-tmp']);
+  const ignoredDirs = new Set(['.git', 'node_modules', 'dist', '.teste-tmp', '.tmp', 'outputs']);
   fs.mkdirSync(destination, { recursive: true });
   for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
     if (entry.isSymbolicLink()) continue;
@@ -127,6 +133,12 @@ function copyBackupTree(source, destination) {
 function makeBackup(projectRoot, backupRoot) {
   const destination = path.join(backupRoot, 'antes-da-atualizacao-' + stamp());
   copyBackupTree(projectRoot, destination);
+  const backups = fs.readdirSync(backupRoot, { withFileTypes:true })
+    .filter(x => x.isDirectory() && x.name.startsWith('antes-da-atualizacao-'))
+    .sort((a, b) => b.name.localeCompare(a.name));
+  for (const old of backups.slice(5)) {
+    try { fs.rmSync(path.join(backupRoot, old.name), { recursive:true, force:true }); } catch {}
+  }
   return destination;
 }
 
@@ -165,7 +177,9 @@ async function ensureLocalHistory(projectRoot, remoteUrl, baseCommit) {
 }
 
 async function commitLocalChanges(projectRoot) {
-  const add = await runGit(projectRoot, ['add', '-A'], 30000);
+  // Só registra alterações em arquivos já versionados. Arquivos locais novos
+  // (downloads, segredos e artefatos) nunca entram automaticamente no histórico.
+  const add = await runGit(projectRoot, ['add', '-u', '--', '.', ':!.tmp/**', ':!outputs/**'], 30000);
   if (!add.ok) throw new Error('Não foi possível preparar as personalizações locais: ' + (add.stderr || add.error));
   const pending = await runGit(projectRoot, ['diff', '--cached', '--quiet'], 15000);
   if (pending.ok) return false;

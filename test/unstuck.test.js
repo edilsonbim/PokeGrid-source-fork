@@ -22,9 +22,9 @@ function makeHarness() {
   } };
   const fakeSetTimeout = (cb, ms) => { const id = nextTimer++; timers.set(id, { cb, ms }); return id; };
   const fakeClearTimeout = id => { timers.delete(id); };
-  const build = new Function('document', 'lsGet', 'lsSet', 't', 'webviews', 'off', 'recentHunts', 'GOTO_HUNT_CURRENT', 'setTimeout', 'clearTimeout', body + '\nreturn { checkUnstuck, unstuckState, applyUnstuck };');
+  const build = new Function('document', 'lsGet', 'lsSet', 't', 'webviews', 'off', 'recentHunts', 'GOTO_HUNT_CURRENT', 'setTimeout', 'clearTimeout', 'accountActionBusy', body + '\nreturn { checkUnstuck, unstuckState, applyUnstuck };');
   const api = build(document, key => key === 'unstuckFarm' ? '1' : null, () => {}, key => key,
-    [webview], [false], { c1:[{ slug:'bulbasaur', name:'Bulbasaur' }] }, slug => 'hunt:' + slug, fakeSetTimeout, fakeClearTimeout);
+    [webview], [false], { c1:[{ slug:'bulbasaur', name:'Bulbasaur' }] }, slug => 'hunt:' + slug, fakeSetTimeout, fakeClearTimeout, new Set());
   return { api, calls, timers, resolveTown };
 }
 

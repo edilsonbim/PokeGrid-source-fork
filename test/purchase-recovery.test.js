@@ -14,8 +14,8 @@ function extract(start, end) {
 
 const runnerBody = extract('const markActionBusy =', 'async function buyUbAllCharacters');
 function makeRunner(webview) {
-  const build = new Function('webviews', 'off', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', runnerBody + '\nreturn runMarkAction;');
-  return build([webview], [false], 'state', 'town', slug => 'tp:' + slug);
+  const build = new Function('webviews', 'off', 'READ_STATE', 'GO_TOWN_FOR_SALE', 'GOTO_HUNT_CURRENT', 'accountActionBusy', runnerBody + '\nreturn runMarkAction;');
+  return build([webview], [false], 'state', 'town', slug => 'tp:' + slug, new Set());
 }
 
 async function testDirectPurchaseDoesNotMove() {

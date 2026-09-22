@@ -4,6 +4,15 @@ const fs = require('fs');
 const https = require('https'); // so pro webhook opcional do Discord
 const { applyOfficialUpdate } = require('./src/updater');
 
+// Somente a interface local pode usar os canais privilegiados. Os webviews do jogo
+// permanecem isolados da ponte IPC mesmo quando o conteúdo remoto é comprometido.
+function isTrustedUi(event) {
+  try {
+    const url = event && event.senderFrame && event.senderFrame.url;
+    return typeof url === 'string' && url.startsWith('file://');
+  } catch { return false; }
+}
+
 // Silencia o spam do Chromium no terminal (ex.: STUN/WebRTC do jogo que a rede nao resolve).
 // E so log, nao afeta o app. Mantem so erros fatais.
 app.commandLine.appendSwitch('log-level', '3');
@@ -31,9 +40,10 @@ process.on('uncaughtException', (e) => {
 process.on('unhandledRejection', (e) => logErro('app-promise', (e && e.stack) || e));
 app.on('child-process-gone', (_e, d) => { if (d && d.reason !== 'clean-exit') logErro('processo-' + (d.type || '?'), d.reason + (d.exitCode != null ? ' (exit ' + d.exitCode + ')' : '')); });
 // erros vindos da interface (window.onerror do index.html)
-ipcMain.handle('errlog:write', (_e, origem, msg) => { if (typeof origem === 'string' && typeof msg === 'string') logErro(origem.slice(0, 40), msg); });
+ipcMain.handle('errlog:write', (e, origem, msg) => { if (!isTrustedUi(e)) return false; if (typeof origem === 'string' && typeof msg === 'string') logErro(origem.slice(0, 40), msg); return true; });
 // abre a pasta com o arquivo selecionado, pro usuario mandar pro suporte
-ipcMain.handle('errlog:open', () => {
+ipcMain.handle('errlog:open', (e) => {
+  if (!isTrustedUi(e)) return false;
   try {
     if (!fs.existsSync(errFile())) fs.writeFileSync(errFile(), 'Nenhum erro registrado ate agora. / No errors recorded yet.\n');
     shell.showItemInFolder(errFile());
@@ -45,6 +55,7 @@ ipcMain.handle('errlog:open', () => {
 // userData/backups sem dialogo. Nome vem do renderer, entao e tratado como hostil: so o
 // basename, charset restrito, teto de 2MB, e no maximo 12 arquivos por prefixo.
 ipcMain.handle('backup:save', (_e, nome, conteudo, cabecalho) => {
+  if (!isTrustedUi(_e)) return false;
   try {
     if (typeof nome !== 'string' || typeof conteudo !== 'string') return false;
     nome = path.basename(nome);
@@ -67,6 +78,7 @@ ipcMain.handle('backup:save', (_e, nome, conteudo, cabecalho) => {
 // Limpa os dados do jogo de UMA conta (cookies, storage e cache da particao dela). Resolve conta
 // "bugada" sem mexer nas outras; a senha salva do treinador nao mora ai e sobrevive.
 ipcMain.handle('conta:limpar', async (_e, i) => {
+  if (!isTrustedUi(_e)) return false;
   i = Math.trunc(+i);
   if (!(i >= 0 && i <= 3)) return false;
   try {
@@ -121,12 +133,13 @@ function baixaUserScript(url, saltos = 0) {
     req.on('error', () => resolve({ ok: false, error: 'Nao foi possivel acessar o GitHub.' }));
   });
 }
-ipcMain.handle('userscript:fetch', (_e, url) => baixaUserScript(url));
+ipcMain.handle('userscript:fetch', (_e, url) => isTrustedUi(_e) ? baixaUserScript(url) : { ok:false, error:'Origem não autorizada.' });
 
 // Atualiza a versão source sem enviar personalizações ao GitHub. Antes de aceitar qualquer
 // mesclagem, o motor cria backup e valida a inicialização do projeto combinado.
 let officialUpdateRunning = false;
-ipcMain.handle('updater:apply', async () => {
+ipcMain.handle('updater:apply', async (e) => {
+  if (!isTrustedUi(e)) return { ok:false, kind:'forbidden', message:'Origem não autorizada.' };
   if (officialUpdateRunning) return { ok:false, kind:'busy', message:'Uma atualização já está em andamento.' };
   if (app.isPackaged) return { ok:false, kind:'packaged', message:'Este botão funciona somente na versão que roda pelo código.' };
   officialUpdateRunning = true;
@@ -204,7 +217,8 @@ app.on('web-contents-created', (_e, contents) => {
 const credFile = () => path.join(app.getPath('userData'), 'accounts.enc');
 
 // Contas salvas: criptografadas em disco via DPAPI/keychain do SO (safeStorage).
-ipcMain.handle('creds:load', () => {
+ipcMain.handle('creds:load', (e) => {
+  if (!isTrustedUi(e)) return [];
   let buf;
   try { buf = fs.readFileSync(credFile()); } catch { return []; } // nunca salvo
   try {
@@ -219,6 +233,7 @@ ipcMain.handle('creds:load', () => {
 });
 
 ipcMain.handle('creds:save', (_e, accounts) => {
+  if (!isTrustedUi(_e)) return false;
   try {
     const json = JSON.stringify(accounts);
     // sem cripto do sistema, gravar em texto puro seria quebrar a promessa do app calado:
@@ -249,13 +264,15 @@ app.userAgentFallback = app.userAgentFallback
 
 // Notificacao do SO (alertas de queda e de sem pokebola).
 // versao do app pro badge do topo (sendSync: disponivel no load, mesmo com o preload em sandbox)
-ipcMain.on('app:version', (e) => { e.returnValue = app.getVersion(); });
+ipcMain.on('app:version', (e) => { if (isTrustedUi(e)) e.returnValue = app.getVersion(); });
 ipcMain.handle('notify', (_e, title, body) => {
+  if (!isTrustedUi(_e)) return false;
   try { if (Notification.isSupported()) new Notification({ title, body }).show(); } catch {}
 });
 
 // Le um preset de userscript da pasta presets/ (nome saneado, sem path traversal).
 ipcMain.handle('preset:read', (_e, name) => {
+  if (!isTrustedUi(_e)) return '';
   if (typeof name !== 'string' || !/^[\w.-]+\.js$/.test(name)) return '';
   try { return fs.readFileSync(path.join(__dirname, 'presets', name), 'utf8'); } catch { return ''; }
 });
@@ -263,6 +280,7 @@ ipcMain.handle('preset:read', (_e, name) => {
 // Anti-sono: impede o PC de dormir enquanto farma (a tela ainda pode desligar).
 let awakeId = null;
 ipcMain.handle('awake:set', (_e, on) => {
+  if (!isTrustedUi(_e)) return false;
   if (on && awakeId === null) awakeId = powerSaveBlocker.start('prevent-app-suspension');
   if (!on && awakeId !== null) { powerSaveBlocker.stop(awakeId); awakeId = null; }
   return awakeId !== null;
@@ -270,7 +288,7 @@ ipcMain.handle('awake:set', (_e, on) => {
 
 // Minimizar: pra bandeja (padrao) ou normal, na barra de tarefas. A interface persiste a escolha.
 let minToTray = true;
-ipcMain.handle('mintray:set', (_e, on) => { minToTray = !!on; return minToTray; });
+ipcMain.handle('mintray:set', (_e, on) => { if (!isTrustedUi(_e)) return false; minToTray = !!on; return minToTray; });
 
 // ===== Abrir com o Windows (desligado por padrao) =====
 // Feito com um atalho na pasta Inicializar do usuario, e nao escrevendo na chave Run do registro
@@ -293,12 +311,13 @@ function setAutoStart(on) {
   } catch (e) { logErro('autostart', String((e && e.message) || e)); }
   return autoStartOn();
 }
-ipcMain.handle('autostart:get', () => ({ on: autoStartOn(), suportado: process.platform === 'win32' }));
-ipcMain.handle('autostart:set', (_e, on) => setAutoStart(!!on));
+ipcMain.handle('autostart:get', (e) => isTrustedUi(e) ? ({ on: autoStartOn(), suportado: process.platform === 'win32' }) : ({ on:false, suportado:false }));
+ipcMain.handle('autostart:set', (_e, on) => isTrustedUi(_e) ? setAutoStart(!!on) : false);
 
 // Webhook do Discord (opcional): o usuario cola a URL do proprio servidor. So aceita o dominio
 // oficial de webhooks; o envio sai daqui porque a CSP do renderer bloqueia rede externa.
 ipcMain.handle('webhook:send', (_e, url, text) => {
+  if (!isTrustedUi(_e)) return false;
   try {
     const u = new URL(String(url));
     if (u.protocol !== 'https:' || !/^(discord\.com|discordapp\.com)$/.test(u.hostname) || !u.pathname.startsWith('/api/webhooks/')) return false;
@@ -334,9 +353,27 @@ app.whenReady().then(() => {
     show: false,
     autoHideMenuBar: true,
     backgroundColor: '#0d1117',
-    webPreferences: { webviewTag: true, preload: path.join(__dirname, 'preload.js'), backgroundThrottling: false }
+    webPreferences: {
+      webviewTag: true,
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      backgroundThrottling: false
+    }
   });
   win.loadFile(path.join(__dirname, 'index.html')); // caminho absoluto: robusto no build empacotado (asar)
+  win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    let origemValida = false;
+    try { origemValida = new URL(params.src || 'about:blank').origin === new URL(GAME).origin; } catch {}
+    const particaoValida = /^persist:conta[1-4]$/.test(String(params.partition || ''));
+    if (!origemValida || !particaoValida) { event.preventDefault(); return; }
+    // O jogo remoto não recebe a ponte privilegiada do renderer principal.
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.sandbox = true;
+  });
   // a janela principal so mostra index.html: bloqueia qualquer navegacao dela (canal de exfiltracao se houver XSS)
   win.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('file://')) { e.preventDefault(); abreFora(url); } });
   win.webContents.setWindowOpenHandler(({ url }) => { abreFora(url); return { action: 'deny' }; });
