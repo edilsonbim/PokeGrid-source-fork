@@ -24,5 +24,11 @@ If Not fso.FolderExists(pasta & "\node_modules") Or fso.FileExists(pasta & "\.up
   If fso.FileExists(pasta & "\.update-needs-install") Then fso.DeleteFile pasta & "\.update-needs-install", True
 End If
 
-' abre o app sem janela nenhuma (0 = oculta); fechar terminais nao afeta o app
-sh.Run "cmd /c npm start", 0, False
+' abre o app sem janela nenhuma (0 = oculta); usa o Electron local desta copia
+' para garantir que o icone abra exatamente o mesmo codigo e perfil de configuracao.
+electron = pasta & "\node_modules\electron\dist\electron.exe"
+If fso.FileExists(electron) Then
+  sh.Run """" & electron & """ """ & pasta & """", 0, False
+Else
+  sh.Run "cmd /c npm start", 0, False
+End If

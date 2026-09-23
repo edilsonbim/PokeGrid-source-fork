@@ -154,8 +154,18 @@ ipcMain.handle('updater:apply', async (e) => {
     officialUpdateRunning = false;
   }
 });
-// Instancia unica: abrir o app de novo so foca a janela ja aberta.
+// Instancia unica: clicar no icone novamente traz a instancia que ja esta aberta
+// para frente, em vez de iniciar uma copia sem carregar o mesmo perfil.
 if (!app.requestSingleInstanceLock()) app.quit();
+else app.on('second-instance', () => {
+  try {
+    const w = BrowserWindow.getAllWindows()[0];
+    if (!w || w.isDestroyed()) return;
+    if (w.isMinimized()) w.restore();
+    if (!w.isVisible()) w.show();
+    w.focus();
+  } catch {}
+});
 
 // Paineis presos ao dominio do jogo: nada de popup, e navegar o painel
 // (que carrega a sessao logada) para outro site abre no navegador de fora.

@@ -726,6 +726,7 @@ const HOME_URL  = 'https://poke.idleworld.online/';
 
   let accounts = [];
   const webviews = [];
+  let ultimoPainelFoco = 0;
   const off = [false, false, false, false];
   const lastLogin = [0, 0, 0, 0]; // cooldown do auto-login por painel (evita ressubmeter em loop)
   const deadT = [0, 0, 0, 0]; // ticks seguidos sem sessao viva: o jogo nao navega sozinho pro login
@@ -891,6 +892,7 @@ const HOME_URL  = 'https://poke.idleworld.online/';
       panel.appendChild(wv);
       grid.appendChild(panel);
       webviews.push(wv);
+      wv.addEventListener('focus', () => { ultimoPainelFoco = i; });
 
       const dot = panel.querySelector('.dot');
       const status = panel.querySelector('.status');
@@ -1027,6 +1029,13 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
   }
   countBtn.onclick = () => setCount(count === 4 ? 1 : count + 1); // cicla 4 -> 1 -> 2 -> 3 -> 4
 
+  function focarJogo(i = ultimoPainelFoco) {
+    const w = webviews[i];
+    if (!w || off[i]) return;
+    ultimoPainelFoco = i;
+    try { w.focus(); } catch {}
+  }
+
   function toggleExpand(i) {
     const p = grid.children[i];
     if (!p) return; // painel nao existe (rodando menos de 4)
@@ -1034,6 +1043,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     [...grid.children].forEach(c => c.classList.remove('expanded')); // um por vez
     if (on) p.classList.add('expanded');
     ajustaProporcao(); // expandir/voltar muda o espaco do painel
+    focarJogo(i);
   }
 
   function togglePower(i) {
@@ -1111,6 +1121,11 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
 
   // ----- Modal de contas -----
   const overlay = document.getElementById('overlay');
+  let accSaveTimer = 0;
+  function scheduleAccountSave() {
+    clearTimeout(accSaveTimer);
+    accSaveTimer = setTimeout(() => { save().catch(() => {}); }, 350);
+  }
   function openAccounts() {
     const rows = document.getElementById('accRows');
     rows.innerHTML = '';
@@ -1124,6 +1139,14 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
         <button class="acc-del" title="${t('accClear')}">🗑</button><button class="acc-wipe" title="${t('accWipe')}">🧹</button>`;
       const [vn, ve, vs] = row.querySelectorAll('input'); // valores por propriedade: nunca viram HTML
       vn.value = c.name || ''; ve.value = c.email || ''; vs.value = c.senha || '';
+      row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+        accounts[+inp.dataset.i][inp.dataset.f] = inp.value;
+        if (inp.dataset.f === 'name') {
+          const header = grid.querySelectorAll('.name')[+inp.dataset.i];
+          if (header) header.textContent = inp.value || defName(+inp.dataset.i);
+        }
+        scheduleAccountSave();
+      }));
       row.querySelector('.acc-del').onclick = () => { vn.value = ''; ve.value = ''; vs.value = ''; vn.focus(); };
   row.querySelector('.acc-wipe').onclick = async () => {
     if (!window.confirm(t('accWipeConfirm').replace('{n}', () => tabNames[i] || stName(i)))) return;
@@ -1137,8 +1160,8 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     overlay.classList.add('show');
   }
   document.getElementById('accounts').onclick = openAccounts;
-  document.getElementById('accCancel').onclick = () => overlay.classList.remove('show');
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.remove('show'); };
+  document.getElementById('accCancel').onclick = () => { overlay.classList.remove('show'); focarJogo(); };
+  overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('show'); focarJogo(); } };
   document.getElementById('accSave').onclick = async () => {
     document.querySelectorAll('#accRows input').forEach(inp => {
       accounts[+inp.dataset.i][inp.dataset.f] = inp.value;
@@ -1146,6 +1169,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     grid.querySelectorAll('.name').forEach((el, i) => el.textContent = accounts[i].name || defName(i));
     if (!(await save())) { window.alert(t('accSaveErr')); return; } // nao fecha o modal: a senha nao foi gravada no disco
     overlay.classList.remove('show');
+    focarJogo();
   };
 
   // ----- Topbar -----
@@ -2292,7 +2316,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const ballMap = {}; if (bm && bm.counts) for (const bk in bm.counts) ballMap[bk] = bm.counts[bk];
     const ballList = (bm && bm.catalog ? bm.catalog : []).map(b => ({ id:String(b.id), name:b.name||('#'+b.id), qty:+ballMap[b.id]||0, price:+b.priceGold||+b.price||0 }));
     const supplyNames = new Set(['hyper potion','ultimate potion','revive','max revive']);
-    const supplyList = (doc && doc.items ? doc.items : []).filter(it => supplyNames.has(String(it.name||'').toLowerCase())).map(it => ({ id:String(it.id), name:it.name, qty:+invMap[it.id]||0, price:+it.npcPrice||+it.priceGold||+it.price||0 }));
+    const supplyList = (doc && doc.items ? doc.items : []).filter(it => supplyNames.has(String(it.name||'').toLowerCase())).map(it => ({ id:String(it.id), name:it.name, qty:+invMap[it.id]||0, price:+it.priceGold||+it.npcPrice||+it.price||0 }));
     const stoneList = (doc && doc.items ? doc.items : []).filter(it => String(it.category||'').toLowerCase()==='stone' && (+invMap[it.id]||0)>0).map(it => ({ id:String(it.id), name:String(it.name||('#'+it.id)), qty:+invMap[it.id]||0 }));
     return { ok:true, cid: ch.id||'', name: ch.name||'', level: ch.level||0, gold: ch.gold||0, diamonds: ch.diamonds||0, vip: !!ch.isVip, clan: ch.clan||null, clanRank: ch.clanRank||0, shinyEnc: P.shinyEnc||0, usedList: P.usedList||[], catchLog: P.catchLog||[], shinyLog: P.shinyLog||[], chatShares: P.chatShares||[], travelTemplate:P.travelTemplate||null, balls: sBalls, potions: sPot, revives: sRev, ballPrice, invMap, ballMap, ballList,
       supplyList, stoneList, trackedItems, prof: ch.profession||'', profRank: ch.professionRank||0, catches: ch.catches||0, hunt, huntSlug, gifts: mail.gifts||0,
@@ -2808,8 +2832,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       buildStatsTabs(); loadTabNames(); refreshStats();
     }
   }
-  statsBtn.onclick = () => { statsOpen = !statsOpen; statsAutoPend = false; applyStats(); };
-  statsEl.querySelector('.st-x').onclick = () => { statsOpen = false; statsAutoPend = false; applyStats(); };
+  statsBtn.onclick = () => { statsOpen = !statsOpen; statsAutoPend = false; applyStats(); if (!statsOpen) focarJogo(); };
+  statsEl.querySelector('.st-x').onclick = () => { statsOpen = false; statsAutoPend = false; applyStats(); focarJogo(); };
   // largura ajustável: arrasta a borda direita (os elementos se reencaixam sozinhos)
   (() => {
     const handle = statsEl.querySelector('.st-resize');
@@ -3276,7 +3300,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   const BUY_1000_BALL = (name) => `(async()=>{const name=${JSON.stringify(name)};const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();const set=(el,v)=>{const p=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');p.set.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));};const qty=document.querySelector('.mk-window input.mk-qty');if(!qty)return {ok:false,reason:'shop'};set(qty,1000);const slider=document.querySelector('.mk-window input.mk-qtyslider');if(slider)set(slider,1000);await new Promise(r=>setTimeout(r,80));const row=[...document.querySelectorAll('.mk-window .mk-row')].find(r=>norm((r.querySelector('.mk-name')||{}).textContent)===norm(name));const buy=row&&row.querySelector('button.mk-buy');if(!buy)return {ok:false,reason:'item'};buy.click();return {ok:true};})()`;
   const BUY_1000_BALL_API = (id, name) => `(async()=>{const id=${JSON.stringify(id)},name=${JSON.stringify(name)};try{if(window.__pgAuth){const r=await fetch('/api/game/shop/buy',{method:'POST',headers:{Authorization:window.__pgAuth,'Content-Type':'application/json'},body:JSON.stringify({ballId:+id,qty:1000})});let j={};try{j=await r.json()}catch(x){}if(!r.ok)throw new Error(j.message||('HTTP '+r.status));try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,bought:j.bought||1000};}}catch(e){return {ok:false,reason:e.message||'api'};}const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();const set=(el,v)=>{const p=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');p.set.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));};const qty=document.querySelector('.mk-window input.mk-qty');if(!qty)return {ok:false,reason:'auth'};set(qty,1000);const slider=document.querySelector('.mk-window input.mk-qtyslider');if(slider)set(slider,1000);await new Promise(r=>setTimeout(r,80));const row=[...document.querySelectorAll('.mk-window .mk-row')].find(r=>norm((r.querySelector('.mk-name')||{}).textContent)===norm(name));const buy=row&&row.querySelector('button.mk-buy');if(!buy)return {ok:false,reason:'item'};buy.click();return {ok:true,bought:1000};})()`;
   const BUY_1000_BALL_V2 = (id) => `(async()=>{const id=${JSON.stringify(id)},key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};const post=token=>fetch('/api/game/shop/buy',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify({ballId:+id,qty:1000})});try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,bought:j.bought||1000};}catch(e){return {ok:false,reason:e.message||'Erro na compra'};}})()`;
-  const BUY_1000_SUPPLY = (kind, id) => `(async()=>{const kind=${JSON.stringify(kind)},id=${JSON.stringify(id)},key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};const post=token=>fetch('/api/game/shop/buy',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({[kind==='ball'?'ballId':'itemId']:+id,qty:1000})});try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};let r=await post(tokens.accessToken);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);r=await post(tokens.accessToken);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||('HTTP '+r.status)};try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true};}catch(e){return {ok:false,reason:e.message||'Erro na compra'};}})()`;
+  const BUY_1000_SUPPLY = (kind, id, unitPrice) => `(async()=>{const kind=${JSON.stringify(kind)},id=${JSON.stringify(id)},unitPrice=Math.max(0,+${JSON.stringify(unitPrice)}||0),key='pokeweb:tokens';const read=()=>{try{return JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(x){return null}};const save=t=>{sessionStorage.setItem(key,JSON.stringify(t));try{localStorage.removeItem(key)}catch(x){}};const authHeaders=token=>({'Content-Type':'application/json',Authorization:'Bearer '+token});const readGold=async token=>{try{const rr=await fetch('/api/characters/me',{headers:{Authorization:'Bearer '+token}}),jj=await rr.json().catch(()=>({})),g=+(jj&&jj.character&&jj.character.gold);if(Number.isFinite(g))return g;}catch(x){}return null;};const post=(token,qty)=>fetch('/api/game/shop/buy',{method:'POST',headers:authHeaders(token),body:JSON.stringify({[kind==='ball'?'ballId':'itemId']:+id,qty})});try{let tokens=read();if(!tokens||!tokens.accessToken)return {ok:false,reason:'Sessão sem token'};let gold=await readGold(tokens.accessToken);let qty=unitPrice>0&&Number.isFinite(gold)?Math.min(1000,Math.floor(gold/unitPrice)):1000;if(qty<=0)return {ok:false,bought:0,reason:'Gold insuficiente'};let r=await post(tokens.accessToken,qty);if(r.status===401&&tokens.refreshToken){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:tokens.refreshToken})});if(rr.ok){tokens=await rr.json();save(tokens);gold=await readGold(tokens.accessToken);qty=unitPrice>0&&Number.isFinite(gold)?Math.min(1000,Math.floor(gold/unitPrice)):1000;if(qty<=0)return {ok:false,bought:0,reason:'Gold insuficiente'};r=await post(tokens.accessToken,qty);}}const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,bought:0,reason:j.message||('HTTP '+r.status)};const bought=Number.isFinite(+j.bought)?Math.max(0,+j.bought):qty;if(bought<=0)return {ok:false,bought:0,reason:'A API não confirmou nenhuma unidade comprada'};try{const rr=await fetch('/api/characters/me',{headers:{Authorization:'Bearer '+tokens.accessToken}}),jj=await rr.json().catch(()=>({}));if(jj&&jj.character&&window.__poke&&window.__poke.api)window.__poke.api['/api/characters/me']=jj;}catch(x){}try{if(window.__poke&&window.__poke.sock&&window.__poke.sock.readyState===1)window.__poke.sock.send(JSON.stringify({type:'inv-get'}))}catch(x){}return {ok:true,bought};}catch(e){return {ok:false,bought:0,reason:e.message||'Erro na compra'};}})()`;
   // Compra usada pelas opções de configuração. Mantém a API legada, mas passa
   // pelo mesmo recuperador de cidade das compras do painel principal.
   const BUY_CONFIG_BALL = (ballId, qty) => `(async()=>{const ballId=${JSON.stringify(+ballId||0)},qty=${JSON.stringify(+qty||0)};try{const r=await fetch('/api/game/balls/buy',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({ballId,qty})});const j=await r.json().catch(()=>({}));if(!r.ok)return {ok:false,reason:j.message||j.error||('HTTP '+r.status)};return {ok:true,bought:+j.bought||qty,gold:j.gold};}catch(e){return {ok:false,reason:e.message||'Erro na compra'};}})()`;
@@ -3442,9 +3466,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (cardsOn) refreshCards(true);
     }
   }
-  async function buy1000Ball(i, kind, id, name) {
+  async function buy1000Ball(i, kind, id, name, price) {
     const label = tabNames[i] || stName(i);
-    const { r, returnFailed } = await runMarkAction(i, BUY_1000_SUPPLY(kind, id));
+    const { r, returnFailed } = await runMarkAction(i, BUY_1000_SUPPLY(kind, id, price));
     if (!r?.ok || returnFailed) {
       const detail = r?.ok ? 'compra concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido';
       try { window.pokeAPI?.logError?.('compra-mark', label + ' · ' + name + ': ' + detail + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
@@ -3456,7 +3480,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
           btn.disabled = false; btn.textContent = '+1000'; btn.title = status;
         }
       });
-      if (r?.ok) refreshCards();
+      stCache[i] = null;
+      refreshStats();
+      if (cardsOn) refreshCards(true);
     } catch {}
     return r;
   }
@@ -3875,11 +3901,11 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     renderProtectedItems();
   }
   document.getElementById('protectItemsBtn').onclick = openProtectedItems;
-  document.getElementById('protectClose').onclick = () => protectOverlay.classList.remove('show');
-  protectOverlay.onclick = e => { if (e.target === protectOverlay) protectOverlay.classList.remove('show'); };
+  document.getElementById('protectClose').onclick = () => { protectOverlay.classList.remove('show'); focarJogo(); };
+  protectOverlay.onclick = e => { if (e.target === protectOverlay) { protectOverlay.classList.remove('show'); focarJogo(); } };
   protectSearch.oninput = renderProtectedItems;
   protectFilter.onchange = renderProtectedItems;
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && protectOverlay.classList.contains('show')) protectOverlay.classList.remove('show'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && protectOverlay.classList.contains('show')) { protectOverlay.classList.remove('show'); focarJogo(); } });
   async function refreshItemsCatalog(showMessage) {
     itensCache = null; itensCacheT = Date.now();
     let loaded = null;
@@ -3917,8 +3943,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   const layoutsOverlay = document.getElementById('layoutsOverlay');
   const renderLayouts = () => document.querySelectorAll('[data-layout]').forEach(ch => { ch.checked = !!gameLayouts[ch.dataset.layout]; });
   document.getElementById('layoutsBtn').onclick = () => { renderLayouts(); layoutsOverlay.classList.add('show'); };
-  document.getElementById('layoutsClose').onclick = () => layoutsOverlay.classList.remove('show');
-  layoutsOverlay.onclick = e => { if (e.target === layoutsOverlay) layoutsOverlay.classList.remove('show'); };
+  document.getElementById('layoutsClose').onclick = () => { layoutsOverlay.classList.remove('show'); focarJogo(); };
+  layoutsOverlay.onclick = e => { if (e.target === layoutsOverlay) { layoutsOverlay.classList.remove('show'); focarJogo(); } };
   document.querySelectorAll('[data-layout]').forEach(ch => ch.onchange = () => { gameLayouts[ch.dataset.layout] = ch.checked; lsSet('gameLayouts', JSON.stringify(gameLayouts)); applyGameLayoutsAll(); });
   function carregaHunts() {
     if (huntsCache || Date.now() - huntsCacheT < 60e3) return;
@@ -4050,8 +4076,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   const tlOv = document.getElementById('tlOverlay');
   document.getElementById('tierBtn').onclick = () => { menu.classList.remove('show'); tlOv.classList.add('show'); renderTier(); };
-  document.getElementById('tlClose').onclick = () => tlOv.classList.remove('show');
-  tlOv.onclick = (e) => { if (e.target === tlOv) tlOv.classList.remove('show'); };
+  document.getElementById('tlClose').onclick = () => { tlOv.classList.remove('show'); focarJogo(); };
+  tlOv.onclick = (e) => { if (e.target === tlOv) { tlOv.classList.remove('show'); focarJogo(); } };
   // resolve o nome do shiny (o field as vezes so manda o speciesId)
   const nomeShiny = (x) => (x.n && !/^#/.test(x.n)) ? x.n : (creaturesById[x.sid] || x.n || ('#' + (x.sid || '?')));
   function spark(vals, color) {
@@ -4215,12 +4241,12 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       let s = '<div class="cd-sec"><div class="cd-h">Pokébolas e curas por personagem · +1000 compra para a conta da linha</div>';
       if (!types.length) return s + '<div class="cd-empty">' + t('cdWaiting') + '</div></div>';
       s += '<table class="cd-table"><thead><tr><th>Personagem</th>'
-        + types.map(b => '<th>' + esc(b.name) + (b.price > 0 ? '<span class="cd-item-price">×1000: $' + nf(b.price * 1000) + '</span>' : '') + '</th>').join('')
+        + types.map(b => '<th>' + esc(b.name) + (b.price > 0 ? '<span class="cd-item-price">$' + nf(b.price) + '</span>' : '') + '</th>').join('')
         + '</tr></thead><tbody>';
       rows.forEach(r => {
         const qty = {}; (r.balls || []).forEach(b => qty['ball:' + b.id] = +b.qty || 0); (r.supplies || []).forEach(b => qty['item:' + b.id] = +b.qty || 0);
         s += '<tr data-i="' + r.i + '"><td><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + (r.st === 'on' ? '<span class="cd-account-gold">$' + nf(r.gold) + '</span>' : '') + '</td>'
-          + types.map(b => '<td style="color:' + (r.st === 'on' && qty[b.key] === 0 ? '#f0883e' : '#e6edf3') + '">' + (r.st === 'on' ? '<span class="cd-ball-cell"><span>' + nf(qty[b.key] || 0) + '</span><button class="cd-ball-buy" data-i="' + r.i + '" data-kind="' + b.kind + '" data-id="' + esc(b.id) + '" data-name="' + esc(b.name) + '" title="Comprar 1000 ' + esc(b.name) + ' para ' + esc(r.name) + '">+1000</button></span>' : '—') + '</td>').join('')
+          + types.map(b => '<td style="color:' + (r.st === 'on' && qty[b.key] === 0 ? '#f0883e' : '#e6edf3') + '">' + (r.st === 'on' ? '<span class="cd-ball-cell"><span>' + nf(qty[b.key] || 0) + '</span><button class="cd-ball-buy" data-i="' + r.i + '" data-kind="' + b.kind + '" data-id="' + esc(b.id) + '" data-name="' + esc(b.name) + '" data-price="' + (+b.price || 0) + '" title="Comprar até 1000 ' + esc(b.name) + ' para ' + esc(r.name) + '">+1000</button></span>' : '—') + '</td>').join('')
           + '</tr>';
       });
       return s + '</tbody><tfoot><tr><td>' + t('cdTotal') + '</td>'
@@ -4636,7 +4662,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     cardsEl.querySelectorAll('.cd-ball-buy').forEach(btn => btn.onclick = e => {
       e.stopPropagation();
       btn.disabled = true; btn.textContent = '…';
-      buy1000Ball(+btn.dataset.i, btn.dataset.kind || 'ball', btn.dataset.id || '', btn.dataset.name || '');
+      buy1000Ball(+btn.dataset.i, btn.dataset.kind || 'ball', btn.dataset.id || '', btn.dataset.name || '', +btn.dataset.price || 0);
     });
     cardsEl.querySelectorAll('.cd-sell-safe').forEach(btn => btn.onclick = e => {
       e.stopPropagation();
@@ -4699,6 +4725,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     lsSet('cardsOn', cardsOn ? '1' : '0');
     webviews.forEach((w, i) => { if (off[i] || !w) return; try { w.setAudioMuted(cardsOn || muted); w.executeJavaScript(ultraScript(cardsOn)).catch(() => {}); w.executeJavaScript(ecoScript(ecoFps())).catch(() => {}); w.executeJavaScript(chatScript(cardsOn || chatHidden)).catch(() => {}); } catch {} });
     if (cardsOn) { cdHtmlAnt = ''; cardsEl.innerHTML = '<div class="cd-empty" style="padding:20px">' + t('cdWaiting') + '</div>'; refreshCards(); }
+    else focarJogo();
   }
   cardsBtn.onclick = () => { cardsOn = !cardsOn; applyCards(); };
   // Keepalive: um toque barato em cada painel ligado, de 30 em 30s, MESMO com a janela
@@ -4805,8 +4832,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   }
   const scOverlay = document.getElementById('scOverlay');
   document.getElementById('scriptsBtn').onclick = () => { renderScriptsList(); scOverlay.classList.add('show'); };
-  document.getElementById('scClose').onclick = () => scOverlay.classList.remove('show');
-  scOverlay.onclick = (e) => { if (e.target === scOverlay) scOverlay.classList.remove('show'); };
+  document.getElementById('scClose').onclick = () => { scOverlay.classList.remove('show'); focarJogo(); };
+  scOverlay.onclick = (e) => { if (e.target === scOverlay) { scOverlay.classList.remove('show'); focarJogo(); } };
   document.getElementById('scAddUrl').onclick = (e) => instalaPorUrl(document.getElementById('scUrl').value.trim(), e.target);
   // arrastar .user.js: SO com o modal de scripts aberto, pra um arraste acidental sobre o jogo
   // nao abrir nada nem tentar instalar
