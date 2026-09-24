@@ -1,13 +1,13 @@
 {
   "name": "pokegrid",
-  "version": "1.5.26",
+  "version": "1.5.27",
   "description": "Rode 4 contas de Poke Idle World ao mesmo tempo, em uma janela so / Run 4 Poke Idle World accounts at once, in a single window",
   "main": "main.js",
   "author": "edilsonbim",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win portable",
-    "test": "node test/iv-math.test.js && node test/boot.test.js && node test/unstuck.test.js && node test/teleport.test.js && node test/sale-recovery.test.js && node test/purchase-recovery.test.js && node test/updater.test.js"
+    "test": "node test/iv-math.test.js && node test/boot.test.js && node test/unstuck.test.js && node test/teleport.test.js && node test/sale-recovery.test.js && node test/purchase-recovery.test.js && node test/updater.test.js && node test/release-updater.test.js"
   },
   "keywords": [
     "electron",
@@ -60,6 +60,12 @@
     },
     "portable": {
       "artifactName": "PokeGrid-${version}-portable-${arch}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "edilsonbim",
+      "repo": "PokeGrid-custom",
+      "releaseType": "release"
     }
   }
 }

@@ -20,6 +20,8 @@
   #topbar .logo { display: flex; align-items: center; gap: 8px; margin-right: auto; font-family: "Segoe UI Variable Display", "Segoe UI", sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 2.5px; }
   #topbar .logo svg { display: block; }
   #topbar .logo .ver { font-size: 10px; font-weight: 400; letter-spacing: 0; color: #6e7681; align-self: flex-end; padding-bottom: 1px; }
+  #appUpdate { display:none; padding: 3px 8px; border-color:#2ea043; background:#17351f; color:#7ee787; font-size:10px; white-space:nowrap; }
+  #appUpdate:hover { background:#238636; color:#fff; }
   button {
     background: #21262d; color: #e6edf3; border: 1px solid #30363d;
     border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; letter-spacing: .2px; cursor: pointer;
@@ -603,6 +605,7 @@
       </svg>
       POKEGRID
       <span class="ver" id="appVer"></span>
+      <button id="appUpdate" type="button" title="Atualizar o PokeGrid">⬆ Atualizar</button>
     </span>
     <button id="loginAll" class="primary">▶ Logar equipe</button>
     <button id="accounts">👤 Treinadores</button>
@@ -2218,34 +2221,36 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   document.getElementById('faqBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/FAQ.md');
   document.getElementById('reloadUi').onclick = () => location.reload();
   document.getElementById('manBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/MANUAL.md');
-  // versao aberta, lida da propria UA (o Electron poe PokeGrid/x.y.z nela; zero IPC)
+  // Versão e atualização do aplicativo instalado. A troca é feita pelo processo principal,
+  // que baixa o instalador e só substitui os arquivos depois que esta janela fechar.
   try {
     const vAtual = window.pokeAPI && window.pokeAPI.appVersion;
     const elVer = document.getElementById('appVer');
     if (vAtual) elVer.textContent = 'v' + vAtual;
-    // Aviso de versao nova, 1x/dia. Nasceu do incidente 1.5.5: quem usa a versao sem executavel
-    // (sem o avisador do instalador) ficou preso numa versao quebrada sem saber.
-    const vMaior = (a, b) => { const A = String(a).split('.'), B = String(b).split('.'); for (let k = 0; k < 3; k++) { if ((+A[k] || 0) > (+B[k] || 0)) return true; if ((+A[k] || 0) < (+B[k] || 0)) return false; } return false; };
-    const vMostra = (tag) => {
-      if (!vAtual || !/^v?[\d.]{1,12}$/.test(String(tag))) return; // tag vem da rede: so digitos e pontos
-      const limpa = String(tag).replace(/^v/, '');
-      if (!vMaior(limpa, vAtual) || document.getElementById('appVerNew')) return;
-      const a2 = document.createElement('span');
-      a2.id = 'appVerNew'; a2.textContent = ' \u2192 v' + limpa;
-      a2.style.cssText = 'color:#f2c665;cursor:pointer';
-      a2.title = t('verNova');
-      a2.onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom');
-      elVer.appendChild(a2);
+    const updateBtn = document.getElementById('appUpdate');
+    const verificaAtualizacao = async () => {
+      if (!updateBtn || !window.pokeAPI || typeof window.pokeAPI.checkForReleaseUpdate !== 'function') return;
+      try {
+        const r = await window.pokeAPI.checkForReleaseUpdate();
+        if (!r || !r.ok || !r.updateAvailable) return;
+        updateBtn.textContent = '⬆ Atualizar para ' + String(r.version || '').replace(/^v/i, 'v');
+        updateBtn.title = r.name ? 'Nova versão: ' + r.name : 'Atualizar o PokeGrid';
+        updateBtn.style.display = 'inline-flex';
+        updateBtn.onclick = async () => {
+          if (!window.confirm('Baixar e instalar a versão ' + r.version + '? O PokeGrid será fechado e reaberto.')) return;
+          updateBtn.disabled = true;
+          updateBtn.textContent = 'Baixando…';
+          const done = await window.pokeAPI.installReleaseUpdate();
+          if (!done || !done.ok) {
+            updateBtn.disabled = false;
+            updateBtn.textContent = '⬆ Atualizar para ' + String(r.version || '').replace(/^v/i, 'v');
+            updateBtn.title = (done && done.message) || 'Não foi possível atualizar agora.';
+            window.alert(updateBtn.title);
+          }
+        };
+      } catch (e) { try { window.pokeAPI.logError('atualizador-release-ui', e && e.message || e); } catch {} }
     };
-    const cacheV = lsObj('verNova');
-    if (cacheV.tag) vMostra(cacheV.tag);
-    if (vAtual && Date.now() - (+cacheV.t || 0) > 22 * 3600e3) setTimeout(() => {
-      fetch('https://api.github.com/repos/edilsonbim/PokeGrid-custom/releases/latest').then(r => r.json()).then(j => {
-        const tag = j && typeof j.tag_name === 'string' ? j.tag_name : '';
-        lsSet('verNova', JSON.stringify({ t: Date.now(), tag: /^v?[\d.]{1,12}$/.test(tag) ? tag : '' }));
-        vMostra(tag);
-      }).catch(() => {});
-    }, 8000); // depois do boot, sem atrasar nada
+    setTimeout(verificaAtualizacao, 3000);
   } catch {}
   // Layout dos paineis: grade (2x2) -> coluna (vertical) -> linha (horizontal)
   let layoutMode = lsGet('layout') || 'grid';

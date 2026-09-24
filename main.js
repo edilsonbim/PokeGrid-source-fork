@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https'); // so pro webhook opcional do Discord
 const { applyOfficialUpdate } = require('./src/updater');
+const { checkLatestRelease, downloadAndInstall } = require('./src/release-updater');
 
 // Somente a interface local pode usar os canais privilegiados. Os webviews do jogo
 // permanecem isolados da ponte IPC mesmo quando o conteúdo remoto é comprometido.
@@ -170,6 +171,38 @@ else app.on('second-instance', () => {
     if (!w.isVisible()) w.show();
     w.focus();
   } catch {}
+});
+let releaseUpdateRunning = false;
+ipcMain.handle('release:update-check', async (e) => {
+  if (!isTrustedUi(e)) return { ok:false, kind:'forbidden', message:'Origem não autorizada.' };
+  return checkLatestRelease({
+    currentVersion: app.getVersion(), packaged: app.isPackaged,
+    portable: !!process.env.PORTABLE_EXECUTABLE_FILE
+  });
+});
+ipcMain.handle('release:update-install', async (e) => {
+  if (!isTrustedUi(e)) return { ok:false, kind:'forbidden', message:'Origem não autorizada.' };
+  if (!app.isPackaged) return { ok:false, kind:'development', message:'A atualização pelo instalador só funciona na versão instalada.' };
+  if (releaseUpdateRunning) return { ok:false, kind:'busy', message:'Uma atualização já está em andamento.' };
+  releaseUpdateRunning = true;
+  try {
+    const release = await checkLatestRelease({
+      currentVersion: app.getVersion(), packaged:true,
+      portable: !!process.env.PORTABLE_EXECUTABLE_FILE
+    });
+    if (!release.ok || !release.updateAvailable) return release.ok ? { ok:false, kind:'current', message:'O PokeGrid já está atualizado.' } : release;
+    const targetPath = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+    const result = await downloadAndInstall({
+      release, appPid:process.pid, targetPath,
+      portable:!!process.env.PORTABLE_EXECUTABLE_FILE,
+      tempRoot:app.getPath('temp')
+    });
+    if (result.ok) {
+      logErro('atualizador-release', 'preparado: ' + result.version + ' [' + result.asset + '] sha256=' + result.sha256);
+      setTimeout(() => app.quit(), 100);
+    }
+    return result;
+  } finally { releaseUpdateRunning = false; }
 });
 
 // Paineis presos ao dominio do jogo: nada de popup, e navegar o painel
