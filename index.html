@@ -2218,9 +2218,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   });
 
   document.getElementById('reloadAll').onclick = () => webviews.forEach((w, i) => { if (!off[i]) { try { w.reloadIgnoringCache(); } catch { w.reload(); } } });
-  document.getElementById('faqBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/FAQ.md');
+  document.getElementById('faqBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-source-fork/blob/main/FAQ.md');
   document.getElementById('reloadUi').onclick = () => location.reload();
-  document.getElementById('manBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/MANUAL.md');
+  document.getElementById('manBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-source-fork/blob/main/MANUAL.md');
   // Versão e atualização do aplicativo instalado. A troca é feita pelo processo principal,
   // que baixa o instalador e só substitui os arquivos depois que esta janela fechar.
   try {

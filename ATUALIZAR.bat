@@ -42,7 +42,7 @@ set "PG_FONTE_TXT=%TEMP%\pokegrid-leo-fonte-%RANDOM%-%RANDOM%.txt"
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue';" ^
-  "Invoke-WebRequest -UseBasicParsing 'https://github.com/edilsonbim/PokeGrid-custom/archive/refs/heads/main.zip' -OutFile $env:PG_ZIP;" ^
+  "Invoke-WebRequest -UseBasicParsing 'https://github.com/edilsonbim/PokeGrid-source-fork/archive/refs/heads/main.zip' -OutFile $env:PG_ZIP;" ^
   "Expand-Archive -LiteralPath $env:PG_ZIP -DestinationPath $env:PG_TMP -Force;" ^
   "$src=(Get-ChildItem -LiteralPath $env:PG_TMP -Directory | Select-Object -First 1).FullName;" ^
   "if(-not $src){throw 'Conteudo da atualizacao nao encontrado'};" ^

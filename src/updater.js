@@ -7,7 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 
-const OFFICIAL_URL = 'https://github.com/edilsonbim/PokeGrid-custom.git';
+const OFFICIAL_URL = 'https://github.com/edilsonbim/PokeGrid-source-fork.git';
 const OFFICIAL_REMOTE = 'origin';
 // Ultima versao oficial que foi mesclada manualmente neste projeto: PokeGrid 1.5.15.
 const OFFICIAL_BASE = '5803119d131193f4987ec0fa1be3fc074d498734';

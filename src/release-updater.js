@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const https = require('https');
 const { spawn } = require('child_process');
 
-const RELEASE_REPO = 'edilsonbim/PokeGrid-custom';
+const RELEASE_REPO = 'edilsonbim/PokeGrid-source-fork';
 const RELEASE_API = 'https://api.github.com/repos/' + RELEASE_REPO + '/releases/latest';
 const RELEASE_HOSTS = new Set([
   'api.github.com', 'github.com', 'objects.githubusercontent.com',

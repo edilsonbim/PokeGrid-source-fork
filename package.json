@@ -64,7 +64,7 @@
     "publish": {
       "provider": "github",
       "owner": "edilsonbim",
-      "repo": "PokeGrid-custom",
+      "repo": "PokeGrid-source-fork",
       "releaseType": "release"
     }
   }
