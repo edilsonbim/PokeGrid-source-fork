@@ -351,6 +351,21 @@
   #ivCard .iv-mv .mv-p { margin-left: auto; color: #f0883e; font-variant-numeric: tabular-nums; flex: none; }
   #ivCard .iv-mv .mv-d { color: #55e6d3; font-variant-numeric: tabular-nums; flex: none; }
   #ivCard .iv-foot { display: flex; align-items: center; gap: 8px; margin-top: 11px; font-size: 11px; color: #6e7681; flex-wrap: wrap; }
+  #ivCard .iv-market { background: #12171e; border: 1px solid #2b3542; border-radius: 9px; padding: 9px 10px; margin-top: 11px; }
+  #ivCard .iv-market-h { display:flex; align-items:center; gap:7px; margin-bottom:7px; color:#f2c665; font-size:11px; font-weight:700; }
+  #ivCard .iv-market-h button { margin-left:auto; background:#172a3d; border:1px solid #388bfd; color:#79c0ff; border-radius:6px; padding:3px 7px; font-size:10px; cursor:pointer; }
+  #ivCard .iv-market-h button:hover { background:#1f4b75; color:#fff; }
+  #ivCard .iv-market-h button.is-loading { opacity:.8; cursor:wait; }
+  #ivCard .iv-market-h button.is-loading::before { content:'↻'; display:inline-block; margin-right:3px; animation:pg-market-spin 1s linear infinite; }
+  @keyframes pg-market-spin { to { transform:rotate(360deg); } }
+  #ivCard .iv-market-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  #ivCard .iv-market-cell { background:#0b0f15; border:1px solid #21262d; border-radius:7px; padding:6px 7px; min-width:0; }
+  #ivCard .iv-market-cell:nth-child(1) { text-align:left; }
+  #ivCard .iv-market-cell:nth-child(2) { text-align:center; border-color:#388bfd; box-shadow:0 0 0 1px rgba(56,139,253,.18); }
+  #ivCard .iv-market-cell:nth-child(3) { text-align:right; }
+  #ivCard .iv-market-cell .k { color:#7d8590; font-size:9px; text-transform:uppercase; }
+  #ivCard .iv-market-cell .v { color:#e6edf3; font-size:12px; font-weight:700; margin-top:3px; line-height:1.4; }
+  #ivCard .iv-market-note { color:#7d8590; font-size:10px; line-height:1.45; margin-top:6px; }
   #ivCard .iv-vazio { padding: 26px 16px; text-align: center; color: #7d8590; font-size: 13px; line-height: 1.7; }
   /* Shiny CAPTURADO: o evento mais raro do jogo, então o aviso fica na tela até ser fechado */
   #shinyParty { position: fixed; top: 58px; left: 50%; /* abaixo da barra: nao cobre os botoes do app */ transform: translateX(-50%); z-index: 900; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
@@ -494,6 +509,7 @@
   .cd-sell-stones:hover { background:#553098; color:#fff; }
   .cd-open-market { background: #172a3d; border: 1px solid #388bfd; border-radius: 6px; color: #79c0ff; font-size: 11px; padding: 4px 9px; cursor: pointer; white-space: nowrap; }
   .cd-open-market:hover { background: #1f4b75; color: #fff; }
+  .cd-open-market.is-busy, .cd-open-depot.is-busy, .cd-sell-safe.is-busy, .cd-sell-pokes.is-busy, .cd-sell-stones.is-busy, .cd-ball-buy.is-busy { opacity:.75; cursor:wait; }
   .cd-open-depot { background:#203127; border:1px solid #3fb950; border-radius:6px; color:#7ee787; font-size:11px; padding:4px 9px; cursor:pointer; white-space:nowrap; }
   .cd-open-depot:hover { background:#285f36; color:#fff; }
   .cd-dex-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:6px; margin-top:8px; }
@@ -1008,8 +1024,8 @@ const HOME_URL  = 'https://poke.idleworld.online/';
       zpct.onclick = () => setZoom(1);
       panel.querySelector('.zi').onclick = () => setZoom(zoom + 0.1);
       panel.querySelector('.zo').onclick = () => setZoom(zoom - 0.1);
-      panel.querySelector('.depot').onclick = e => { e.stopPropagation(); openCharacterDepot(i); };
-      panel.querySelector('.market').onclick = e => { e.stopPropagation(); openCharacterMarket(i); };
+      bindBusyButton(panel.querySelector('.depot'), 'Abrindo…', '📦', () => openCharacterDepot(i));
+      bindBusyButton(panel.querySelector('.market'), 'Abrindo…', '🏪', () => openCharacterMarket(i));
 
       wv.addEventListener('dom-ready', () => {
         if (!off[i] && !falhou) { dot.className = 'dot ok'; status.textContent = t('stOnline'); fails = 0; alertedDown = false; } // carregou DE VERDADE: zera o watchdog (a pagina de erro tambem emite dom-ready)
@@ -1327,13 +1343,33 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     window.__eco.fps = ${fps};
   })()`;
   // Modo Cartas: no ultra leve o canvas do jogo some e o rAF cai pra 1fps (o farm e do servidor)
-  let cardsOn = false, cdHtmlAnt = ''; // sempre comeca desligado: com o jogo escondido nao dava pra logar/resolver captcha
+  let cardsOn = false, cdHtmlAnt = '', simpleDiamondQuote = null, simpleDiamondBusy = false, simpleDiamondAt = 0, simpleDiamondHist = lsArr('simpleDiamondHist').filter(p => p && Number.isFinite(+p.t) && Number.isFinite(+p.v) && +p.v > 0).slice(-720); // sempre comeca desligado: com o jogo escondido nao dava pra logar/resolver captcha
   // ultra leve: esconde o que pinta (canvas/vídeo) e mata animações/transições CSS (corta paint/GPU).
   // NÃO mexe em WebSocket/timers do jogo, então o farm (que é do servidor) continua igual.
   const ultraScript = (on) => on
     ? `(()=>{let s=document.getElementById('pg-ultra');if(!s){s=document.createElement('style');s.id='pg-ultra';document.head.appendChild(s);}s.textContent='canvas,video{display:none !important} *{animation:none !important;transition:none !important;will-change:auto !important}';})()`
     : `(()=>{const s=document.getElementById('pg-ultra');if(s)s.remove();})()`;
   const ecoFps = () => cardsOn ? 1 : (eco ? 15 : 0);
+  async function atualizaCotacaoDiamante() {
+    if (!cardsOn || simpleDiamondBusy || Date.now() - simpleDiamondAt < 55000) return;
+    const indices = webviews.map((w, k) => w && !off[k] ? k : -1).filter(k => k >= 0);
+    if (!indices.length) return;
+    simpleDiamondBusy = true; simpleDiamondAt = Date.now();
+    try {
+      for (const i of indices) {
+        const r = await webviews[i].executeJavaScript('window.__pgIv && window.__pgIv.diamond()');
+        if (r && r.diamante && Number.isFinite(+r.diamante.goldPorDiamante) && +r.diamante.goldPorDiamante > 0) {
+          simpleDiamondQuote = r.diamante;
+          simpleDiamondHist.push({ t: Date.now(), v: +r.diamante.goldPorDiamante });
+          simpleDiamondHist = simpleDiamondHist.filter(p => p.t > Date.now() - 24 * 3600e3).slice(-720);
+          lsSet('simpleDiamondHist', JSON.stringify(simpleDiamondHist));
+          cdHtmlAnt = '';
+          if (cardsOn) refreshCards(true);
+          break;
+        }
+      }
+    } catch {} finally { simpleDiamondBusy = false; }
+  }
   function applyEco() {
     ecoBtn.textContent = eco ? t('eco') : t('ecoOff');
     ecoBtn.classList.toggle('on', eco);
@@ -2654,10 +2690,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const favoriteOptions = '<option value="">' + favoritePlaceholder + '</option>' + favoriteList.map(x => '<option value="' + esc(x.slug) + '"' + (favoriteCurrent === x ? ' selected' : '') + '>' + esc(x.name || x.slug) + (+x.level ? ' · Lv ' + nf(x.level) : '') + (String(x.ar || '').toLowerCase() === 'orre' ? ' · ORRE' : '') + '</option>').join('');
     h += '<div style="padding:12px 14px 8px;border-top:1px solid #30363d;margin-top:12px">'
       + '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px">'
-      + '<button id="stOpenMarket" style="padding:8px 5px;border:1px solid #30363d;border-radius:7px;background:#161b22;color:#e6edf3;cursor:pointer">🏪 Abrir Market</button>'
-      + '<button id="stOpenDepot" style="padding:8px 5px;border:1px solid #30363d;border-radius:7px;background:#161b22;color:#e6edf3;cursor:pointer">📦 Abrir Baú</button>'
-      + '<button id="stSellPokes" style="padding:8px 5px;border:1px solid #7d3b42;border-radius:7px;background:#2a171a;color:#ffb3ba;cursor:pointer">Vender Pokémon</button>'
-      + '<button id="stSellItems" style="padding:8px 5px;border:1px solid #7d3b42;border-radius:7px;background:#2a171a;color:#ffb3ba;cursor:pointer">Vender itens</button>'
+      + '<button id="stOpenMarket" class="cd-open-market">🏪 Abrir Market</button>'
+      + '<button id="stOpenDepot" class="cd-open-depot">📦 Abrir Baú</button>'
+      + '<button id="stSellPokes" class="cd-sell-pokes">Vender Pokémon</button>'
+      + '<button id="stSellItems" class="cd-sell-safe">Vender itens</button>'
       + '</div></div>'
       + '<div style="padding:0 14px 16px">'
       + '<button id="stBackLastHunt" style="width:100%;padding:9px;border:1px solid #388bfd;border-radius:7px;background:#13233a;color:#79c0ff;font-weight:700;cursor:pointer"'
@@ -2668,14 +2704,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       + '</div></div></div>';
     if (campoDigitacaoAtivo(stBody)) return;
     stBody.innerHTML = h;
-    const market = stBody.querySelector('#stOpenMarket'); if (market) market.onclick = () => openCharacterMarket(statsIdx);
-    const depot = stBody.querySelector('#stOpenDepot'); if (depot) depot.onclick = () => openCharacterDepot(statsIdx);
-    const sellPokes = stBody.querySelector('#stSellPokes'); if (sellPokes) sellPokes.onclick = () => {
-      sellPokes.disabled = true; sellPokes.textContent = 'Vendendo…'; sellSafePokes(statsIdx);
-    };
-    const sellItems = stBody.querySelector('#stSellItems'); if (sellItems) sellItems.onclick = () => {
-      sellItems.disabled = true; sellItems.textContent = 'Vendendo…'; sellSafeItems(statsIdx);
-    };
+    const market = stBody.querySelector('#stOpenMarket'); if (market) bindBusyButton(market, 'Abrindo…', '🏪 Abrir Market', () => openCharacterMarket(statsIdx));
+    const depot = stBody.querySelector('#stOpenDepot'); if (depot) bindBusyButton(depot, 'Abrindo…', '📦 Abrir Baú', () => openCharacterDepot(statsIdx));
+    const sellPokes = stBody.querySelector('#stSellPokes'); if (sellPokes) bindBusyButton(sellPokes, 'Vendendo…', 'Vender Pokémon', () => sellSafePokes(statsIdx));
+    const sellItems = stBody.querySelector('#stSellItems'); if (sellItems) bindBusyButton(sellItems, 'Vendendo…', 'Vender itens', () => sellSafeItems(statsIdx));
     const back = stBody.querySelector('#stBackLastHunt');
     if (back && lastHunt) back.onclick = () => {
       back.disabled = true; back.textContent = 'Enviando…';
@@ -3681,18 +3713,36 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (cardsOn) refreshCards(true);
     }
   }
+  async function aguardarCompraAtualizada(i, kind, id, antes, comprado) {
+    const w = webviews[i];
+    if (!w || !antes) return true;
+    const chave = String(id), quantidadeAntes = kind === 'ball' ? +(antes.ballMap && antes.ballMap[chave] || 0) : +(antes.invMap && antes.invMap[chave] || 0);
+    const goldAntes = Number(antes.gold);
+    const esperado = quantidadeAntes + Math.max(1, +comprado || 0);
+    for (let tentativa = 0; tentativa < 30; tentativa++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const atual = await w.executeJavaScript(READ_STATE).catch(() => null);
+      if (!atual || !atual.ok) continue;
+      const quantidadeAtual = kind === 'ball' ? +(atual.ballMap && atual.ballMap[chave] || 0) : +(atual.invMap && atual.invMap[chave] || 0);
+      const saldoAtualizado = Number.isFinite(goldAntes) && Number.isFinite(+atual.gold) ? +atual.gold < goldAntes : false;
+      if (quantidadeAtual >= esperado && saldoAtualizado) return true;
+    }
+    return false;
+  }
   async function buy1000Ball(i, kind, id, name, price) {
     const label = tabNames[i] || stName(i);
+    const antes = typeof webviews !== 'undefined' && webviews[i] ? await webviews[i].executeJavaScript(READ_STATE).catch(() => null) : null;
     const { r, returnFailed } = await runMarkAction(i, BUY_1000_SUPPLY(kind, id, price));
     if (!r?.ok || returnFailed) {
       const detail = r?.ok ? 'compra concluída, mas retorno à hunt não confirmado' : r?.reason || 'erro desconhecido';
       try { window.pokeAPI?.logError?.('compra-mark', label + ' · ' + name + ': ' + detail + (returnFailed && !r?.ok ? '; retorno à hunt não confirmado' : '')); } catch {}
     }
     try {
+      const atualizado = r?.ok ? await aguardarCompraAtualizada(i, kind, id, antes, r.bought) : false;
       const status = (r?.ok ? 'Compra concluída' : 'Compra não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
       document.querySelectorAll('.cd-ball-buy').forEach(btn => {
         if (+btn.dataset.i === i && btn.dataset.kind === kind && btn.dataset.id === String(id)) {
-          btn.disabled = false; btn.textContent = '+1000'; btn.title = status;
+          btn.disabled = false; if (btn.classList) btn.classList.remove('is-busy'); btn.textContent = '+1000'; btn.title = atualizado ? status : (status + '; aguardando confirmação dos valores');
         }
       });
       stCache[i] = null;
@@ -3864,7 +3914,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     return r;
   }
   function openCharacterMarket(i) {
-    const w = webviews[i]; if (!w || off[i]) return;
+    const w = webviews[i]; if (!w || off[i]) return Promise.resolve({ ok:false, reason:'Painel indisponível' });
     const openMarketHere = `(async()=>{
       const wait=n=>new Promise(r=>setTimeout(r,n));
       const marketOpen=()=>!!document.querySelector('[class*="mkt2-"]');
@@ -3907,14 +3957,16 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       }
       return {ok:false,reason:'controle do Market não encontrado nesta versão do jogo'};
     })()`;
-    w.executeJavaScript(openMarketHere).then(result => {
+    return w.executeJavaScript(openMarketHere).then(result => {
       if (!result || !result.ok) {
-        return window.alert('Não foi possível abrir o Market: ' + ((result && result.reason) || 'erro desconhecido') + '.');
+        window.alert('Não foi possível abrir o Market: ' + ((result && result.reason) || 'erro desconhecido') + '.');
+        return result || { ok:false, reason:'erro desconhecido' };
       }
       cardsOn = false;
       applyCards();
       setTimeout(() => maximizaPainel(i), 120);
-    }).catch(e => window.alert('Não foi possível abrir o Market: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
+      return result;
+    }).catch(e => { window.alert('Não foi possível abrir o Market: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'); return { ok:false, reason:e?.message || 'erro desconhecido' }; });
   }
   function openCharacterDepotLegacy(i) {
     const w = webviews[i]; if (!w || off[i]) return;
@@ -3974,7 +4026,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }).catch(e => window.alert('Não foi possível abrir o Baú: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
   }
   function openCharacterDepot(i) {
-    const w=webviews[i];if(!w||off[i])return;
+    const w=webviews[i];if(!w||off[i])return Promise.resolve(false);
     const probe=`(()=>{
       const vis=e=>{if(!e)return false;const s=getComputedStyle(e),r=e.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};
       const rect=e=>{const r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}};
@@ -4008,7 +4060,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if(!result||result.kind!=='click'||attempt>=4)return false;
       await clickReal(result.click);await delay(220);return run(attempt+1);
     };
-    openByHook().then(ok=>ok?true:run()).then(ok=>{if(!ok)return window.alert('Não foi possível abrir o Baú: o fluxo do Depot não foi concluído.');cardsOn=false;applyCards();setTimeout(()=>maximizaPainel(i),120)}).catch(e=>window.alert('Não foi possível abrir o Baú: '+(e&&e.message?e.message:'erro desconhecido')+'.'));
+    return openByHook().then(ok=>ok?true:run()).then(ok=>{if(!ok){window.alert('Não foi possível abrir o Baú: o fluxo do Depot não foi concluído.');return false;}cardsOn=false;applyCards();setTimeout(()=>maximizaPainel(i),120);return true;}).catch(e=>{window.alert('Não foi possível abrir o Baú: '+(e&&e.message?e.message:'erro desconhecido')+'.');return false;});
   }
   // base medida por conta e hunt: media (EWMA) do que CADA conta realmente fez ali (gold/h, xp/h, capturas/h).
   // amostra a taxa acumulada da sessao (ja e uma media) quando a hunt rodou tempo suficiente pra estabilizar.
@@ -4444,8 +4496,25 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     if (!best || !(best.gph > alvo)) return '';
     return ' <span title="' + esc(cap(best.k)) + ': ' + ncs(best.gph) + '/h ' + t('cdBetterTip') + '" style="color:#f2c665;cursor:help">\u2197</span>';
   };
+  function bindBusyButton(btn, loadingText, normalText, action) {
+    if (!btn) return;
+    btn.onclick = e => {
+      if (e) e.stopPropagation();
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add('is-busy');
+      btn.textContent = loadingText;
+      Promise.resolve().then(action).finally(() => {
+        if (!btn.isConnected) return;
+        btn.disabled = false;
+        btn.classList.remove('is-busy');
+        btn.textContent = normalText;
+      });
+    };
+  }
   async function refreshCards(force) {
     if (!cardsOn || (cdBusy && Date.now() - cdBusy < 8000)) return; // nao destroi o DOM durante o gesto, mas destrava sozinho se o mouseup se perder
+    atualizaCotacaoDiamante();
     // Guarda do tick: com foco num campo do painel, o redesenho passivo espera (nao apagar o que
     // o usuario digita). Mudou um select/checkbox, o handler chama com force: sem ele, o foco
     // que fica no campo segurava o redesenho pra sempre (bug do "filtro nao aplica").
@@ -4516,11 +4585,15 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const SB = {};
     SB.kpis = () => {
       const kpi = (v, l, c) => '<div class="cd-kpi"><div class="v"' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</div><div class="l">' + l + '</div></div>';
+      const diamante = simpleDiamondQuote && +simpleDiamondQuote.goldPorDiamante > 0 ? ncs(Math.round(+simpleDiamondQuote.goldPorDiamante)) + ' / 💎1' : '–';
+      const diamondHist = simpleDiamondHist.filter(p => p.t > Date.now() - 24 * 3600e3);
+      const diamondGraph = spark(diamondHist.map(p => p.v), '#79c0ff');
       return '<div class="cd-kpis">'
         + kpi(ncs(sumG), t('cdGold'), sumG < 0 ? '#f0883e' : '#3fb950') + kpi(nc(sumX), t('cdXp'), '#79c0ff')
         + kpi(nf(sumK), t('cdKills')) + kpi(nf(sumC), t('cdCaps'))
         + kpi(nf(sumSF) + ' / ' + nf(sumSC), t('cdShiny'), sumSF > 0 ? '#f778ba' : null)
-        + kpi(ativos + ' / ' + count, t('cdActive'), '#3fb950') + '</div>';
+        + kpi(ativos + ' / ' + count, t('cdActive'), '#3fb950')
+        + '<div class="cd-kpi cd-diamond-kpi"><div class="v" style="color:#79c0ff">' + diamante + '</div><div class="l">💎 valor do diamante</div>' + diamondGraph + '</div></div>';
     };
     SB.today = () => {
       const T = totalDia(curDay), W = somaDias(7), A = somaDias(0);
@@ -5062,19 +5135,11 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     };
     cardsEl.querySelectorAll('.cd-ball-buy').forEach(btn => btn.onclick = e => {
       e.stopPropagation();
-      btn.disabled = true; btn.textContent = '…';
+      btn.disabled = true; btn.classList.add('is-busy'); btn.textContent = 'Comprando…';
       buy1000Ball(+btn.dataset.i, btn.dataset.kind || 'ball', btn.dataset.id || '', btn.dataset.name || '', +btn.dataset.price || 0);
     });
-    cardsEl.querySelectorAll('.cd-sell-safe').forEach(btn => btn.onclick = e => {
-      e.stopPropagation();
-      btn.disabled = true; btn.textContent = 'Vendendo…';
-      sellSafeItems(+btn.dataset.i);
-    });
-    cardsEl.querySelectorAll('.cd-sell-pokes').forEach(btn => btn.onclick = e => {
-      e.stopPropagation();
-      btn.disabled = true; btn.textContent = 'Vendendo…';
-      sellSafePokes(+btn.dataset.i);
-    });
+    cardsEl.querySelectorAll('.cd-sell-safe').forEach(btn => bindBusyButton(btn, 'Vendendo…', 'Vender todos os itens permitidos', () => sellSafeItems(+btn.dataset.i)));
+    cardsEl.querySelectorAll('.cd-sell-pokes').forEach(btn => bindBusyButton(btn, 'Vendendo…', 'Vender Pokémon IV < 150', () => sellSafePokes(+btn.dataset.i)));
     cardsEl.querySelectorAll('.cd-stone-check').forEach(chk => chk.onchange = e => {
       e.stopPropagation();
       const cid = chk.dataset.cid, id = chk.dataset.id;
@@ -5082,21 +5147,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       stoneSelected[cid][id] = chk.checked;
       try { localStorage.setItem('stoneSelected', JSON.stringify(stoneSelected)); } catch {}
     });
-    cardsEl.querySelectorAll('.cd-sell-stones').forEach(btn => btn.onclick = e => {
-      e.stopPropagation();
-      btn.disabled = true; btn.textContent = 'Vendendo Stones…';
-      sellSelectedStones(+btn.dataset.i, btn.dataset.cid || '');
-    });
-    cardsEl.querySelectorAll('.cd-open-market').forEach(btn => btn.onclick = e => {
-      e.stopPropagation();
-      btn.disabled = true; btn.textContent = 'Abrindo…';
-      openCharacterMarket(+btn.dataset.i);
-    });
-    cardsEl.querySelectorAll('.cd-open-depot').forEach(btn => btn.onclick = e => {
-      e.stopPropagation();
-      btn.disabled = true; btn.textContent = 'Abrindo…';
-      openCharacterDepot(+btn.dataset.i);
-    });
+    cardsEl.querySelectorAll('.cd-sell-stones').forEach(btn => bindBusyButton(btn, 'Vendendo…', 'Vender Stones selecionadas', () => sellSelectedStones(+btn.dataset.i, btn.dataset.cid || '')));
+    cardsEl.querySelectorAll('.cd-open-market').forEach(btn => bindBusyButton(btn, 'Abrindo…', '🏪 Abrir Market', () => openCharacterMarket(+btn.dataset.i)));
+    cardsEl.querySelectorAll('.cd-open-depot').forEach(btn => bindBusyButton(btn, 'Abrindo…', '📦 Abrir Baú', () => openCharacterDepot(+btn.dataset.i)));
     const dexModeEl = cardsEl.querySelector('#cdDexMode'); if (dexModeEl) dexModeEl.onchange = () => {
       dexMode = dexModeEl.value; lsSet('dexMode', dexMode); refreshCards(true);
     };
@@ -5148,7 +5201,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   function resetSessao() {
     if (!window.confirm(t('resetConfirm'))) return;
     webviews.forEach((w, i) => { if (off[i] || !w) return; try { w.executeJavaScript(RESET_SESS).catch(() => {}); } catch {} });
-    dhist = []; // zera a tendencia (sparklines) tambem
+    dhist = []; // zera a tendencia da sessao; o historico local do diamante permanece salvo
     utBase.length = 0; sessSnap.length = 0; // shinies tentados "sessao" recomecam; e a semente antiga nao ressuscita a sessao zerada
     refreshStats(); if (cardsOn) refreshCards();
   }
@@ -5271,7 +5324,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   // mouse num pokémon. O cálculo continua dentro do painel (é lá que estão as fórmulas e a busca
   // dos atributos-base), então aqui é exibição e entrada, sem fórmula duplicada.
   const ivEl = document.getElementById('ivCard');
-  let ivAberto = lsGet('ivCardOpen') === '1', ivDados = null, ivFonte = -1;
+  let ivAberto = lsGet('ivCardOpen') === '1', ivDados = null, ivFonte = -1, ivMarketTimer = null;
   let ivPos = null; try { ivPos = (() => { const p = lsObj('ivCardPos'); return typeof p.x === 'number' && typeof p.y === 'number' ? p : null; })(); } catch {}
   const TIPO_COR = { normal:'#a8a878', fire:'#f08030', water:'#6890f0', electric:'#f8d030', grass:'#78c850', ice:'#98d8d8', fighting:'#c03028', poison:'#a040a0', ground:'#e0c068', flying:'#a890f0', psychic:'#f85888', bug:'#a8b820', rock:'#b8a038', ghost:'#705898', dragon:'#7038f8', dark:'#705848', steel:'#b8b8d0', fairy:'#ee99ac',
     fogo:'#f08030', agua:'#6890f0', água:'#6890f0', eletrico:'#f8d030', elétrico:'#f8d030', planta:'#78c850', gelo:'#98d8d8', lutador:'#c03028', luta:'#c03028', veneno:'#a040a0', terra:'#e0c068', voador:'#a890f0', psiquico:'#f85888', psíquico:'#f85888', inseto:'#a8b820', pedra:'#b8a038', fantasma:'#705898', dragao:'#7038f8', dragão:'#7038f8', sombrio:'#705848', metal:'#b8b8d0', aco:'#b8b8d0', aço:'#b8b8d0', fada:'#ee99ac' };
@@ -5308,6 +5361,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     } catch { return null; }
   }
   function ivRender() {
+    if (ivMarketTimer) { clearTimeout(ivMarketTimer); ivMarketTimer = null; }
     ivEl.classList.toggle('show', ivAberto);
     lsSet('ivCardOpen', ivAberto ? '1' : '0');
     if (!ivAberto) return;
@@ -5320,6 +5374,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       const raro = d.qualidade ? RARO(+d.qualidade) : null;
       const kpi = (k, v, c) => '<div class="iv-kpi"><div class="k">' + k + '</div><div class="v"' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</div></div>';
       const kpiInp = (k, id, val, step) => '<div class="iv-kpi"><div class="k">' + k + '</div><input class="iv-inp" id="' + id + '" type="number" step="' + step + '" value="' + val + '"></div>';
+      const dinheiro = (v, sinal) => v == null ? '–' : (sinal || '') + '💵 ' + nf(Math.round(+v));
+      const diamantes = (v, sinal) => v == null ? '–' : (sinal || '') + '💎 ' + nf(Math.round(+v));
+      const ofertaMercado = (x, vazio) => x ? '<div class="v">IV ' + nf(+x.iv || 0) + '<br><span class="iv-price-gold">' + dinheiro(x.gold) + '</span><br><span class="iv-price-diamond">' + diamantes(x.diamantes) + '</span></div>' : '<div class="v" title="Sem referência nesta direção">' + (vazio || '–') + '</div>';
+      const m = d.mercado;
+      const mercadoHtml = '<div class="iv-market"><div class="iv-market-h">🔎 Estimativa de mercado <button id="ivMarketSearch">Pesquisar</button></div>'
+        + (m && m.ok ? '<div class="iv-market-grid"><div class="iv-market-cell"><div class="k">IV abaixo</div>' + ofertaMercado(m.abaixo, '_') + '</div><div class="iv-market-cell"><div class="k">Estimativa</div><div class="v">' + dinheiro(m.estimativa && m.estimativa.gold, m.estimativa && m.estimativa.sinal) + '<br>' + diamantes(m.estimativa && m.estimativa.diamantes, m.estimativa && m.estimativa.sinal) + '</div></div><div class="iv-market-cell"><div class="k">IV acima</div>' + ofertaMercado(m.acima, '+') + '</div></div><div class="iv-market-note">' + (m.amostras ? nf(m.amostras) + ' oferta(s) da espécie analisada. Comparação por ' + esc(m.raridade || 'raridade') + (m.fallbackRaridade ? ' (incluída raridade vizinha por falta de comparativo).' : '.') : 'Nenhuma oferta encontrada para esta espécie nas páginas consultadas.') + '</div>' : '<div class="iv-market-note">' + (m && m.reason ? 'A pesquisa não conseguiu consultar as ofertas: ' + esc(m.reason) : 'Clique em Pesquisar para consultar o Market em segundo plano, sem abrir ou alterar a tela.') + '</div>')
+        + '</div>';
       // sprite: mesma lista branca estrita do saneador, e ainda escapada no atributo
       const sprOk = (u) => typeof u === 'string' && IV_SPR_OK.test(u);
       const spr = d.sprite && sprOk(d.sprite.still) ? d.sprite : null;
@@ -5342,6 +5403,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
               + '<div><div class="iv-pot-t" style="color:' + corPot + '">' + esc(d.classificacao.texto || '') + '</div>'
               + '<div class="iv-pot-d">' + esc(d.classificacao.descricao || '') + '</div></div></div>';
           })() : '')
+        + mercadoHtml
         + '<div class="iv-sec">' + t('ivcStats') + ' <span style="color:#586069;text-transform:none">(' + (+d.percentual || 0).toFixed(1) + '% · ' + (raro ? '<span style="color:' + raro[1] + '">' + raro[0] + '</span> ×' + (+d.qualidade).toFixed(2) : '') + ')</span></div>'
         + '<div class="iv-grid">' + IVST.map(([k, c]) => {
             const iv = +((d.ivs || {})[k]) || 0, pct = Math.min(100, iv / (d.ivMaxInd || 32) * 100);
@@ -5368,6 +5430,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }
     ivPosiciona();
     const x = ivEl.querySelector('#ivX'); if (x) x.onclick = () => { ivAberto = false; ivRender(); };
+    const ms = ivEl.querySelector('#ivMarketSearch');
+    if (ms) ms.onclick = () => {
+      ms.disabled = true; ms.classList.add('is-loading'); ms.textContent = '⏳ Pesquisando…';
+      const w = webviews[ivFonte];
+      const iv = +((ivDados && ivDados.ivTotal) || 0);
+      const consultar = () => { if (!w) return Promise.resolve(null); return w.executeJavaScript('window.__pgIv && window.__pgIv.market(' + JSON.stringify({ pokemon: ivDados && ivDados.pokemon, iv }) + ')').catch(() => null); };
+      consultar().then(market => { if (market) { ivDados = Object.assign({}, ivDados, { mercado: market }); ivRender(); } else { ms.disabled = false; ms.classList.remove('is-loading'); ms.textContent = 'Pesquisar'; } }).catch(() => { ms.disabled = false; ms.classList.remove('is-loading'); ms.textContent = 'Pesquisar'; });
+    };
     const ab = ivEl.querySelector('#ivPanel'); // quem precisa das abas de golpes/comparar abre no painel
     if (ab) ab.onclick = () => { const w = webviews[ivFonte]; if (w) try { w.executeJavaScript("(()=>{const p=document.getElementById('pokemon-reader-panel');if(p&&p.classList.contains('minimized')){const b=document.getElementById('minimize');if(b)b.click();}})()").catch(() => {}); } catch {} };
     ivEl.querySelectorAll('.iv-inp, .iv-st-l input').forEach(inp => inp.onchange = ivRecalcula);
@@ -5380,6 +5450,15 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); hd.classList.remove('drag'); try { lsSet('ivCardPos', JSON.stringify(ivPos)); } catch {} };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     });
+    if (ivAberto && d && !d.erro) {
+      ivMarketTimer = setTimeout(() => {
+        const w = webviews[ivFonte], iv = +((ivDados && ivDados.ivTotal) || 0);
+        if (!w || !ivDados || !ivAberto) return;
+        w.executeJavaScript('window.__pgIv && window.__pgIv.market(' + JSON.stringify({ pokemon: ivDados.pokemon, iv }) + ')').then(market => {
+          if (market && ivDados && ivAberto) { ivDados = Object.assign({}, ivDados, { mercado: market }); ivRender(); }
+        }).catch(() => {});
+      }, 60000);
+    }
   }
   // recalcula no painel de origem: a fórmula é a de lá, o app só manda os valores editados
   function ivRecalcula() {
@@ -5429,6 +5508,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         poder: g.poder == null ? null : ivNum(g.poder), dano: ivNum(g.dano), eff: ivNum(g.eff), ativo: !!g.ativo
       })),
       poder: ivNum(p.poder), poderJogo: ivNum(p.poderJogo),
+      mercado: (() => {
+        const m = p.mercado && typeof p.mercado === 'object' ? p.mercado : null;
+        if (!m) return null;
+        const oferta = x => x && typeof x === 'object' ? { iv: ivNum(x.iv), gold: x.gold == null ? null : ivNum(x.gold), diamantes: x.diamantes == null ? null : ivNum(x.diamantes), rank: ivNum(x.rank), raridade: ivTxt(x.raridade, 20) } : null;
+        const est = m.estimativa && typeof m.estimativa === 'object' ? m.estimativa : {};
+        const dr = m.diamante && typeof m.diamante === 'object' ? m.diamante : {};
+        return { ok: !!m.ok, nome: ivTxt(m.nome), iv: ivNum(m.iv), abaixo: oferta(m.abaixo), acima: oferta(m.acima), raridade: ivTxt(m.raridade, 20), fallbackRaridade: !!m.fallbackRaridade, diamante: { goldPorDiamante: dr.goldPorDiamante == null ? null : ivNum(dr.goldPorDiamante), compra: dr.compra == null ? null : ivNum(dr.compra), venda: dr.venda == null ? null : ivNum(dr.venda), amostras: ivNum(dr.amostras) }, estimativa: { gold: est.gold == null ? null : ivNum(est.gold), diamantes: est.diamantes == null ? null : ivNum(est.diamantes), sinal: est.sinal === '+' ? '+' : '' }, amostras: Math.max(0, Math.min(999, ivNum(m.amostras))) };
+      })(),
       // volta pro painel no recálculo: só campos com tipo conferido
       pokemon: (() => { const q = p.pokemon && typeof p.pokemon === 'object' ? p.pokemon : {}; const o = { nome: ivTxt(q.nome), nivel: ivNum(q.nivel), ivAtual: ivNum(q.ivAtual), poder: ivNum(q.poder), qualidade: ivTxt(q.qualidade, 30), multiplicadorQualidade: ivNum(q.multiplicadorQualidade, 1), tipos: (Array.isArray(q.tipos) ? q.tipos : []).slice(0, 4).map(x => ivTxt(x, 20)) }; IVST.forEach(([k]) => o[k] = ivNum(q[k])); return o; })()
     };

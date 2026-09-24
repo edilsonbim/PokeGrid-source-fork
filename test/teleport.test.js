@@ -74,7 +74,7 @@ async function simulate({ destination, locked = false, ignored = false, guide = 
   assert.equal(ignored.success, false, 'clique ignorado pelo jogo não vira sucesso falso');
 
   for (const [variable, next, text] of [
-    ['openMarketHere', 'w.executeJavaScript(openMarketHere)', 'Abrir Market'],
+    ['openMarketHere', 'return w.executeJavaScript(openMarketHere)', 'Abrir Market'],
     ['openDepot', 'w.executeJavaScript(openDepot)', 'Abrir Depot']
   ]) {
     let clicked = false, depotVisible = false;

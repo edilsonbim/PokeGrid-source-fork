@@ -5531,6 +5531,240 @@
     // O card fica na janela do app (fora dos paineis), pra poder abrir no centro da tela e maior.
     // O calculo continua aqui, que e onde estao as formulas e a busca dos atributos-base, entao
     // nao existe formula duplicada: o app so pede o resultado e mostra.
+    function numeroMercado(valor) {
+        const s = String(valor == null ? '' : valor).replace(/\s/g, '');
+        if (!s) return null;
+        const n = s.includes(',') && s.includes('.')
+            ? (s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, ''))
+            : s.includes(',') ? (/,\d{1,2}$/.test(s) ? s.replace(',', '.') : s.replace(/,/g, ''))
+            : (/\.\d{3}$/.test(s) ? s.replace(/\./g, '') : s);
+        const x = Number(n.replace(/[^\d.-]/g, ''));
+        return Number.isFinite(x) ? x : null;
+    }
+    async function pesquisarMercadoIV(pk, ivAlvo, somenteCotacao) {
+        const nomeAlvo = normalizarNomePokemon(pk && pk.nome || '').replace(/\s+/g, ' ').trim();
+        const alvo = Number(ivAlvo);
+        if ((!nomeAlvo || !Number.isFinite(alvo)) && !somenteCotacao) return { ok: false, reason: 'dados incompletos', nome: pk && pk.nome || '' };
+        const rankRaridade = valor => {
+            const s = normalizarNomePokemon(String(valor == null ? '' : valor));
+            const porNome = { fraca: 0, comum: 1, incomum: 2, rara: 3, raro: 3, epica: 4, epico: 4, lendaria: 5, lendario: 5, mitica: 6, mitico: 6, ancia: 7, anciao: 7, divina: 8, divino: 8 };
+            for (const k of Object.keys(porNome)) if (s.includes(k)) return porNome[k];
+            const n = Number(String(valor).replace(',', '.').match(/[\d.]+/)?.[0]);
+            return Number.isFinite(n) ? (n >= 4 ? 8 : n >= 3 ? 7 : n >= 2 ? 6 : n >= 1.7 ? 5 : n >= 1.5 ? 4 : n >= 1.3 ? 3 : n >= 1.1 ? 2 : 1) : null;
+        };
+        const qualidadeAlvo = pk && (pk.qualidade || pk.multiplicadorQualidade || 'Comum');
+        const rankAlvo = rankRaridade(qualidadeAlvo) == null ? 1 : rankRaridade(qualidadeAlvo);
+        const nomesRaridade = ['Fraca', 'Comum', 'Incomum', 'Rara', 'Épica', 'Lendária', 'Mítica', 'Anciã', 'Divina'];
+        const ofertas = [];
+        const diamanteOfertas = { compra: [], venda: [] };
+        const taxasImplicitas = [];
+        const adicionar = (iv, gold, diamantes, raridade, rank) => {
+            if (!Number.isFinite(iv) || (gold == null && diamantes == null)) return;
+            const chave = [iv, gold == null ? '' : gold, diamantes == null ? '' : diamantes].join(':');
+            const r = Number.isFinite(rank) ? rank : rankRaridade(raridade);
+            if (!ofertas.some(x => x._chave === chave && x.rank === r)) {
+                ofertas.push({ iv, gold, diamantes, rank: r == null ? rankAlvo : r, raridade: raridade || (r == null ? nomesRaridade[rankAlvo] : nomesRaridade[r]), _chave: chave });
+                if (gold > 0 && diamantes > 0) taxasImplicitas.push(gold / diamantes);
+            }
+        };
+        const visivel = el => { if (!el) return false; const s = getComputedStyle(el), r = el.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+        const extrairPreco = (texto, el) => {
+            const fontes = [texto];
+            if (el) el.querySelectorAll('.mkt2-price, [class*="price"], img[alt], img[title]').forEach(x => fontes.push(String(x.innerText || x.alt || x.title || '')));
+            const t = fontes.join(' ').replace(/\s+/g, ' ');
+            // O Market exibe tanto "90.000 dollars" quanto "$ 90.000".
+            const goldMatch = t.match(/(?:💰|gold|ouro|d[oó]lar(?:es)?|\$)\s*[:=]?\s*([\d.,]+)|([\d.,]+)\s*(?:💰|gold|ouro|d[oó]lar(?:es)?)/i);
+            const diamMatch = t.match(/(?:💎|diamond|diamante|diamantes)\s*[:=]?\s*([\d.,]+)|([\d.,]+)\s*(?:💎|diamond|diamante|diamantes)/i);
+            return {
+                gold: goldMatch ? numeroMercado(goldMatch[1] || goldMatch[2]) : null,
+                diamantes: diamMatch ? numeroMercado(diamMatch[1] || diamMatch[2]) : null
+            };
+        };
+        const mediana = lista => {
+            const v = lista.filter(Number.isFinite).sort((a, b) => a - b);
+            if (!v.length) return null;
+            const m = Math.floor(v.length / 2);
+            return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+        };
+        const registrarDiamante = obj => {
+            // priceDiamonds em um anúncio de Pokémon é apenas a moeda daquele
+            // anúncio; não é uma oferta de diamantes. Só registra quando o
+            // produto anunciado é realmente o item Diamond/Diamante.
+            const identidade = [obj.name, obj.itemName, obj.productName, obj.displayName, obj.title, obj.label, obj.assetName, obj.resourceName, obj.kind, obj.category, obj.itemType, obj.item, obj.product, obj.item?.name, obj.item?.label, obj.product?.name, obj.asset?.name]
+                .filter(v => typeof v === 'string').join(' ');
+            if (!/diamond|diamante|diamantes/i.test(identidade) || /pokemon|pokémon|iv total|raridade/i.test(identidade)) return;
+            const valor = v => typeof v === 'string' ? numeroMercado(v) : Number(v);
+            const preco = obj.price && typeof obj.price === 'object' ? obj.price : obj.cost && typeof obj.cost === 'object' ? obj.cost : {};
+            const currency = String(obj.currency ?? obj.currencyType ?? obj.paymentCurrency ?? obj.moneyType ?? '').toLowerCase();
+            const gold = valor(obj.priceGold ?? obj.goldPrice ?? obj.priceInGold ?? obj.gold ?? obj.dollars ?? preco.gold ?? preco.goldCoins ?? (currency.includes('gold') ? obj.price ?? obj.value : null));
+            const diamonds = valor(obj.quantity ?? obj.qty ?? obj.amount ?? obj.count ?? obj.units ?? obj.diamondQuantity ?? obj.diamonds ?? obj.diamond ?? preco.diamonds ?? preco.diamond);
+            if (!(gold > 0) || !(diamonds > 0)) return;
+            // O Market informa este campo como PREÇO UNITÁRIO. A quantidade
+            // exibida (ex.: 20x) é apenas o lote disponível e não deve reduzir
+            // o valor de 1 diamante.
+            const totalGold = valor(obj.totalGold ?? obj.totalPriceGold ?? obj.totalGoldPrice);
+            const taxa = totalGold > 0 ? totalGold / diamonds : gold;
+            const direcao = String(obj.side ?? obj.offerType ?? obj.listingType ?? obj.orderType ?? obj.type ?? '').toLowerCase();
+            const comprando = obj.isBuyOrder === true || obj.isBuying === true || obj.buying === true || /buy|compra|comprar|bid|wanted|procura/.test(direcao);
+            const lista = comprando ? diamanteOfertas.compra : diamanteOfertas.venda;
+            if (Number.isFinite(taxa) && taxa > 0 && taxa < 1e9 && !lista.includes(taxa)) lista.push(taxa);
+        };
+        document.querySelectorAll('.mkt2-trow:not(.mkt2-trow--head), .mkt2-card').forEach(el => {
+            if (!visivel(el)) return;
+            const texto = String(el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+            if (somenteCotacao || !texto || !normalizarNomePokemon(texto).includes(nomeAlvo)) return;
+            const ivm = texto.match(/(?:IV\s*)?(\d+)\s*\/\s*(?:\d+)/i);
+            const iv = ivm ? Number(ivm[1]) : null;
+            if (!Number.isFinite(iv)) return;
+            const preco = extrairPreco(texto, el);
+            const raridade = texto.match(/(fraca|comum|incomum|rara|raro|épica|epica|épico|epico|lendária|lendaria|lendário|lendario|mítica|mitica|mítico|mitico|anciã|ancia|ancião|anciao|divina|divino)(?:\s*[×x]\s*[\d.,]+)?/i)?.[1] || '';
+            adicionar(iv, preco.gold, preco.diamantes, raridade, rankRaridade(raridade));
+        });
+        const api = window.__poke && window.__poke.api || {};
+        // Reaproveita endpoints que a própria página já consultou. O fetch ocorre em segundo
+        // plano, com credenciais da sessão, sem abrir o Market nem alterar filtros/paginação.
+        try {
+            // Rota oficial do Market. As variações de filtro mantêm compatibilidade
+            // com as versões do jogo que chamam o campo de search, pokemonName ou q.
+            const baseMarket = '/api/game/market';
+            const nomeQuery = encodeURIComponent(nomeAlvo);
+            const diretas = somenteCotacao ? ['Diamond', 'Diamonds', 'Diamante', 'Diamantes'].map(n => baseMarket + '?page=1&search=' + encodeURIComponent(n)) : [
+                baseMarket + '?page=1&search=' + nomeQuery,
+                baseMarket + '?page=1&pokemonName=' + nomeQuery,
+                baseMarket + '?page=1&speciesName=' + nomeQuery,
+                baseMarket + '?page=1&q=' + nomeQuery,
+                baseMarket + '?page=1'
+            ];
+            if (somenteCotacao) diretas.push(baseMarket + '?page=1');
+            const recursos = performance.getEntriesByType('resource').map(x => String(x.name || ''))
+                .filter(x => /\/api\//i.test(x));
+            const prioridade = recursos.filter(x => /market|marketplace|auction|trade|listing|offer/i.test(x));
+            const urls = [...new Set([...diretas, ...prioridade, ...recursos])].slice(0, 45);
+            const carregar = async url => { try { const init = { credentials: 'include' }; const auth = (window.__poke && window.__poke.auth) || window.__pgAuth; if (auth) init.headers = { Authorization: auth }; const r = await fetch(url, init); if (!r.ok) return null; const data = await r.json(); api[url] = data; api[new URL(url).pathname] = data; return data; } catch { return null; } };
+            const dados = await Promise.all(urls.map(carregar));
+            const numeroPaginas = valor => {
+                const n = Number(valor && (valor.totalPages ?? valor.pages ?? valor.pageCount ?? valor.pagination?.totalPages));
+                if (Number.isFinite(n)) return Math.min(100, Math.max(1, Math.floor(n)));
+                const total = Number(valor && (valor.total ?? valor.totalCount ?? valor.pagination?.total));
+                const porPagina = Number(valor && (valor.pageSize ?? valor.perPage ?? valor.limit ?? valor.pagination?.pageSize)) || 12;
+                return Number.isFinite(total) && total > 0 ? Math.min(100, Math.ceil(total / porPagina)) : 1;
+            };
+            for (let i = 0; i < urls.length; i++) {
+                const original = urls[i], atual = dados[i], u = new URL(original);
+                const chave = ['page', 'pageNumber', 'pageIndex'].find(k => u.searchParams.has(k));
+                const total = numeroPaginas(atual);
+                if (!chave || total <= 1) continue;
+                const paginaAtual = Number(u.searchParams.get(chave)) || 1;
+                for (let pagina = paginaAtual + 1; pagina <= total; pagina++) { const p = new URL(original); p.searchParams.set(chave, String(pagina)); await carregar(p.toString()); }
+            }
+        } catch {}
+        // A API atual pode usar uma rota genérica (sem "market" no nome) e o
+        // retorno pode ficar armazenado no cache por caminho ou por URL completa.
+        // Depois que o jogo consultou os dados, todos os registros são fontes
+        // válidas; o filtro por nome da espécie evita misturar outros dados.
+        const chaves = Object.keys(api);
+        const vistos = new Set(), nomeKeys = ['name', 'pokemonName', 'speciesName', 'displayName', 'species'];
+        const andar = (obj, depth = 0) => {
+            if (!obj || typeof obj !== 'object' || depth > 6 || vistos.size > 25000 || vistos.has(obj)) return;
+            vistos.add(obj);
+            registrarDiamante(obj);
+            const poke = obj.pokemon && typeof obj.pokemon === 'object' ? obj.pokemon : obj.creature && typeof obj.creature === 'object' ? obj.creature : {};
+            const preco = obj.price && typeof obj.price === 'object' ? obj.price : obj.cost && typeof obj.cost === 'object' ? obj.cost : {};
+            const nome = nomeKeys.map(k => obj[k]).find(v => typeof v === 'string' && v.trim()) || nomeKeys.map(k => poke[k]).find(v => typeof v === 'string' && v.trim());
+            const raridade = obj.rarity ?? obj.raridade ?? obj.qualityName ?? obj.qualityLabel ?? obj.quality ?? obj.grade ?? poke.rarity ?? poke.raridade ?? poke.qualityName ?? poke.quality;
+            const valor = v => typeof v === 'string' ? numeroMercado(v) : Number(v);
+            const ivBruto = obj.ivTotal ?? obj.totalIV ?? obj.iv ?? obj.ivs?.total ?? obj.stats?.ivTotal ?? poke.ivTotal ?? poke.totalIV ?? poke.iv;
+            const iv = String(ivBruto ?? '').match(/^(\d+)\s*\//) ? Number(String(ivBruto).match(/^(\d+)\s*\//)[1]) : valor(ivBruto);
+            const currency = String(obj.currency ?? obj.currencyType ?? obj.type ?? '').toLowerCase();
+            const goldValue = valor(obj.priceGold ?? obj.gold ?? obj.dollars ?? obj.dollar ?? preco.gold ?? preco.goldCoins ?? preco.dollars ?? (currency.includes('gold') || currency.includes('dollar') ? obj.price ?? obj.amount : NaN));
+            const diamValue = valor(obj.diamonds ?? obj.diamond ?? obj.priceDiamonds ?? preco.diamonds ?? preco.diamond ?? (currency.includes('diamond') ? obj.price ?? obj.amount : NaN));
+            if (!somenteCotacao && nome && normalizarNomePokemon(nome).includes(nomeAlvo)) adicionar(iv, Number.isFinite(goldValue) ? goldValue : null, Number.isFinite(diamValue) ? diamValue : null, raridade, rankRaridade(raridade));
+            Object.values(obj).forEach(v => andar(v, depth + 1));
+        };
+        chaves.forEach(k => andar(api[k]));
+        const ws = window.__poke && window.__poke.ws || {};
+        Object.keys(ws).forEach(k => andar(ws[k]));
+        const melhorCompra = diamanteOfertas.compra.length ? Math.max(...diamanteOfertas.compra) : null;
+        const melhorVenda = diamanteOfertas.venda.length ? Math.min(...diamanteOfertas.venda) : null;
+        const implicita = mediana(taxasImplicitas);
+        // A referência oficial do conversor é sempre a menor cotação de
+        // Diamond encontrada no Market, independentemente do tipo da oferta.
+        const todasCotacoes = diamanteOfertas.compra.concat(diamanteOfertas.venda).filter(x => Number.isFinite(x) && x > 0);
+        const goldPorDiamante = todasCotacoes.length ? Math.min(...todasCotacoes) : implicita;
+        if (somenteCotacao) return { ok: true, diamante: { goldPorDiamante, compra: melhorCompra, venda: melhorVenda, amostras: diamanteOfertas.compra.length + diamanteOfertas.venda.length } };
+        if (goldPorDiamante > 0) ofertas.forEach(x => {
+            if (x.gold == null && x.diamantes != null) x.gold = x.diamantes * goldPorDiamante;
+            if (x.diamantes == null && x.gold != null) x.diamantes = x.gold / goldPorDiamante;
+        });
+        const preferencia = [rankAlvo];
+        const candidatos = lado => {
+            const direcao = lado === 'baixo' ? x => x.iv < alvo : x => x.iv > alvo;
+            // Comparações de preço só são válidas dentro da mesma raridade.
+            return ofertas.filter(x => x.rank === rankAlvo && direcao(x))
+                .sort((a, b) => lado === 'baixo' ? b.iv - a.iv : a.iv - b.iv);
+        };
+        const candidatosBaixo = candidatos('baixo'), candidatosCima = candidatos('cima');
+        const valorGold = x => x && (Number.isFinite(x.gold) ? x.gold : (goldPorDiamante > 0 && Number.isFinite(x.diamantes) ? x.diamantes * goldPorDiamante : (Number.isFinite(x.diamantes) ? x.diamantes : null)));
+        const selecionarBaixos = lista => {
+            const selecionados = [];
+            for (const item of lista) {
+                if (selecionados.length >= 3) break;
+                const preco = valorGold(item);
+                // Uma oferta com IV menor não pode custar mais que a oferta
+                // de maior IV já aceita. Isso remove outliers como 175/10,
+                // 174/11 e 173/9: o 174/11 fica fora da média.
+                const maiorIV = selecionados[0];
+                const precoMaiorIV = valorGold(maiorIV);
+                if (preco != null && precoMaiorIV != null && preco > precoMaiorIV) continue;
+                selecionados.push(item);
+            }
+            return selecionados;
+        };
+        const referenciasAbaixo = selecionarBaixos(candidatosBaixo);
+        const referenciasAcima = candidatosCima.slice(0, 3);
+        const abaixo = referenciasAbaixo[0] || null;
+        const acima = referenciasAcima[0] || null;
+        const fallbackRaridade = !!((abaixo && abaixo.rank !== rankAlvo) || (acima && acima.rank !== rankAlvo));
+        ofertas.forEach(x => delete x._chave);
+        const mediaReferencias = (lista, campo) => {
+            const valores = lista.map(x => Number.isFinite(x && x[campo]) ? x[campo] : null).filter(x => x != null);
+            return valores.length ? valores.reduce((a, b) => a + b, 0) / valores.length : null;
+        };
+        const extrapolarAcima = campo => {
+            if (!referenciasAbaixo.length) return null;
+            const pontos = referenciasAbaixo.map(x => ({ x: x.iv, y: x[campo] })).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+            if (!pontos.length) return null;
+            const mediaX = pontos.reduce((s, p) => s + p.x, 0) / pontos.length;
+            const mediaY = pontos.reduce((s, p) => s + p.y, 0) / pontos.length;
+            const variacaoX = pontos.reduce((s, p) => s + (p.x - mediaX) ** 2, 0);
+            const covariancia = pontos.reduce((s, p) => s + (p.x - mediaX) * (p.y - mediaY), 0);
+            const inclinacao = variacaoX ? covariancia / variacaoX : 0;
+            const maiorValor = Math.max(...pontos.map(p => p.y));
+            // Sem referência acima, projeta a tendência dos três IVs abaixo
+            // e nunca retorna abaixo do maior comparativo observado.
+            return Math.max(maiorValor, mediaY + Math.max(0, inclinacao) * (alvo - mediaX));
+        };
+        const media = campo => {
+            const ivBaixo = mediaReferencias(referenciasAbaixo, 'iv');
+            const ivCima = mediaReferencias(referenciasAcima, 'iv');
+            const valorBaixo = mediaReferencias(referenciasAbaixo, campo);
+            const valorCima = mediaReferencias(referenciasAcima, campo);
+            if (!referenciasAcima.length) return extrapolarAcima(campo);
+            if (ivBaixo != null && ivCima != null && ivBaixo !== ivCima && valorBaixo != null && valorCima != null) {
+                const proporcao = Math.max(0, Math.min(1, (alvo - ivBaixo) / (ivCima - ivBaixo)));
+                return valorBaixo + (valorCima - valorBaixo) * proporcao;
+            }
+            const valores = [valorBaixo, valorCima].filter(x => x != null);
+            return valores.length ? valores.reduce((a, b) => a + b, 0) / valores.length : null;
+        };
+        const estimativa = { gold: media('gold'), diamantes: media('diamantes') };
+        if (goldPorDiamante > 0) {
+            if (estimativa.gold == null && estimativa.diamantes != null) estimativa.gold = estimativa.diamantes * goldPorDiamante;
+            if (estimativa.diamantes == null && estimativa.gold != null) estimativa.diamantes = estimativa.gold / goldPorDiamante;
+        }
+        return { ok: true, nome: pk.nome, iv: alvo, abaixo, acima, raridade: nomesRaridade[rankAlvo] || 'raridade informada', fallbackRaridade, diamante: { goldPorDiamante, compra: melhorCompra, venda: melhorVenda, amostras: diamanteOfertas.compra.length + diamanteOfertas.venda.length, implicita: implicita != null }, estimativa: { ...estimativa, sinal: !referenciasAcima.length && referenciasAbaixo.length ? '+' : '' }, amostras: ofertas.length };
+    }
+
     window.__pgIv = {
         async calc(entrada) {
             const e = entrada || {};
@@ -5583,8 +5817,16 @@
                 sprite, golpes,
                 poder: calcularPoderEstimado({ bases, ivs, nivel, qualidade }),
                 poderJogo: pk.poder || 0,
+                mercado: await pesquisarMercadoIV(pk, usaObs ? ivObs : Math.ceil(soma)),
                 pokemon: { nome: pk.nome, nivel: pk.nivel, ivAtual: pk.ivAtual, poder: pk.poder, tipos: pk.tipos || [], qualidade: pk.qualidade || "", multiplicadorQualidade: pk.multiplicadorQualidade || 1, hp: pk.hp, atk: pk.atk, def: pk.def, spa: pk.spa, spd: pk.spd, vel: pk.vel }
             };
+        },
+        market(entrada) {
+            const e = entrada || {}, pk = e.pokemon || ultimoPokemon;
+            return pesquisarMercadoIV(pk, e.iv != null ? e.iv : pk && pk.ivAtual);
+        },
+        diamond() {
+            return pesquisarMercadoIV({ nome: 'Diamond' }, 0, true);
         },
         // avisa o app: o canal e o console do painel, que o app escuta (sem ficar consultando)
         async reportar(abrir) {
