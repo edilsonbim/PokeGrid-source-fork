@@ -10,6 +10,7 @@ release-installer-flat/
 release-pokegrid/
 release/
 release-update-test*/
+release-fix*/
 *.zip
 *.log
 .update-needs-install

@@ -199,7 +199,7 @@ ipcMain.handle('release:update-install', async (e) => {
     });
     if (result.ok) {
       logErro('atualizador-release', 'preparado: ' + result.version + ' [' + result.asset + '] sha256=' + result.sha256);
-      setTimeout(() => app.quit(), 100);
+      setTimeout(() => app.exit(0), 250);
     }
     return result;
   } finally { releaseUpdateRunning = false; }

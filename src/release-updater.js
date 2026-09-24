@@ -135,12 +135,20 @@ function download(url, destination, redirects = 0, received = 0) {
 function writeInstallScript({ packageFile, targetPath, portable, pid, tempDir }) {
   const script = path.join(tempDir, 'aplicar-atualizacao.ps1');
   const q = (value) => "'" + String(value).replace(/'/g, "''") + "'";
+  const logFile = path.join(tempDir, 'atualizacao.log');
   const lines = [
     '$ErrorActionPreference = "Stop"',
     '$pidAlvo = ' + Math.trunc(pid),
     '$pacote = ' + q(packageFile),
     '$alvo = ' + q(targetPath),
-    'while (Get-Process -Id $pidAlvo -ErrorAction SilentlyContinue) { Start-Sleep -Milliseconds 250 }'
+    '$log = ' + q(logFile),
+    'function Registrar($texto) { Add-Content -LiteralPath $log -Value ((Get-Date -Format "s") + " " + $texto) }',
+    'try {',
+    'Registrar "atualizador iniciado; pid=$pidAlvo; pacote=$pacote; alvo=$alvo"',
+    '$limite = (Get-Date).AddSeconds(30)',
+    'while ((Get-Process -Id $pidAlvo -ErrorAction SilentlyContinue) -and ((Get-Date) -lt $limite)) { Start-Sleep -Milliseconds 250 }',
+    'if (Get-Process -Id $pidAlvo -ErrorAction SilentlyContinue) { Registrar "tempo limite aguardando o PokeGrid; encerrando o processo"; Stop-Process -Id $pidAlvo -Force; Start-Sleep -Milliseconds 500 }',
+    'Registrar "iniciando instalacao"'
   ];
   if (portable) {
     lines.push(
@@ -148,15 +156,22 @@ function writeInstallScript({ packageFile, targetPath, portable, pid, tempDir })
       'Remove-Item -LiteralPath $backup -Force -ErrorAction SilentlyContinue',
       'Move-Item -LiteralPath $alvo -Destination $backup -Force',
       'Copy-Item -LiteralPath $pacote -Destination $alvo -Force',
-      'Start-Process -FilePath $alvo'
+      'Registrar "arquivo portatil substituido"',
+      'Start-Process -FilePath $alvo',
+      'Registrar "PokeGrid reiniciado"'
     );
   } else {
     lines.push(
-      '$inst = Start-Process -FilePath $pacote -ArgumentList @("/S", ("/D=" + (Split-Path -Parent $alvo))) -PassThru -Wait',
-      'if ($inst.ExitCode -ne 0) { exit $inst.ExitCode }',
-      'Start-Process -FilePath $alvo'
+      '$pasta = Split-Path -Parent $alvo',
+      '$inst = Start-Process -FilePath $pacote -ArgumentList @("/S", ("/D=" + $pasta)) -WorkingDirectory $pasta -PassThru -Wait',
+      'Registrar ("instalador finalizado com codigo " + $inst.ExitCode)',
+      'if ($inst.ExitCode -ne 0) { throw ("instalador retornou " + $inst.ExitCode) }',
+      'if (-not (Test-Path -LiteralPath $alvo)) { throw "executavel nao encontrado apos a instalacao" }',
+      'Start-Process -FilePath $alvo',
+      'Registrar "PokeGrid reiniciado"'
     );
   }
+  lines.push('} catch { Registrar ("FALHA: " + $_.Exception.Message); exit 1 }');
   fs.writeFileSync(script, lines.join('\r\n') + '\r\n', 'utf8');
   return script;
 }
