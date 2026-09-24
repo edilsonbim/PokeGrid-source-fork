@@ -452,6 +452,29 @@
   .cd-ball-cell { display: flex; align-items: center; gap: 7px; }
   .cd-item-price { display: block; margin-top: 2px; color: #f2c665; font-size: 9px; font-weight: 500; white-space: nowrap; }
   .cd-account-gold { margin-left: 5px; color: #f2c665; font-size: 10px; white-space: nowrap; }
+  .cd-team-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:9px 0 5px; color:#adbac7; font-size:12px; }
+  .cd-team-main { display:flex; align-items:center; gap:5px; min-width:190px; }
+  .cd-team-balance { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:600; white-space:nowrap; }
+  .cd-team-balance .cd-dollar { color:#f2c665; }
+  .cd-team-balance .cd-diamond { color:#79c0ff; }
+  .cd-team-actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:1 1 360px; flex-wrap:wrap; }
+  .cd-team-slot { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex:none; border:1px solid #3b4654; border-radius:4px; color:#8b949e; font-size:10px; font-weight:700; }
+  .cd-team-empty { opacity:.55; cursor:default; }
+  #simpleChatDock { display:none; position:fixed; right:18px; bottom:18px; z-index:1200; width:min(390px,calc(100vw - 36px)); height:330px; flex-direction:column; background:#111820; border:1px solid #344454; border-radius:10px; box-shadow:0 12px 34px rgba(0,0,0,.5); overflow:hidden; }
+  body.cards-on #simpleChatDock.has-chat { display:flex; }
+  .sc-tabs { display:flex; gap:4px; padding:6px; background:#18222d; border-bottom:1px solid #2c3947; overflow-x:auto; }
+  .sc-tab { display:flex; align-items:center; gap:5px; max-width:150px; padding:5px 7px; border:1px solid #344454; border-radius:6px; background:#111820; color:#c9d1d9; font-size:10px; cursor:pointer; white-space:nowrap; }
+  .sc-tab.active { border-color:#388bfd; color:#fff; background:#1b3047; }
+  .sc-tab .sc-close { color:#f0883e; font-size:13px; line-height:10px; }
+  .sc-title { padding:7px 10px; color:#79c0ff; font-size:11px; font-weight:700; border-bottom:1px solid #263241; }
+  .sc-messages { flex:1; min-height:0; overflow:auto; padding:7px 9px; font-size:11px; }
+  .sc-msg { padding:4px 6px; margin:3px 0; border-radius:6px; background:#19232e; color:#d7e0e8; word-break:break-word; }
+  .sc-msg.mine { background:#17351f; color:#c9f7d1; text-align:right; }
+  .sc-empty { color:#7d8590; padding:14px 4px; text-align:center; }
+  .sc-compose { display:flex; gap:5px; padding:7px; border-top:1px solid #2c3947; }
+  .sc-account { width:108px; min-width:0; padding:7px 5px; background:#0d141b; color:#c9d1d9; border:1px solid #344454; border-radius:6px; }
+  .sc-compose input { flex:1; min-width:0; padding:7px 8px; background:#0d141b; color:#e6edf3; border:1px solid #344454; border-radius:6px; }
+  .sc-compose button { padding:6px 9px; border:1px solid #2ea043; border-radius:6px; background:#17351f; color:#7ee787; cursor:pointer; }
   .cd-ball-buy { background: #17351f; border: 1px solid #2ea043; border-radius: 5px; color: #7ee787; font-size: 10px; padding: 2px 6px; cursor: pointer; white-space: nowrap; }
   .cd-ball-buy:hover { background: #238636; color: #fff; }
   .cd-sell-safe { background: #3b1d20; border: 1px solid #da3633; border-radius: 6px; color: #ffb3ad; font-size: 11px; padding: 4px 9px; cursor: pointer; white-space: nowrap; }
@@ -1014,6 +1037,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
           wv.executeJavaScript('window.__pgSellGuardOn=' + (sellGuardOn ? 'true' : 'false') + ';window.__pgSellLock=' + JSON.stringify(sellLock)).catch(() => {});
           wv.executeJavaScript(QOL_UI).catch(() => {});
           wv.executeJavaScript(chatScript(chatHidden || cardsOn)).catch(() => {});
+          wv.executeJavaScript(DIRECT_CHAT_SCRIPT).catch(() => {});
           wv.executeJavaScript(dockScript(dockHidden)).catch(() => {});
           applyGameLayoutsTo(i);
           // so na tela de login, pra nao rodar a toa dentro do jogo
@@ -1270,7 +1294,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     d.a = a;
     d.name = String(d.name || '').slice(0, 40); d.cid = String(d.cid || '').slice(0, 60); d.hunt = String(d.hunt || '').slice(0, 60);
     ['catchLog', 'usedList', 'team', 'chatShares'].forEach(k => d[k] = (Array.isArray(d[k]) ? d[k] : []).slice(0, 120)
-      .map(e => { if (e && typeof e === 'object') { for (const p2 in e) if (typeof e[p2] === 'string') e[p2] = e[p2].slice(0, 80); } return e; }));
+      .map(e => { if (e && typeof e === 'object') { for (const p2 in e) if (typeof e[p2] === 'string') e[p2] = e[p2].slice(0, p2 === 'body' ? 500 : 80); } return e; }));
     ['gold', 'diamonds', 'balls', 'potions', 'revives', 'shinyEnc', 'level', 'ballPrice'].forEach(k => d[k] = num(d[k]));
     const im = d.invMap && typeof d.invMap === 'object' && !Array.isArray(d.invMap) ? d.invMap : {};
     const inv2 = {}; let nInv = 0;
@@ -1462,12 +1486,14 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
       window.__chatObs.observe(document.documentElement, { childList: true, subtree: true });
     }
   })()`;
+  const DIRECT_CHAT_SCRIPT = `(()=>{try{const P=window.__poke;if(!P||P.__pgDirectChat)return;P.__pgDirectChat=1;const save=(mm,forced)=>{try{if(!mm||!mm.body)return;const body=String(mm.body).slice(0,500),from=String(mm.fromName||mm.senderName||mm.from||'').slice(0,60),to=String(mm.toName||mm.recipientName||mm.to||'').slice(0,60);const shares=P.chatShares=P.chatShares||[],re=/\\[poke!([A-Za-z0-9_-]+)\\]/g;let mt;while((mt=re.exec(body))){try{const j=JSON.parse(atob(mt[1].replace(/-/g,'+').replace(/_/g,'/')));if(j&&j.k==='poke'){const n=String(j.n||'?').slice(0,40),iv=Number(j.iv)||0,lv=Number(j.lv)||0,old=shares.find(x=>x.n===n&&x.iv===iv&&x.lv===lv&&x.fr===from);if(old){old.body=body;old.to=to;}else{shares.push({fr:from,n,sh:!!j.sh,lv,q:Number(j.q)||0,iv,pw:Number(j.pw)||0,body,to,t:Date.now()});if(shares.length>15)shares.shift();}}}catch(x){}}const direct=P.chatDirect=P.chatDirect||[];if((forced||to)&&from&&body&&!body.includes('[poke!')){const old=direct.find(x=>x.from===from&&x.to===to&&x.body===body);if(!old)direct.push({from,to,body,t:Date.now()});if(direct.length>120)direct.splice(0,direct.length-120);}}catch(x){}};const attach=()=>{const s=P.sock;if(!s||s.readyState!==1||s.__pgDirectChat)return;s.__pgDirectChat=1;s.addEventListener('message',e=>{try{const m=JSON.parse(e.data);if(m&&m.msg)save(m.msg,!!(m.msg.toName||m.msg.recipientName||m.msg.to));['private','whisper','dm'].forEach(k=>{if(m&&Array.isArray(m[k]))m[k].forEach(x=>save(x,true));});}catch(x){}});};attach();setInterval(attach,2000);}catch(x){}})()`;
+  const READ_DIRECT_CHAT = `(()=>{const P=window.__poke;return P&&Array.isArray(P.chatDirect)?P.chatDirect.slice(-120):[]})()`;
   const chatBtn = document.getElementById('chat');
   let chatHidden = lsGet('chatHidden') !== '0'; // fechado por padrao
   function applyChat() {
     chatBtn.textContent = chatHidden ? t('chatHidden') : t('chatShown');
     chatBtn.classList.toggle('on', !chatHidden);
-    webviews.forEach((w, i) => { if (off[i]) return; try { w.executeJavaScript(chatScript(chatHidden || cardsOn)).catch(() => {}); } catch {} });
+    webviews.forEach((w, i) => { if (off[i]) return; try { w.executeJavaScript(chatScript(chatHidden || cardsOn)).catch(() => {}); w.executeJavaScript(DIRECT_CHAT_SCRIPT).catch(() => {}); } catch {} });
     lsSet('chatHidden', chatHidden ? '1' : '0');
   }
   chatBtn.onclick = () => { chatHidden = !chatHidden; applyChat(); };
@@ -2368,7 +2394,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const bagPokes = pokeList.map(p => {
       const st = p.stats || {};
       return { id:String(p.id||''), sid:+p.speciesId||+p.pokeId||0, name:String(p.name||'?'), level:+p.level||0, quality:nL(p.quality), ivTotal:nL(p.ivTotal),
-        shiny:!!p.shiny, team:!!p.team, locked:!!p.locked, type1:String(p.type1||''), type2:String(p.type2||''),
+        shiny:!!p.shiny, team:!!p.team, locked:!!(p.locked ?? p.isLocked ?? p.protected ?? p.sellLocked), type1:String(p.type1||''), type2:String(p.type2||''),
         stats:{ hp:Math.floor(+(st.hp!=null?st.hp:p.hp)||0), atk:Math.floor(+(st.atk!=null?st.atk:p.atk)||0), def:Math.floor(+(st.def!=null?st.def:p.def)||0),
           spa:Math.floor(+(st.spAtk!=null?st.spAtk:(st.spa!=null?st.spa:(p.spAtk!=null?p.spAtk:p.spa)))||0),
           spd:Math.floor(+(st.spDef!=null?st.spDef:(st.spd!=null?st.spd:(p.spDef!=null?p.spDef:p.spd)))||0),
@@ -3094,6 +3120,101 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
 
   // ===== Modo Cartas: dashboard ultra leve (jogo invisivel a ~1fps, farm continua no servidor) =====
   const cardsEl = document.getElementById('cards');
+  const simpleChatTabs = new Map();
+  let simpleChatActive = '';
+  const OPEN_SIMPLE_CHAT = player => `(()=>{try{const n=${JSON.stringify(String(player||'').slice(0,60))},norm=v=>String(v||'').trim().toLowerCase();const els=[...document.querySelectorAll('.chat-box [data-user],.chat-box [data-username],.chat-box [data-player],.chat-box [data-name],.chat-box button,.chat-box a,.chat-box [role="button"],.chat-box [role="listitem"],.chat-box .chat-message,.chat-box .message')];const el=els.find(x=>norm(x.dataset.user||x.dataset.username||x.dataset.player||x.dataset.name)===norm(n))||els.find(x=>norm(x.textContent)===norm(n));if(el){el.click();return{ok:true};}return{ok:false,reason:'Jogador não encontrado no chat nativo'};}catch(e){return{ok:false,reason:e.message||'Não foi possível abrir o chat'}}})()`;
+  const SEND_SIMPLE_CHAT = text => `(()=>{try{const msg=${JSON.stringify(String(text||'').slice(0,500))};if(!msg)return{ok:false,reason:'Mensagem vazia'};const inputs=[...document.querySelectorAll('input,textarea')],input=inputs.find(x=>/Message to|Mensagem para|private|privad|Talk to|Falar com/i.test((x.placeholder||'')+' '+(x.getAttribute('aria-label')||'')))||inputs.find(x=>x.closest('.chat-box')&&/Talk in|Falar em/i.test(x.placeholder||''));if(!input)return{ok:false,reason:'Campo do chat privado não encontrado'};const proto=input instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,setter=Object.getOwnPropertyDescriptor(proto,'value')&&Object.getOwnPropertyDescriptor(proto,'value').set;if(setter)setter.call(input,msg);else input.value=msg;input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:msg}));input.dispatchEvent(new Event('change',{bubbles:true}));input.focus();const root=input.closest('form')||input.closest('[role="dialog"]')||input.closest('.chat-box')||input.parentElement,send=root&&[...root.querySelectorAll('button')].find(b=>b.type==='submit'||/send|enviar/i.test((b.textContent||'')+' '+(b.getAttribute('aria-label')||'')));if(send){send.click();return{ok:true,method:'button'};}input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',which:13,keyCode:13,bubbles:true,cancelable:true}));input.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',code:'Enter',which:13,keyCode:13,bubbles:true,cancelable:true}));return{ok:true,method:'enter'};}catch(e){return{ok:false,reason:e.message||'Não foi possível enviar a mensagem'}}})()`;
+  function ensureSimpleChatDock() {
+    let dock = document.getElementById('simpleChatDock');
+    if (dock) return dock;
+    dock = document.createElement('div'); dock.id = 'simpleChatDock';
+    dock.innerHTML = '<div class="sc-tabs"></div><div class="sc-title"></div><div class="sc-messages"></div><div class="sc-compose"><select class="sc-account" title="Conta que enviará a mensagem"></select><input type="text" maxlength="500" placeholder="Mensagem…"><button type="button">Enviar</button></div>';
+    document.body.appendChild(dock);
+    return dock;
+  }
+  function renderSimpleChatDock() {
+    const dock = ensureSimpleChatDock(), tabs = dock.querySelector('.sc-tabs'), title = dock.querySelector('.sc-title'), messages = dock.querySelector('.sc-messages');
+    dock.classList.toggle('has-chat', simpleChatTabs.size > 0);
+    tabs.innerHTML = '';
+    for (const [key, tab] of simpleChatTabs) {
+      const b = document.createElement('button'); b.className = 'sc-tab' + (key === simpleChatActive ? ' active' : ''); b.type = 'button'; b.textContent = tab.player;
+      const x = document.createElement('span'); x.className = 'sc-close'; x.textContent = '×'; x.title = 'Fechar chat';
+      x.onclick = e => { e.stopPropagation(); simpleChatTabs.delete(key); if (simpleChatActive === key) simpleChatActive = [...simpleChatTabs.keys()][0] || ''; renderSimpleChatDock(); };
+      b.appendChild(x); b.onclick = () => { simpleChatActive = key; renderSimpleChatDock(); }; tabs.appendChild(b);
+    }
+    const tab = simpleChatTabs.get(simpleChatActive);
+    title.textContent = tab ? 'Chat com ' + tab.player : 'Nenhum chat aberto';
+    messages.innerHTML = '';
+    if (tab) {
+      if (!tab.messages.length) messages.innerHTML = '<div class="sc-empty">Nenhuma mensagem recebida ainda.</div>';
+      else tab.messages.forEach(m => { const el = document.createElement('div'); el.className = 'sc-msg' + (m.mine ? ' mine' : ''); el.textContent = m.body; messages.appendChild(el); });
+    }
+    messages.scrollTop = messages.scrollHeight;
+    const account = dock.querySelector('.sc-account'), input = dock.querySelector('.sc-compose input'), send = dock.querySelector('.sc-compose button');
+    send.disabled = !tab;
+    account.innerHTML = tab ? tab.accounts.map((a, idx) => '<option value="' + a.i + '">' + esc(a.name) + '</option>').join('') : '';
+    if (tab) account.value = String(tab.accountId);
+    account.disabled = !tab || tab.accounts.length < 2;
+    account.onchange = async () => { if (tab) { tab.accountId = +account.value; const w = webviews[tab.accountId]; if (w) { try { await w.executeJavaScript('(' + chatScript(false) + ')'); await w.executeJavaScript(OPEN_SIMPLE_CHAT(tab.player)); } catch {} } } };
+    const submit = async () => {
+      const active = simpleChatTabs.get(simpleChatActive), textMsg = input.value.trim();
+      if (!active || !textMsg || !webviews[active.accountId]) return;
+      const w = webviews[active.accountId];
+      const opened = await w.executeJavaScript('(' + chatScript(false) + ')').catch(e => ({ ok:false, reason:e.message || 'falha ao exibir o chat' }));
+      const selected = await w.executeJavaScript(OPEN_SIMPLE_CHAT(active.player)).catch(e => ({ ok:false, reason:e.message || 'falha ao abrir o chat privado' }));
+      const sent = selected && selected.ok ? await w.executeJavaScript(SEND_SIMPLE_CHAT(textMsg)).catch(e => ({ ok:false, reason:e.message || 'falha ao enviar' })) : selected;
+      if (!sent || !sent.ok) {
+        active.messages.push({ body:'Não enviado: ' + ((sent && sent.reason) || (opened && opened.reason) || 'chat privado indisponível'), mine:false, error:true, t:Date.now() });
+        renderSimpleChatDock(); return;
+      }
+      active.messages.push({ body:textMsg, mine:true, t:Date.now() }); input.value = ''; renderSimpleChatDock();
+    };
+    send.onclick = submit; input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } };
+  }
+  function ensureSimpleChatTab(player, accountId, messages) {
+    const name = String(player || '').trim(); if (!name || accountId == null || !webviews[+accountId]) return '';
+    const key = String(accountId) + ':' + name.toLowerCase();
+    if (!simpleChatTabs.has(key)) {
+      const accountsForChat = webviews.map((w, i) => ({ i, name:tabNames[i] || stName(i) })).filter(a => !off[a.i] && webviews[a.i]);
+      simpleChatTabs.set(key, { player:name, accountId:+accountId, accounts:accountsForChat, messages:messages || [] });
+    } else if (messages && messages.length) {
+      const tab = simpleChatTabs.get(key); tab.messages = messages;
+    }
+    return key;
+  }
+  async function openSimpleChat(player, accountId) {
+    const name = String(player || '').trim(); if (!name || accountId == null) return;
+    const key = ensureSimpleChatTab(name, accountId); if (!key) return;
+    simpleChatActive = key; renderSimpleChatDock();
+    const w = webviews[+accountId];
+    if (w) { try { await w.executeJavaScript('(' + chatScript(false) + ')'); await w.executeJavaScript(OPEN_SIMPLE_CHAT(name)); } catch {} }
+    refreshSimpleChats();
+  }
+  async function refreshSimpleChats() {
+    let opened = false;
+    for (let i = 0; i < webviews.length; i++) {
+      if (off[i] || !webviews[i]) continue;
+      const list = await webviews[i].executeJavaScript(READ_DIRECT_CHAT).catch(() => []) || [];
+      const own = String(tabNames[i] || stName(i) || '').toLowerCase();
+      const incoming = list.filter(m => {
+        const from = String(m.from || '').trim(), to = String(m.to || '').trim();
+        return from && from.toLowerCase() !== own && (!to || to.toLowerCase() === own);
+      });
+      if (incoming.length) {
+        const player = String(incoming[incoming.length - 1].from || '').trim();
+        const key = ensureSimpleChatTab(player, i, incoming.map(m => ({ body:String(m.body || ''), mine:false, t:m.t })));
+        if (key && key !== simpleChatActive) { simpleChatActive = key; opened = true; }
+      }
+    }
+    for (const tab of simpleChatTabs.values()) {
+      const list = await webviews[tab.accountId]?.executeJavaScript(READ_DIRECT_CHAT).catch(() => []) || [];
+      const incoming = list.filter(m => String(m.from || '').toLowerCase() === tab.player.toLowerCase() || String(m.to || '').toLowerCase() === tab.player.toLowerCase()).map(m => ({ body:String(m.body || ''), mine:String(m.from || '').toLowerCase() !== tab.player.toLowerCase(), t:m.t }));
+      const local = tab.messages.filter(m => m.mine);
+      tab.messages = [...incoming, ...local].sort((a,b) => (+a.t||0) - (+b.t||0)).slice(-80);
+    }
+    if (simpleChatTabs.size || opened) renderSimpleChatDock();
+  }
+  setInterval(() => { if (cardsOn && simpleChatTabs.size) refreshSimpleChats(); }, 2000);
   const cardsBtn = document.getElementById('cardsBtn');
   // Depois de uma acao que nao edita um filtro, devolve o teclado ao jogo. Campos de
   // texto/select continuam com foco para permitir edicao normal.
@@ -3266,8 +3387,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   let huntScope = lsGet('huntScope') || 'minhas'; // 'minhas' (as que voce farma/favoritou) | 'todas'
   let showHiddenHunts = false; // transitorio: revelar as ocultas pra desfazer
   // ----- Cartas modular: cada seção liga/desliga e reordena, salvo no localStorage -----
-  const CDSECTS = ['kpis', 'today', 'table', 'balls', 'bagIv', 'sellItems', 'recentHunts', 'hunts', 'catches', 'shinies', 'shinyTried', 'trend', 'shared', 'team', 'inv', 'pokedexTp'];
-  const cdLabel = (k) => ({ kpis: t('cdSecKpis'), today: t('cdToday'), table: t('cdByAcc2'), balls: 'Pokébolas e curas por personagem', bagIv: 'Análise de IV da bag', sellItems: 'Venda protegida de itens', recentHunts: 'Últimas hunts por personagem', pokedexTp: 'Pokédex e teleporte', hunts: t('cdHunts'), catches: t('cdCatches'), shinies: t('cdShinies'), shinyTried: t('cdShinyTried'), trend: t('cdTrend'), shared: t('cdShared'), team: t('cdTeams'), inv: t('cdInv') }[k] || k);
+  const CDSECTS = ['kpis', 'today', 'table', 'balls', 'recentHunts', 'hunts', 'catches', 'shinies', 'shinyTried', 'trend', 'shared', 'team', 'inv', 'pokedexTp'];
+  const cdLabel = (k) => ({ kpis: t('cdSecKpis'), today: t('cdToday'), table: t('cdByAcc2'), balls: 'Pokébolas e curas por personagem', recentHunts: 'Últimas hunts por personagem', pokedexTp: 'Pokédex e teleporte', hunts: t('cdHunts'), catches: t('cdCatches'), shinies: t('cdShinies'), shinyTried: t('cdShinyTried'), trend: t('cdTrend'), shared: t('cdShared'), team: t('cdTeams'), inv: t('cdInv') }[k] || k);
   // Melhor catch: por que criterio. Padrao IV x qualidade, porque a qualidade multiplica os
   // stats e o poder final, entao IV puro sozinho engana (126/192 x1.80 bate 150/192 x0.95).
   let bestCrit = ['ivq', 'iv', 'q'].includes(lsGet('bestCrit')) ? lsGet('bestCrit') : 'ivq';
@@ -3293,7 +3414,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       per: +c0.per || 0
     };
   } catch {}
-  const CDW_DEF = { kpis: 12, today: 12, table: 12, balls: 12, bagIv: 12, sellItems: 12, recentHunts: 12, hunts: 4, catches: 4, shinies: 4, shinyTried: 6, trend: 3, shared: 3, team: 12, inv: 6, pokedexTp: 12 };
+  const CDW_DEF = { kpis: 12, today: 12, table: 12, balls: 12, recentHunts: 12, hunts: 4, catches: 4, shinies: 4, shinyTried: 6, trend: 3, shared: 3, team: 12, inv: 6, pokedexTp: 12 };
   const cdW = (s) => Math.max(3, Math.min(12, +(cardsCfg.w[s]) || CDW_DEF[s] || 6));
   try { const c = lsObj('cardsCfg'); if (Array.isArray(c.order)) cardsCfg.order = c.order.filter(x => CDSECTS.includes(x)); CDSECTS.forEach(s => { if (!cardsCfg.order.includes(s)) cardsCfg.order.push(s); }); cardsCfg.hide = c.hide || {}; if (c.w && typeof c.w === 'object') cardsCfg.w = c.w; if (c.h && typeof c.h === 'object') cardsCfg.h = c.h; } catch {}
   const saveCardsCfg = () => { try { lsSet('cardsCfg', JSON.stringify(cardsCfg)); } catch {} };
@@ -3623,7 +3744,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       sellItemsBusy.delete(i);
       accountActionBusy.delete(i);
       try {
-        if (r?.ok) refreshCards();
+        if (r?.ok) { try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); setTimeout(() => { try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); } catch {} }, 350); } catch {} }
         const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
         document.querySelectorAll('.cd-sell-safe').forEach(btn => {
           if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender todos os itens permitidos'; btn.title = status; }
@@ -3689,7 +3810,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       sellPokesBusy.delete(i);
       accountActionBusy.delete(i);
       try {
-        if (r?.ok) refreshCards();
+        if (r?.ok) { try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); setTimeout(() => { try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); } catch {} }, 350); } catch {} }
         const status = (r?.ok ? 'Venda concluída' : r?.cancelled ? 'Venda cancelada' : 'Venda não realizada: ' + (r?.reason || 'erro desconhecido')) + (returnFailed ? '; retorno à hunt não confirmado' : '');
         document.querySelectorAll('.cd-sell-pokes').forEach(btn => {
           if (+btn.dataset.i === i) { btn.disabled = false; btn.textContent = 'Vender Pokémon IV < 150'; btn.title = status; }
@@ -3718,7 +3839,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       const confirmed = preview.stones.map(x => ({ id:+x.id, qty:+x.qty || 0 }));
       const out = await runMarkAction(i, SELL_SELECTED_STONES_SELECTED(ids, confirmed), true);
       r = out.r; returnFailed = out.returnFailed;
-      if (r?.ok) { stoneSelected[cid] = {}; try { localStorage.setItem('stoneSelected', JSON.stringify(stoneSelected)); } catch {} refreshCards(); }
+      if (r?.ok) { stoneSelected[cid] = {}; try { localStorage.setItem('stoneSelected', JSON.stringify(stoneSelected)); } catch {} try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); setTimeout(() => { try { stCache[i] = null; bagIvCache[i] = null; refreshStats(); if (cardsOn) refreshCards(true); } catch {} }, 350); } catch {} }
     } catch (e) { r = { ok:false, reason:e?.message || 'erro desconhecido' }; }
     finally {
       const label = tabNames[i] || stName(i);
@@ -4001,7 +4122,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   const pokemonCount = document.getElementById('pokemonCount');
   let pokemonRows = [], pokemonLoading = false;
   const pokemonActionBusy = new Set();
-  const POKEMON_LOCK_ACTION = (id, locked) => `(()=>{try{const P=window.__poke;if(!P||!P.sock||P.sock.readyState!==1)return{ok:false,reason:'WebSocket do jogo indisponível'};const list=(P.ws&&P.ws.pokes&&P.ws.pokes.list)||[];const p=list.find(x=>String(x&&x.id)===String(${JSON.stringify(String(id))}));if(!p)return{ok:false,reason:'Pokémon não encontrado na conta'};const next=!!${locked?'true':'false'};P.sock.send(JSON.stringify({type:'poke-lock',pokeId:p.id,locked:next}));p.locked=next;return{ok:true,locked:next};}catch(e){return{ok:false,reason:e&&e.message||'Não foi possível alterar o cadeado'};}})()`;
+  const POKEMON_LOCK_ACTION = (id, locked) => `(async()=>{try{const P=window.__poke;if(!P||!P.sock||P.sock.readyState!==1)return{ok:false,reason:'WebSocket do jogo indisponível'};const raw=P.ws&&P.ws.pokes;const list=Array.isArray(raw)?raw:(raw&&Array.isArray(raw.list)?raw.list:[]);const p=list.find(x=>String(x&&x.id)===String(${JSON.stringify(String(id))}));if(!p)return{ok:false,reason:'Pokémon não encontrado na conta'};const next=!!${locked?'true':'false'};P.sock.send(JSON.stringify({type:'poke-lock',pokeId:p.id,locked:next}));p.locked=next;p.isLocked=next;try{P.sock.send(JSON.stringify({type:'pokes-get'}));}catch(x){}await new Promise(r=>setTimeout(r,350));const fresh=(P.ws&&P.ws.pokes);const freshList=Array.isArray(fresh)?fresh:(fresh&&Array.isArray(fresh.list)?fresh.list:[]);const current=freshList.find(x=>String(x&&x.id)===String(p.id));return{ok:true,locked:!!(current&&(current.locked??current.isLocked??current.protected??current.sellLocked))};}catch(e){return{ok:false,reason:e&&e.message||'Não foi possível alterar o cadeado'};}})()`;
   const CHAT_POKEMON_ACTION = p => `(()=>{try{const id=${JSON.stringify(String(p.id||''))};if(!id)return{ok:false,reason:'Pokémon sem identificador válido'};const msg='[poke:'+id+'] ';const all=[...document.querySelectorAll('input,textarea')];let input=all.find(x=>x.closest('.chat-box')&&/Falar em|Talk in/i.test(x.placeholder||''));if(!input)input=all.find(x=>/Falar em|Talk in/i.test(x.placeholder||'')&&!/Message to|Mensagem para/i.test(x.placeholder||''));if(!input)return{ok:false,reason:'Campo público do chat não encontrado'};const proto=input instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')&&Object.getOwnPropertyDescriptor(proto,'value').set;if(setter)setter.call(input,msg);else input.value=msg;input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:msg}));input.dispatchEvent(new Event('change',{bubbles:true}));input.focus();return{ok:true,prepared:true};}catch(e){return{ok:false,reason:e&&e.message||'Não foi possível preparar o Pokémon no chat'};}})()`;
   const pokemonFilters = () => ({
     name: String(pokemonSearch.value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
@@ -4364,7 +4485,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         }
       });
       if (d.usedList && d.usedList.length) (utBase[i] || (utBase[i] = { init: 0 })).init = 1; // a partir daqui, especie inedita = tentativa da sessao
-      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, gold: +d.gold || 0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], depotPokes, dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
+      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, gold: +d.gold || 0, diamonds: +d.diamonds || 0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], depotPokes, dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
     }
     dhist.push({ t: Date.now(), g: sumG, x: sumX });
     dhist = dhist.filter(p => p.t > Date.now() - 3600e3);
@@ -4429,7 +4550,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
           + '<td>' + (r.st === 'on' ? nf(r.kph) : '—') + '</td>'
           + '<td>' + (r.st === 'on' ? nf(r.caps) : '—') + '</td>'
           + '<td style="color:' + ((r.sh || 0) > 0 ? '#f778ba' : '#8b949e') + '">' + (r.st === 'on' ? nf(r.sh) : '—') + '</td>'
-          + '<td>' + (r.best ? '<span style="color:' + (r.best.q ? RARO(+r.best.q)[1] : '#e6edf3') + '">' + esc(r.best.n) + '</span> <span style="color:#55e6d3">' + (+r.best.iv || 0) + '/192</span>' + (+r.best.q ? ' <span style="color:#f2c665">×' + (+r.best.q).toFixed(2) + '</span>' : '') : '—') + '</td>'
+          + '<td>' + (r.best ? '<span class="cd-iv-poke cd-best-poke" data-iv-source="' + r.i + '" data-shared-name="' + esc(r.best.n) + '" data-shared-level="' + (+r.best.lv || +r.best.level || 1) + '" data-shared-iv="' + (+r.best.iv || 0) + '" data-shared-quality="' + (+r.best.q || 1) + '" data-shared-power="' + (+r.best.pw || +r.best.power || 0) + '" title="Mantenha os dois botões do mouse pressionados para abrir a calculadora de IV"><span style="color:' + (r.best.q ? RARO(+r.best.q)[1] : '#e6edf3') + '">' + esc(r.best.n) + '</span> <span style="color:#55e6d3">' + (+r.best.iv || 0) + '/192</span>' + (+r.best.q ? ' <span style="color:#f2c665">×' + (+r.best.q).toFixed(2) + '</span>' : '') + '</span>' : '—') + '</td>'
           + '<td>' + (r.last ? '<span style="color:' + (r.last.q ? RARO(r.last.q)[1] : '#e6edf3') + '">' + esc(r.last.n) + '</span> <span style="color:#6e7681">' + fmtHM(r.last.t) + '</span>' + (r.since ? ' <span style="color:#f0883e">· ' + nf(r.since) + ' ' + ballIco + '</span>' : '') : '—') + '</td>'
           + '<td>' + stTxt + '</td></tr>';
       });
@@ -4475,9 +4596,19 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         if (pct >= 25) return ['Abaixo da média', '#f39a4b'];
         return ['Fraco', '#f05a62'];
       };
-      let s = '<div class="cd-sec"><div class="cd-h">Pokémon no Inventário (até 6 espaços) · não inclui Pokémon guardados</div>';
+      let s = '<div class="cd-sec"><div class="cd-h">Times e IV · venda protegida por personagem · itens permitidos, Pokémon com IV &lt; 150 e Stones selecionadas</div>';
       on.forEach(r => {
-        s += '<div style="margin:9px 0 5px;color:#adbac7;font-size:12px"><span class="cd-dot" style="background:' + r.dot + '"></span><b>' + esc(r.name) + '</b> · ' + nf((r.bagPokes || []).length) + ' Pokémon</div>';
+        const balance = '<span class="cd-team-balance"><span class="cd-dollar">💲' + nf(r.gold) + '</span><span class="cd-diamond">💎' + nf(r.diamonds) + '</span></span>';
+        const actions = r.st === 'on'
+          ? '<span class="cd-team-actions"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button><button class="cd-open-market" data-i="' + r.i + '">Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>'
+          : '<span class="rt">—</span>';
+        s += '<div class="cd-team-head"><span class="cd-team-main"><span class="cd-dot" style="background:' + r.dot + '"></span>' + balance + '<b>' + esc(r.name) + '</b> · ' + nf((r.bagPokes || []).length) + ' Pokémon</span>' + actions + '</div>';
+        if (r.st === 'on') {
+          const selected = stoneSelected[r.cid] || {};
+          s += '<div class="cd-team-actions" style="justify-content:flex-start;margin:0 0 8px 24px">'
+            + ((r.stones || []).length ? r.stones.map(x => '<label class="cd-stone-pick"><input class="cd-stone-check" type="checkbox" data-cid="' + esc(r.cid) + '" data-id="' + esc(x.id) + '"' + (selected[x.id] ? ' checked' : '') + '> ' + esc(x.name) + ' <b>×' + nf(x.qty) + '</b></label>').join('') : '<span class="cd-empty">Nenhuma Stone na bolsa</span>')
+            + ((r.stones || []).length ? '<button class="cd-sell-stones" data-i="' + r.i + '" data-cid="' + esc(r.cid) + '">Vender Stones selecionadas</button>' : '') + '</div>';
+        }
         if (!(r.bagPokes || []).length) { s += '<div class="cd-empty">Aguardando dados da bag…</div>'; return; }
         s += '<div style="overflow-x:auto"><table class="cd-table"><thead><tr><th>Pokémon</th><th>Level</th><th>Raridade</th><th>IV total</th><th>HP IV</th><th>ATK IV</th><th>DEF IV</th><th>SpA IV</th><th>SpD IV</th><th>VEL IV</th><th>Avaliação</th></tr></thead><tbody>';
         r.bagPokes.forEach(p => {
@@ -4520,20 +4651,6 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
           + '<span class="rn"><b>' + (p.shiny ? '✨ ' : '') + esc(p.name) + '</b><br><span style="color:#adbac7">' + esc(p.account.name) + ' · Lv' + nf(p.level) + '</span><br><span style="color:#55e6d3">IV ' + nf(p.ivTotal) + '/192</span> <span style="color:' + rare[1] + '">' + rare[0] + ' ×' + (+p.quality || 0).toFixed(2) + '</span></span></div>';
       });
       return s + '</div></div>';
-    };
-    SB.sellItems = () => {
-      let s = '<div class="cd-sec"><div class="cd-h">Venda protegida · Pokémon: somente IV menor que 150 e até Épico; nunca vende Lendário ou superior</div>';
-      rows.forEach(r => {
-        s += '<div class="cd-row"><span class="cd-dot" style="background:' + r.dot + '"></span><b class="rn">' + esc(r.name) + '</b>'
-          + (r.st === 'on' ? '<span style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button><button class="cd-open-market" data-i="' + r.i + '">Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>' : '<span class="rt">—</span>') + '</div>';
-        if (r.st === 'on') {
-          const selected = stoneSelected[r.cid] || {};
-          s += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:2px 6px 9px 24px">'
-            + ((r.stones || []).length ? r.stones.map(x => '<label class="cd-stone-pick"><input class="cd-stone-check" type="checkbox" data-cid="' + esc(r.cid) + '" data-id="' + esc(x.id) + '"' + (selected[x.id] ? ' checked' : '') + '> ' + esc(x.name) + ' <b>×' + nf(x.qty) + '</b></label>').join('') : '<span class="cd-empty">Nenhuma Stone na bolsa</span>')
-            + ((r.stones || []).length ? '<button class="cd-sell-stones" data-i="' + r.i + '" data-cid="' + esc(r.cid) + '">Vender Stones selecionadas</button>' : '') + '</div>';
-        }
-      });
-      return s + '</div>';
     };
     SB.recentHunts = () => {
       const canBack = rows.some(r => r.st === 'on' && (recentHunts[r.cid] || []).some(h => h && h.slug && h.slug !== r.huntSlug));
@@ -4582,23 +4699,32 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     SB.team = () => {
       const M = window.PokeGridIvMath;
       const alvo = Math.max(1, Math.min(500, +(lsGet('cdPjLv') || 500)));
-      const cols = ordered.filter(r => r.st === 'on' && (r.team || []).length);
+      const cols = ordered.filter(r => r.st === 'on');
       const poder = (p) => { // mesmo modulo do card de IV; sem base/qualidade/IV nao inventa numero
         const b = basesByName[String(p.name || '').toLowerCase()];
         if (!M || !b || !(+p.q > 0) || !(+p.ivt > 0) || !(+p.level > 0)) return null;
         const sp = { baseStats: { hp: b[0], atk: b[1], def: b[2], spa: b[3], spd: b[4], speed: b[5] } };
         try { return { agora: M.projectPokemon({ level: +p.level, quality: +p.q, ivTotal: +p.ivt, species: sp }, +p.level).power, proj: M.projectPokemon({ level: +p.level, quality: +p.q, ivTotal: +p.ivt, species: sp }, alvo).power }; } catch { return null; }
       };
-      const inner = cols.length ? '<div style="display:grid;grid-template-columns:repeat(' + Math.min(4, cols.length) + ',1fr);gap:12px">' + cols.map(r =>
-        '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-h" style="margin-bottom:4px"><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + '</div>'
-        + (r.team || []).map(p => {
+      const inner = cols.length ? '<div style="display:grid;grid-template-columns:repeat(' + Math.min(4, cols.length) + ',1fr);gap:12px">' + cols.map(r => {
+        const balance = '<span class="cd-team-balance"><span class="cd-dollar">💲' + nf(r.gold) + '</span><span class="cd-diamond">💎' + nf(r.diamonds) + '</span></span>';
+        const actions = '<span class="cd-team-actions"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button><button class="cd-open-market" data-i="' + r.i + '">🏪 Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>';
+        const selected = stoneSelected[r.cid] || {};
+        const stones = '<div class="cd-team-actions" style="justify-content:flex-start;margin:0 0 7px 2px">'
+          + ((r.stones || []).length ? r.stones.map(x => '<label class="cd-stone-pick"><input class="cd-stone-check" type="checkbox" data-cid="' + esc(r.cid) + '" data-id="' + esc(x.id) + '"' + (selected[x.id] ? ' checked' : '') + '> ' + esc(x.name) + ' <b>×' + nf(x.qty) + '</b></label>').join('') : '<span class="cd-empty">Nenhuma Stone na bolsa</span>')
+          + ((r.stones || []).length ? '<button class="cd-sell-stones" data-i="' + r.i + '" data-cid="' + esc(r.cid) + '">Vender Stones selecionadas</button>' : '') + '</div>';
+        const slots = Array.from({ length: 6 }, (_, slot) => (r.team || [])[slot] || null);
+         return '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-team-head" style="margin:0 0 5px"><span class="cd-team-main"><span class="cd-dot" style="background:' + r.dot + '"></span><b>' + esc(r.name) + '</b>' + balance + '</span>' + actions + '</div>' + stones
+        + slots.map((p, slot) => {
+          if (!p) return '<div class="cd-row cd-team-empty"><span class="cd-team-slot">' + (slot + 1) + '</span><span class="cd-empty">Slot vazio</span></div>';
           const pw = poder(p);
-          return '<div class="cd-row cd-iv-poke cd-team-poke" data-iv-source="' + r.i + '" data-hunt-account="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivt || 0) + '" data-shared-quality="' + (+p.q || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Duplo clique para preencher no PIW Tools Hunt" style="flex-wrap:wrap"><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
+          return '<div class="cd-row cd-iv-poke cd-team-poke" data-iv-source="' + r.i + '" data-hunt-account="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivt || 0) + '" data-shared-quality="' + (+p.q || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Duplo clique para preencher no PIW Tools Hunt" style="flex-wrap:wrap"><span class="cd-team-slot">' + (slot + 1) + '</span><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
             + (p.ivt != null ? '<span style="color:#55e6d3">' + nf(p.ivt) + '/192</span>' : '')
             + (+p.q ? '<span style="color:#f2c665">×' + (+p.q).toFixed(2) + '</span>' : '')
             + (pw ? '<span style="color:#3fb950" title="' + t('ivcPower') + '">' + nf(pw.agora) + '</span><span style="color:#8ab4ff" title="Lv' + alvo + '">→' + nf(pw.proj) + '</span>' : '')
             + '</div>';
-        }).join('') + '</div>').join('') + '</div>' : '<div class="cd-empty">' + t('cdNone') + '</div>';
+        }).join('') + '</div>';
+      }).join('') + '</div>' : '<div class="cd-empty">' + t('cdNone') + '</div>';
       return '<div class="cd-sec"><div class="cd-h">' + t('cdTeams') + '</div>'
         + '<div class="cd-cfg-row" style="margin-bottom:6px">' + t('cdProjLv') + ' <input id="cdPjLv" type="number" min="1" max="500" class="cd-inp" style="width:64px" value="' + alvo + '"></div>' + inner + '</div>'; };
     SB.inv = () => {
@@ -4721,10 +4847,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     };
     SB.shared = () => {
       const shMap = {};
-      rows.forEach(r => (r.shares || []).forEach(x2 => { shMap[x2.fr + '|' + x2.n + '|' + x2.iv + '|' + x2.lv] = x2; }));
+      rows.forEach(r => (r.shares || []).forEach(x2 => { shMap[x2.fr + '|' + x2.n + '|' + x2.iv + '|' + x2.lv] = Object.assign({ accountId:r.i }, x2); }));
       const shList = Object.values(shMap).sort((p, q) => q.t - p.t).slice(0, 8);
       return '<div class="cd-sec"><div class="cd-h">' + t('cdShared') + '</div>'
-        + (shList.length ? shList.map(x2 => '<div class="cd-row cd-shared-poke" data-shared-name="' + esc(x2.n) + '" data-shared-level="' + (+x2.lv || 0) + '" data-shared-iv="' + (+x2.iv || 0) + '" data-shared-quality="' + (+x2.q || 1) + '" data-shared-power="' + (+x2.pw || 0) + '" data-shared-shiny="' + (x2.sh ? '1' : '0') + '" title="Passe o mouse para ver este Pokémon na calculadora de IV"><span class="rn">' + (x2.sh ? '✨ ' : '') + '<b style="color:' + RARO(+x2.q || 1)[1] + '">' + esc(x2.n) + '</b>' + (+x2.lv ? ' <span style="color:#7d8590">Lv ' + (+x2.lv || 0) + '</span>' : '') + ' <span style="color:#7d8590">· ' + esc(x2.fr || '?') + '</span></span>' + (+x2.iv ? '<span style="color:#55e6d3">' + (+x2.iv || 0) + '/192</span>' : '') + (+x2.q ? '<span style="color:#f2c665">×' + (+x2.q).toFixed(2) + '</span>' : '') + '<span class="rt">' + fmtHM(x2.t) + '</span></div>').join('') : '<div class="cd-empty">' + t('cdNone') + '</div>') + '</div>';
+        + (shList.length ? shList.map(x2 => '<div class="cd-row cd-shared-poke" data-chat-player="' + esc(x2.fr || '') + '" data-chat-account="' + (+x2.accountId || 0) + '" data-shared-name="' + esc(x2.n) + '" data-shared-level="' + (+x2.lv || 0) + '" data-shared-iv="' + (+x2.iv || 0) + '" data-shared-quality="' + (+x2.q || 1) + '" data-shared-power="' + (+x2.pw || 0) + '" data-shared-shiny="' + (x2.sh ? '1' : '0') + '" title="' + esc(x2.body || ('Mensagem original de ' + (x2.fr || '?'))) + '"><span class="rn">' + (x2.sh ? '✨ ' : '') + '<b style="color:' + RARO(+x2.q || 1)[1] + '">' + esc(x2.n) + '</b>' + (+x2.lv ? ' <span style="color:#7d8590">Lv ' + (+x2.lv || 0) + '</span>' : '') + ' <span style="color:#7d8590">· ' + esc(x2.fr || '?') + '</span></span>' + (+x2.iv ? '<span style="color:#55e6d3">' + (+x2.iv || 0) + '/192</span>' : '') + (+x2.q ? '<span style="color:#f2c665">×' + (+x2.q).toFixed(2) + '</span>' : '') + '<span class="rt">' + fmtHM(x2.t) + '</span></div>').join('') : '<div class="cd-empty">' + t('cdNone') + '</div>') + '</div>';
     };
     SB.pokedexTp = () => {
       const selectedRow = rows.find(r => r.i === dexAccSel);
@@ -4797,6 +4923,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       el.addEventListener('mouseup', e => { ivMouseButtons &= e.button === 0 ? ~1 : e.button === 2 ? ~2 : ~0; });
       el.addEventListener('contextmenu', e => { if (ivMouseButtons === 3) e.preventDefault(); });
     });
+    cardsEl.querySelectorAll('.cd-shared-poke').forEach(el => el.addEventListener('dblclick', e => {
+      e.preventDefault(); e.stopPropagation();
+      openSimpleChat(el.dataset.chatPlayer || '', +el.dataset.chatAccount);
+    }));
     cardsEl.querySelectorAll('.cd-team-poke').forEach(el => el.addEventListener('dblclick', async () => {
       const r = ordered.find(x => x.i === +el.dataset.huntAccount);
       const nome = String(el.dataset.sharedName || '').trim();

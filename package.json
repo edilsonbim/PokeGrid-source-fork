@@ -6,6 +6,7 @@
   "author": "leodantas70",
   "scripts": {
     "start": "electron .",
+    "dist": "electron-builder --win portable",
     "test": "node test/iv-math.test.js && node test/boot.test.js && node test/unstuck.test.js && node test/teleport.test.js && node test/sale-recovery.test.js && node test/purchase-recovery.test.js && node test/updater.test.js"
   },
   "keywords": [
@@ -16,6 +17,49 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "electron": "^43.1.1"
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.pokegrid.app",
+    "productName": "PokeGrid",
+    "asar": true,
+    "files": [
+      "index.html",
+      "main.js",
+      "preload.js",
+      "package.json",
+      "tray.png",
+      "assets/**/*",
+      "presets/**/*",
+      "src/**/*",
+      "*.md",
+      "*.txt",
+      "*.bat",
+      "*.vbs",
+      "*.sh"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/darkgrid-pokeball.ico",
+      "artifactName": "PokeGrid-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "artifactName": "PokeGrid-${version}-setup-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "PokeGrid-${version}-portable-${arch}.${ext}"
+    }
   }
 }

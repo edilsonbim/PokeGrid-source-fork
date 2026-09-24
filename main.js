@@ -219,6 +219,7 @@ function abrirHuntToolModal(url) {
     huntToolWindow = new BrowserWindow({
       parent, modal: true, width: 1440, height: 980, show: false,
       title: 'PIW Tools · Simulador e rota do Pokémon',
+      icon: path.join(__dirname, 'assets', 'darkgrid-pokeball.ico'),
       backgroundColor: '#0d1117',
       webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
     });
@@ -433,7 +434,7 @@ app.whenReady().then(() => {
   // Nada aqui pode derrubar a criacao da janela: se qualquer peca do sistema falhar (registro,
   // particao de sessao corrompida, bandeja), o app tem que abrir assim mesmo. Antes destas
   // guardas, uma excecao aqui deixava o processo vivo e SEM JANELA, que e o pior sintoma possivel.
-  try { app.setAppUserModelId('online.idleworld.pokegrid'); } catch (e) { logErro('boot', 'appUserModelId: ' + e.message); } // notificacoes do Windows com o nome certo
+  try { app.setAppUserModelId('com.darkgrid.app'); } catch (e) { logErro('boot', 'appUserModelId: ' + e.message); } // notificacoes e agrupamento da barra com o nome certo
 
   // Nega pedidos de permissao dos jogos (mic, camera, localizacao, notificacao...).
   for (let i = 1; i <= 4; i++)
@@ -444,6 +445,7 @@ app.whenReady().then(() => {
     height: 900,
     show: false,
     autoHideMenuBar: true,
+    icon: path.join(__dirname, 'assets', 'darkgrid-pokeball.ico'),
     backgroundColor: '#0d1117',
     webPreferences: {
       webviewTag: true,
@@ -454,6 +456,7 @@ app.whenReady().then(() => {
       backgroundThrottling: false
     }
   });
+  try { win.setIcon(path.join(__dirname, 'assets', 'darkgrid-pokeball.ico')); } catch {}
   win.loadFile(path.join(__dirname, 'index.html')); // caminho absoluto: robusto no build empacotado (asar)
   win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
     let origemValida = false;
@@ -525,7 +528,7 @@ app.whenReady().then(() => {
   // Bandeja nao existe em todo ambiente (Linux sem indicador, por exemplo). Se falhar, o app
   // segue funcionando sem bandeja em vez de morrer no boot.
   try {
-    tray = new Tray(path.join(__dirname, 'tray.png'));
+    tray = new Tray(path.join(__dirname, 'assets', 'darkgrid-pokeball.png'));
     tray.setToolTip('PokeGrid');
     const menuBandeja = Menu.buildFromTemplate([
       { label: 'Mostrar', click: mostrar },
