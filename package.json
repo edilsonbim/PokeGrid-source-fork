@@ -3,7 +3,7 @@
   "version": "1.5.30",
   "description": "Rode 4 contas de Poke Idle World ao mesmo tempo, em uma janela so / Run 4 Poke Idle World accounts at once, in a single window",
   "main": "main.js",
-  "author": "edilsonbim",
+  "author": "Asylum",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win portable",
@@ -21,8 +21,9 @@
     "electron-builder": "^26.15.3"
   },
   "build": {
-    "appId": "com.pokegrid.app",
+    "appId": "com.asylum.pokegrid",
     "productName": "PokeGrid",
+    "forceCodeSigning": true,
     "asar": true,
     "files": [
       "index.html",

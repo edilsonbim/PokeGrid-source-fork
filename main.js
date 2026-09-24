@@ -4,6 +4,14 @@ const fs = require('fs');
 const https = require('https'); // so pro webhook opcional do Discord
 const { applyOfficialUpdate } = require('./src/updater');
 const { checkLatestRelease, downloadAndInstall } = require('./src/release-updater');
+const APP_USER_MODEL_ID = 'com.asylum.pokegrid';
+const APP_ICON = path.join(__dirname, 'assets', 'darkgrid-pokeball.ico');
+const TRAY_ICON = path.join(__dirname, 'assets', 'darkgrid-pokeball.png');
+
+// Define a identidade antes da janela existir. O mesmo ID precisa ser usado
+// pelo executável, pela janela e pelos atalhos para o Windows agrupar o app
+// com o ícone do PokeGrid em vez do ícone genérico do Electron.
+try { app.setAppUserModelId(APP_USER_MODEL_ID); } catch {}
 
 // Somente a interface local pode usar os canais privilegiados. Os webviews do jogo
 // permanecem isolados da ponte IPC mesmo quando o conteúdo remoto é comprometido.
@@ -425,7 +433,7 @@ function setAutoStart(on) {
   if (process.platform !== 'win32') return false;
   try {
     if (on) {
-      const opts = { target: exeReal(), description: 'PokeGrid', appUserModelId: 'online.idleworld.pokegrid' };
+      const opts = { target: exeReal(), description: 'PokeGrid', appUserModelId: APP_USER_MODEL_ID };
       if (!app.isPackaged) opts.args = `"${app.getAppPath()}"`; // rodando pelo codigo: electron + a pasta do app
       shell.writeShortcutLink(startupLnk(), 'create', opts);
     } else {
@@ -468,7 +476,7 @@ app.whenReady().then(() => {
   // Nada aqui pode derrubar a criacao da janela: se qualquer peca do sistema falhar (registro,
   // particao de sessao corrompida, bandeja), o app tem que abrir assim mesmo. Antes destas
   // guardas, uma excecao aqui deixava o processo vivo e SEM JANELA, que e o pior sintoma possivel.
-  try { app.setAppUserModelId('com.darkgrid.app'); } catch (e) { logErro('boot', 'appUserModelId: ' + e.message); } // notificacoes e agrupamento da barra com o nome certo
+  try { app.setAppUserModelId(APP_USER_MODEL_ID); } catch (e) { logErro('boot', 'appUserModelId: ' + e.message); } // notificacoes e agrupamento da barra com o nome certo
 
   // Nega pedidos de permissao dos jogos (mic, camera, localizacao, notificacao...).
   for (let i = 1; i <= 4; i++)
@@ -479,7 +487,7 @@ app.whenReady().then(() => {
     height: 900,
     show: false,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, 'assets', 'darkgrid-pokeball.ico'),
+    icon: APP_ICON,
     backgroundColor: '#0d1117',
     webPreferences: {
       webviewTag: true,
@@ -490,7 +498,7 @@ app.whenReady().then(() => {
       backgroundThrottling: false
     }
   });
-  try { win.setIcon(path.join(__dirname, 'assets', 'darkgrid-pokeball.ico')); } catch {}
+  try { win.setIcon(APP_ICON); } catch {}
   win.loadFile(path.join(__dirname, 'index.html')); // caminho absoluto: robusto no build empacotado (asar)
   win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
     let origemValida = false;
@@ -562,7 +570,7 @@ app.whenReady().then(() => {
   // Bandeja nao existe em todo ambiente (Linux sem indicador, por exemplo). Se falhar, o app
   // segue funcionando sem bandeja em vez de morrer no boot.
   try {
-    tray = new Tray(path.join(__dirname, 'assets', 'darkgrid-pokeball.png'));
+    tray = new Tray(TRAY_ICON);
     tray.setToolTip('PokeGrid');
     const menuBandeja = Menu.buildFromTemplate([
       { label: 'Mostrar', click: mostrar },
