@@ -6,6 +6,7 @@ release-electron-v3/
 release-installer/
 release-installer-squirrel/
 release-installer-squirrel-v2/
+release-installer-flat/
 release-pokegrid/
 release/
 *.zip
