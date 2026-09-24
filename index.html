@@ -1046,9 +1046,8 @@ const HOME_URL  = 'https://poke.idleworld.online/';
 if(S.supBase){for(const id in S.supBase){const antes=S.supBase[id]||0,agora=(cur[id]!=null?cur[id]:0),d=antes-agora;if(d>0){const it=cat0[id]||{};S.supGold=(S.supGold||0)+d*(it.priceGold||it.npcPrice||0);S.supN=(S.supN||0)+d;}}}
 S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const doc=P.api['/game/items.json'];const it=doc&&doc.items&&doc.items.find(x=>x.id===59195);const d=S.drops[59195]||(S.drops[59195]={name:(it&&it.name)||'Rare Pokémon Picture',qty:0});d.qty+=(now-S.picBase);}S.picBase=now;}}else if(m.type==='chat'||m.type==='history'){const chS=(mm)=>{try{if(!mm||!mm.body)return;const re=/\\[poke!([A-Za-z0-9_-]+)\\]/g;let mt;while((mt=re.exec(mm.body))){try{const j=JSON.parse(atob(mt[1].replace(/-/g,'+').replace(/_/g,'/')));if(j&&j.k==='poke'){const CS=P.chatShares=P.chatShares||[];const N=(v)=>{v=Number(v);return isFinite(v)?v:0;};const cn=String(j.n||'?').slice(0,40),cf=String(mm.fromName||'').slice(0,40);if(!CS.some(c=>c.n===cn&&c.iv===N(j.iv)&&c.lv===N(j.lv)&&c.fr===cf)){CS.push({fr:cf,n:cn,sh:!!j.sh,lv:N(j.lv),q:N(j.q),iv:N(j.iv),pw:N(j.pw),t:Date.now()});if(CS.length>15)CS.shift();}}}catch(x){}}}catch(x){}};if(m.type==='chat')chS(m.msg);else['world','trade','help'].forEach(c2=>(m[c2]||[]).forEach(chS));}}}}catch(x){}});return s;};window.WebSocket.prototype=OW.prototype;['CONNECTING','OPEN','CLOSING','CLOSED'].forEach(k=>{try{window.WebSocket[k]=OW[k]}catch(x){}});const OF=window.fetch;window.fetch=function(...a){try{let H;const r0=a[0],ini=a[1];if(ini&&ini.headers)H=ini.headers;else if(r0&&typeof r0==='object'&&r0.headers)H=r0.headers;if(H){let au;if(typeof H.get==='function')au=H.get('authorization');else au=H.Authorization||H.authorization;if(au){auth=au;P.auth=au;}}}catch(x){}const p=OF.apply(this,a);try{let u=(a[0]&&a[0].url)||a[0];if(typeof u==='string'&&/\\/api\\/|items\\.json/.test(u)){p.then(r=>{const c=r.clone();c.json().then(j=>{const key=u.split('?')[0];if(key==='/api/game/used-balls'){if(j&&j.pokemons){P.shinyEnc=j.pokemons.reduce((s,p)=>s+(p.shiny?(p.attempts||0):0),0);P.usedList=j.pokemons.map(p=>({sid:p.speciesId,name:p.name,shiny:!!p.shiny,attempts:p.attempts||0,total:p.total||0,caught:!!p.caught}));}return;}if(key==='/api/characters/me'&&(!j||!j.character))return;P.api[key]=j}).catch(()=>{})}).catch(()=>{})}}catch(x){}return p;};const poll=()=>{try{while(P.catchLog&&P.catchLog.length>400)P.catchLog.shift();while(P.shinyLog&&P.shinyLog.length>300)P.shinyLog.shift();const o=auth?{headers:{Authorization:auth}}:undefined;fetch('/api/characters/me',o).catch(()=>{});fetch('/api/game/used-balls',o).catch(()=>{});try{if(P.sock&&P.sock.readyState===1){P.sock.send(JSON.stringify({type:'inv-get'}));P.sock.send(JSON.stringify({type:'analyzer-get'}));}}catch(x){}}catch(x){}};setInterval(poll,30000);setTimeout(poll,9000);})()`).catch(() => {}); // coletor de estado + sessao (refetch autenticado de gold/nivel a cada 30s)
           wv.executeJavaScript(`(()=>{if(window.__pgAuthCapture)return;window.__pgAuthCapture=1;const f=window.fetch;window.fetch=function(...a){try{const r=a[0],o=a[1],h=(o&&o.headers)||(r&&typeof r==='object'&&r.headers);let v;if(h){if(typeof h.get==='function')v=h.get('authorization');else v=h.Authorization||h.authorization;}if(v)window.__pgAuth=v;}catch(x){}return f.apply(this,a);};})()`).catch(() => {});
-          wv.executeJavaScript(`(()=>{if(window.__pgAnalyzerPoll)return;window.__pgAnalyzerPoll=setInterval(()=>{try{const P=window.__poke;if(P&&P.sock&&P.sock.readyState===1)P.sock.send(JSON.stringify({type:'analyzer-get'}));}catch(x){}},30000);try{const P=window.__poke;if(P&&P.sock&&P.sock.readyState===1)P.sock.send(JSON.stringify({type:'analyzer-get'}));}catch(x){}})()`).catch(() => {});
           /* A segunda copia do coletor veio do lado oficial do conflito. O coletor personalizado
-             acima continua ativo; o polling do analyzer foi incorporado separadamente. Inativa:
+             acima continua ativo; o polling do analyzer já está incorporado nele. Inativa:
 S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const doc=P.api['/game/items.json'];const it=doc&&doc.items&&doc.items.find(x=>x.id===59195);const d=S.drops[59195]||(S.drops[59195]={name:(it&&it.name)||'Rare Pokémon Picture',qty:0});d.qty+=(now-S.picBase);}S.picBase=now;}}else if(m.type==='chat'||m.type==='history'){const chS=(mm)=>{try{if(!mm||!mm.body)return;const re=/\\[poke!([A-Za-z0-9_-]+)\\]/g;let mt;while((mt=re.exec(mm.body))){try{const j=JSON.parse(atob(mt[1].replace(/-/g,'+').replace(/_/g,'/')));if(j&&j.k==='poke'){const CS=P.chatShares=P.chatShares||[];const N=(v)=>{v=Number(v);return isFinite(v)?v:0;};const cn=String(j.n||'?').slice(0,40),cf=String(mm.fromName||'').slice(0,40);if(!CS.some(c=>c.n===cn&&c.iv===N(j.iv)&&c.lv===N(j.lv)&&c.fr===cf)){CS.push({fr:cf,n:cn,sh:!!j.sh,lv:N(j.lv),q:N(j.q),iv:N(j.iv),pw:N(j.pw),t:Date.now()});if(CS.length>15)CS.shift();}}}catch(x){}}}catch(x){}};if(m.type==='chat')chS(m.msg);else['world','trade','help'].forEach(c2=>(m[c2]||[]).forEach(chS));}}}}catch(x){}});return s;};window.WebSocket.prototype=OW.prototype;['CONNECTING','OPEN','CLOSING','CLOSED'].forEach(k=>{try{window.WebSocket[k]=OW[k]}catch(x){}});const OF=window.fetch;window.fetch=function(...a){try{let H;const r0=a[0],ini=a[1];if(ini&&ini.headers)H=ini.headers;else if(r0&&typeof r0==='object'&&r0.headers)H=r0.headers;if(H){let au;if(typeof H.get==='function')au=H.get('authorization');else au=H.Authorization||H.authorization;if(au)auth=au;}}catch(x){}const p=OF.apply(this,a);try{let u=(a[0]&&a[0].url)||a[0];if(typeof u==='string'&&/\\/api\\/|items\\.json/.test(u)){p.then(r=>{const c=r.clone();c.json().then(j=>{const key=u.split('?')[0];if(key==='/api/game/used-balls'){if(j&&j.pokemons){P.shinyEnc=j.pokemons.reduce((s,p)=>s+(p.shiny?(p.attempts||0):0),0);P.usedList=j.pokemons.map(p=>({sid:p.speciesId,name:p.name,shiny:!!p.shiny,attempts:p.attempts||0,total:p.total||0,caught:!!p.caught}));}return;}if(key==='/api/characters/me'&&(!j||!j.character))return;P.api[key]=j}).catch(()=>{})}).catch(()=>{})}}catch(x){}return p;};const poll=()=>{try{const o=auth?{headers:{Authorization:auth}}:undefined;fetch('/api/characters/me',o).catch(()=>{});fetch('/api/game/used-balls',o).catch(()=>{});try{if(P.sock&&P.sock.readyState===1){P.sock.send(JSON.stringify({type:'inv-get'}));P.sock.send(JSON.stringify({type:'analyzer-get'}));}}catch(x){}}catch(x){}};setInterval(poll,30000);setTimeout(poll,9000);})()`).catch(() => {}); // coletor de estado + sessao (refetch autenticado de gold/nivel a cada 30s)
           /* fim da copia inativa */
           wv.executeJavaScript(ecoScript(ecoFps())).catch(() => {});
@@ -1343,6 +1342,11 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     window.__eco.fps = ${fps};
   })()`;
   // Modo Cartas: no ultra leve o canvas do jogo some e o rAF cai pra 1fps (o farm e do servidor)
+  const PERF_DEFAULTS = { depotIv: false, pokedex: false, chat: false, trend: false, market: false, images: false };
+  let perfCfg = { low: false, modules: { ...PERF_DEFAULTS } };
+  try { const savedPerf = lsObj('perfCfg'); perfCfg = { low: !!savedPerf.low, modules: { ...PERF_DEFAULTS, ...(savedPerf.modules || {}) } }; } catch {}
+  const perfOn = name => !perfCfg.low || perfCfg.modules[name] !== false;
+  const savePerfCfg = () => { try { lsSet('perfCfg', JSON.stringify(perfCfg)); } catch {} };
   let cardsOn = false, cdHtmlAnt = '', simpleDiamondQuote = null, simpleDiamondBusy = false, simpleDiamondAt = 0, simpleDiamondHist = lsArr('simpleDiamondHist').filter(p => p && Number.isFinite(+p.t) && Number.isFinite(+p.v) && +p.v > 0).slice(-720); // sempre comeca desligado: com o jogo escondido nao dava pra logar/resolver captcha
   // ultra leve: esconde o que pinta (canvas/vídeo) e mata animações/transições CSS (corta paint/GPU).
   // NÃO mexe em WebSocket/timers do jogo, então o farm (que é do servidor) continua igual.
@@ -1351,7 +1355,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     : `(()=>{const s=document.getElementById('pg-ultra');if(s)s.remove();})()`;
   const ecoFps = () => cardsOn ? 1 : (eco ? 15 : 0);
   async function atualizaCotacaoDiamante() {
-    if (!cardsOn || simpleDiamondBusy || Date.now() - simpleDiamondAt < 55000) return;
+    if (!cardsOn || !perfOn('market') || simpleDiamondBusy || Date.now() - simpleDiamondAt < 55000) return;
     const indices = webviews.map((w, k) => w && !off[k] ? k : -1).filter(k => k >= 0);
     if (!indices.length) return;
     simpleDiamondBusy = true; simpleDiamondAt = Date.now();
@@ -2138,17 +2142,19 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     if (r.kills > 0 && !stallOn[i] && alertsOn && now - (lastKT[i] != null ? lastKT[i] : now) > 600e3) { stallOn[i] = true; alerta(i, 'msgStalled'); }
   }
 
-  const pendA = [0, 0, 0, 0]; // ticks seguidos sem resposta (renderer travado deixa a promise pendente pra sempre)
+  const pendA = [0, 0, 0, 0], alertBusy = [false, false, false, false]; // ticks seguidos sem resposta (renderer travado deixa a promise pendente pra sempre)
   const sessSnap = []; // fotografia da sessao por conta: re-semeia o coletor apos reload (o jogo segue no servidor)
   setInterval(() => {
     webviews.forEach((w, i) => {
       if (off[i]) { pendA[i] = 0; return; }
+      if (alertBusy[i]) return;
       if (++pendA[i] >= 10) { // 60s sem nenhuma resposta: painel travado, recarrega sozinho
         pendA[i] = 0;
         try { window.pokeAPI.logError('painel', 'painel ' + (i + 1) + ' sem responder ha 60s, recarregando'); } catch {}
         try { w.reload(); } catch {}
         return;
       }
+      alertBusy[i] = true;
       w.executeJavaScript(READ_ALERTS).then(r => {
         pendA[i] = 0;
         if (!r) return;
@@ -2178,7 +2184,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         // cada aviso depende do dado que ele mede: inventario ainda carregando nao vale como "acabou"
         if (r.hasBalls) checkLow(i, 'balls', r.balls, BALL_MIN, 'msgBallsLow');
         if (r.hasInv) { checkLow(i, 'potions', r.potions, POTION_MIN, 'msgPotionsLow'); checkLow(i, 'revives', r.revives, REVIVE_MIN, 'msgRevivesLow'); }
-      }).catch(() => { pendA[i] = 0; }); // rejeicao rapida (navegando/crash) nao e travamento: outros watchdogs cuidam
+      }).catch(() => { pendA[i] = 0; }).finally(() => { alertBusy[i] = false; }); // rejeicao rapida (navegando/crash) nao e travamento: outros watchdogs cuidam
     });
   }, 6000);
 
@@ -2911,7 +2917,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     return !!(ae && root && root.contains(ae) && (ae.isContentEditable ||
       (/^(INPUT|TEXTAREA)$/.test(ae.tagName) && !/^(checkbox|radio|button|submit|reset|file|range|color|date|time|month|week)$/.test(ae.type || 'text'))));
   };
-  async function refreshStats() {
+  async function renderStatsRefresh() {
     if (!statsOpen || dragging) return;
     if (campoDigitacaoAtivo(stBody)) return;
     if (stTabs.childElementCount !== count + 1) buildStatsTabs();
@@ -2925,6 +2931,12 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       renderStats(d);
       if (d && d.ok && d.name && tabNames[statsIdx] !== d.name) { tabNames[statsIdx] = d.name; buildStatsTabs(); }
     } catch { if (!campoDigitacaoAtivo(stBody)) stBody.innerHTML = '<div class="st-empty">' + t('statsWaiting') + '</div>'; }
+  }
+  let statsRefreshPromise = null;
+  async function refreshStats() {
+    if (statsRefreshPromise) return statsRefreshPromise;
+    statsRefreshPromise = renderStatsRefresh();
+    try { return await statsRefreshPromise; } finally { statsRefreshPromise = null; }
   }
   async function trocaLider(row) {
     if (row.dataset.ld === '1') return; // ja e o lider
@@ -3257,7 +3269,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }
     if (simpleChatTabs.size || opened) renderSimpleChatDock();
   }
-  setInterval(() => { if (cardsOn && simpleChatTabs.size) refreshSimpleChats(); }, 2000);
+  setInterval(() => { if (cardsOn && perfOn('chat') && simpleChatTabs.size) refreshSimpleChats(); }, 2000);
   const cardsBtn = document.getElementById('cardsBtn');
   // Depois de uma acao que nao edita um filtro, devolve o teclado ao jogo. Campos de
   // texto/select continuam com foco para permitir edicao normal.
@@ -4512,7 +4524,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       });
     };
   }
-  async function refreshCards(force) {
+  async function renderCards(force) {
     if (!cardsOn || (cdBusy && Date.now() - cdBusy < 8000)) return; // nao destroi o DOM durante o gesto, mas destrava sozinho se o mouseup se perder
     atualizaCotacaoDiamante();
     // Guarda do tick: com foco num campo do painel, o redesenho passivo espera (nao apagar o que
@@ -4530,7 +4542,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       else try { d = await webviews[i].executeJavaScript(READ_STATE); } catch {}
       if (!d || !d.ok) { rows.push({ i, dot, cid:recentHuntSlots[i] || '', name: nm0, st: 'wait' }); continue; }
       const depotPokes = Array.isArray(d.bagPokes) ? d.bagPokes : [];
-      if (!cardsCfg.hide.bagIv) {
+      if (perfOn('depotIv') && !cardsCfg.hide.bagIv) {
         const bc = bagIvCache[i];
         if (bc && Date.now() - bc.t < BAG_IV_CACHE_MS) d.bagPokes = bc.v;
         else {
@@ -4540,7 +4552,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
           } catch { d.bagPokes = []; }
         }
       }
-      if (!cardsCfg.hide.pokedexTp && i === dexAccSel) {
+      if (perfOn('pokedex') && !cardsCfg.hide.pokedexTp && i === dexAccSel) {
         try { d.dexList = await webviews[i].executeJavaScript(READ_POKEDEX_DOM); } catch { d.dexList = []; }
       }
       if (d.name && tabNames[i] !== d.name) tabNames[i] = d.name;
@@ -4733,7 +4745,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       s += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">';
       lista.forEach(p => {
         const rare = RARO(+p.quality || 0), sid = dexId(+p.sid || 0);
-        const sprite = sid > 0 ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (p.shiny ? 'shiny/' : '') + sid + '.png' : '';
+        const sprite = perfOn('images') && sid > 0 ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (p.shiny ? 'shiny/' : '') + sid + '.png' : '';
         s += '<div class="cd-row cd-iv-poke" data-iv-source="' + p.account.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivTotal || 0) + '" data-shared-quality="' + (+p.quality || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="' + esc(p.account.name) + ' · Pokémon do depot" style="padding:6px 7px;border:1px solid #263241;border-radius:8px;background:#101820">'
           + (sprite ? '<img src="' + sprite + '" alt="" style="width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex:none" onerror="this.style.visibility=\'hidden\'">' : '')
           + '<span class="rn"><b>' + (p.shiny ? '✨ ' : '') + esc(p.name) + '</b><br><span style="color:#adbac7">' + esc(p.account.name) + ' · Lv' + nf(p.level) + '</span><br><span style="color:#55e6d3">IV ' + nf(p.ivTotal) + '/192</span> <span style="color:' + rare[1] + '">' + rare[0] + ' ×' + (+p.quality || 0).toFixed(2) + '</span></span></div>';
@@ -4842,13 +4854,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (modo === 'sess') arr = arr.filter(s => s.sess > 0);
       else if (modo === 'targets') arr = arr.filter(s => shinyTargets[s.sid]);
       arr.sort((p, q) => val(q) - val(p));
-      const spr = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/';
+        const spr = perfOn('images') ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/' : '';
       const opts = [['total', t('cdTotal')], ['sess', t('stSession')], ['targets', '🎯 ' + t('cdTargets')]];
       return '<div class="cd-sec"><div class="cd-h" style="display:flex;align-items:center;gap:8px">' + t('cdShinyTried') + ' <span style="color:#586069;font-weight:400">(' + arr.length + ')</span>'
         + '<select id="cdStMode" style="margin-left:auto">' + opts.map(o => '<option value="' + o[0] + '"' + (modo === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>'
         + (arr.length ? '<div class="cd-shgrid">' + arr.map(s => '<div class="cd-sh" title="' + esc(s.name || ('#' + s.sid)) + (s.caught ? ' ✓' : '') + ' · ' + nf(val(s)) + ' ' + t('stTries') + '">'
           + '<span class="cd-sh-st' + (shinyTargets[s.sid] ? ' on' : '') + '" data-sid="' + s.sid + '" title="' + t('cdTargetsMark') + '">' + (shinyTargets[s.sid] ? '★' : '☆') + '</span>'
-          + '<img class="cd-sh-img" src="' + spr + dexId(s.sid) + '.png" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
+          + (spr ? '<img class="cd-sh-img" src="' + spr + dexId(s.sid) + '.png" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : '')
           + '<div class="cd-sh-n">' + (s.caught ? '<span style="color:#3fb950">✓</span> ' : '') + esc(s.name || ('#' + s.sid)) + '</div>'
           + '<div class="cd-sh-t">' + nf(val(s)) + ' ' + ballIco + '</div>'
           + ((modo === 'sess' ? s.byAcc.filter(b => b.sess > 0) : s.byAcc).length ? '<div class="cd-sh-acc">' + (modo === 'sess' ? s.byAcc.filter(b => b.sess > 0) : s.byAcc).map(b => '<span><span class="cd-sh-dot" style="background:' + b.dot + '"></span>' + nf(modo === 'sess' ? b.sess : b.attempts) + '</span>').join('') + '</div>' : '')
@@ -4961,7 +4973,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       s += '<div style="font-size:10px;color:#7d8590">Ordenado pelo level da hunt · clique nos Pokémon com <b style="color:#79c0ff">TP</b></div><div class="cd-dex-grid">';
       list.forEach(p => {
         const caught = p.caught ? '<span style="color:#3fb950">✓ Capturado</span>' : '<span>Não capturado</span>';
-        const inner = '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (+p.no || 0) + '.png" alt=""><span style="min-width:0"><div class="nm">' + esc(p.name) + '</div><div class="mt">Lv ' + nf(p.level) + ' · ' + caught + (p.hunt ? ' · <b style="color:#79c0ff">TP</b>' : '') + '</div></span>';
+        const inner = (perfOn('images') ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (+p.no || 0) + '.png" alt="">' : '') + '<span style="min-width:0"><div class="nm">' + esc(p.name) + '</div><div class="mt">Lv ' + nf(p.level) + ' · ' + caught + (p.hunt ? ' · <b style="color:#79c0ff">TP</b>' : '') + '</div></span>';
         s += p.hunt ? '<button class="cd-dex-poke cd-dex-go" data-slug="' + esc(p.hunt.slug || '') + '" data-name="' + esc(p.hunt.name || p.name) + '">' + inner + '</button>' : '<div class="cd-dex-poke no-tp">' + inner + '</div>';
       });
       return s + '</div></div>';
@@ -4971,6 +4983,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     let h = '<div class="cd-top"><span class="cd-tt">' + t('cardsShort') + '</span><button id="cdGear" class="' + (cardsCfgOpen ? 'on' : '') + '" title="' + t('cdConfig') + '">⚙</button></div>';
     if (cardsCfgOpen) h += '<div class="cd-cfg"><div class="cd-cfg-h">' + t('cdConfigH') + '</div>'
       + cardsCfg.order.map(s => '<div class="cd-cfg-row" draggable="true" data-s="' + s + '"><span class="cd-grip">⋮⋮</span><label><input type="checkbox" data-sec="' + s + '"' + (cardsCfg.hide[s] ? '' : ' checked') + '> ' + cdLabel(s) + '</label></div>').join('')
+      + '<div class="cd-cfg-h" style="margin-top:10px">Desempenho / PC fraco</div>'
+      + '<div class="cd-cfg-row"><label><input type="checkbox" id="cdPerfLow"' + (perfCfg.low ? ' checked' : '') + '> Modo PC fraco</label></div>'
+      + '<div class="cd-cfg-row" style="display:block;font-size:10px;color:#7d8590;line-height:1.4">Desative módulos pesados sem interromper login, farm, compras e vendas.</div>'
+      + ['depotIv', 'pokedex', 'chat', 'trend', 'market', 'images'].map(k => '<div class="cd-cfg-row"><label><input type="checkbox" data-perf="' + k + '"' + ((!perfCfg.low || perfCfg.modules[k]) ? ' checked' : '') + '> ' + ({ depotIv: 'Depot / IV', pokedex: 'Pokédex e sprites', chat: 'Chat', trend: 'Gráficos e histórico', market: 'Pesquisa de mercado / diamante', images: 'Imagens' }[k]) + '</label></div>').join('')
       + '<div class="cd-cfg-h" style="margin-top:10px">' + t('alLocalTitle') + '</div>'
       + '<div class="cd-cfg-row" style="display:block;font-size:10px;color:#7d8590;line-height:1.4">' + t('alLocalHint') + '</div>'
       + ['shiny', 'down', 'stalled', 'balls', 'faint'].map(k => '<div class="cd-cfg-row"><label><input type="checkbox" id="cdAl_' + k + '"' + (alLocal[k] ? ' checked' : '') + '> ' + t('alLocal_' + k) + '</label></div>').join('')
@@ -4983,6 +4999,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     let secHtml = '';
     cardsCfg.order.forEach(sec => {
       if (cardsCfg.hide[sec] || !SB[sec]) return;
+      if ((!perfOn('pokedex') && sec === 'pokedexTp') || (!perfOn('trend') && sec === 'trend') || (!perfOn('chat') && sec === 'shared')) return;
       secHtml += '<div class="cd-it" data-s="' + sec + '" style="grid-column:span ' + cdW(sec) + '"><span class="cd-mv" draggable="true" title="' + t('cdMove') + '">⋮⋮</span><span class="cd-rz" title="' + t('cdResize') + '"></span><span class="cd-rz2" title="' + t('cdResizeV') + '"></span>' + SB[sec]() + '</div>';
     });
     h += '<div class="cd-cols">' + secHtml + '</div>';
@@ -5031,6 +5048,17 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     // config: engrenagem, checkboxes e arraste pra reordenar seções
     const gear = cardsEl.querySelector('#cdGear'); if (gear) gear.onclick = () => { cardsCfgOpen = !cardsCfgOpen; refreshCards(true); };
     cardsEl.querySelectorAll('.cd-cfg input[data-sec]').forEach(chk => chk.onchange = () => { cardsCfg.hide[chk.dataset.sec] = !chk.checked; saveCardsCfg(); refreshCards(true); });
+    const perfRepaint = () => { cdHtmlAnt = ''; refreshCards(true); };
+    const perfLow = cardsEl.querySelector('#cdPerfLow'); if (perfLow) perfLow.onchange = () => {
+      perfCfg.low = !!perfLow.checked;
+      savePerfCfg();
+      perfRepaint();
+    };
+    cardsEl.querySelectorAll('.cd-cfg input[data-perf]').forEach(chk => chk.onchange = () => {
+      perfCfg.modules[chk.dataset.perf] = !!chk.checked;
+      savePerfCfg();
+      perfRepaint();
+    });
     // filtros das capturas, nivel de projecao do time e busca do inventario
     const fcSave = () => { try { lsSet('cdFC', JSON.stringify(cdFC)); } catch {} cdHtmlAnt = ''; refreshCards(true); };
     const fcP = cardsEl.querySelector('#cdFcP'); if (fcP) fcP.onchange = () => { cdFC.p = +fcP.value; fcP.blur(); fcSave(); };
@@ -5172,6 +5200,12 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const sh = cardsEl.querySelector('#cdShowHidden'); if (sh) sh.onclick = () => { showHiddenHunts = !showHiddenHunts; refreshCards(true); };
     cardsEl.querySelectorAll('.cd-fav').forEach(f => f.onclick = () => { const k = f.dataset.h; if (huntFavs[k]) delete huntFavs[k]; else huntFavs[k] = 1; try { lsSet('huntFavs', JSON.stringify(huntFavs)); } catch {} refreshCards(true); });
     cardsEl.querySelectorAll('.cd-hide').forEach(f => f.onclick = () => { const k = f.dataset.h; if (huntHidden[k]) delete huntHidden[k]; else huntHidden[k] = 1; try { lsSet('huntHidden', JSON.stringify(huntHidden)); } catch {} refreshCards(true); });
+  }
+  let cardsRefreshPromise = null;
+  async function refreshCards(force) {
+    if (cardsRefreshPromise) return cardsRefreshPromise;
+    cardsRefreshPromise = renderCards(force);
+    try { return await cardsRefreshPromise; } finally { cardsRefreshPromise = null; }
   }
   function applyCards() {
     document.body.classList.toggle('cards-on', cardsOn);
