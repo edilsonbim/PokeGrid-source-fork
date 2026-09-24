@@ -104,29 +104,32 @@ function download(url, destination, redirects = 0, received = 0) {
   return new Promise((resolve) => {
     const u = validUrl(url);
     if (!u || redirects > 4) { resolve({ ok:false, error:'Download fora dos domínios permitidos.' }); return; }
-    const out = fs.createWriteStream(destination);
     let total = received;
     let finished = false;
-    const fail = (error) => {
+    const fail = (error, out) => {
       if (finished) return;
       finished = true;
-      try { out.close(); fs.unlinkSync(destination); } catch {}
+      try { if (out) out.close(); fs.unlinkSync(destination); } catch {}
       resolve({ ok:false, error });
     };
     const req = https.get(u, { headers:{ 'User-Agent':'PokeGrid updater', Accept:'application/octet-stream' } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        res.resume(); out.close();
+        // O GitHub entrega primeiro um redirecionamento para release-assets.
+        // Só abra o arquivo depois de chegar à resposta final; abrir antes deixava
+        // o stream em estado pendente e o botão ficava eternamente em "Baixando…".
+        res.resume();
         const next = new URL(res.headers.location, u).toString();
         download(next, destination, redirects + 1, total).then(resolve);
         return;
       }
       if (res.statusCode !== 200) { res.resume(); fail('GitHub respondeu HTTP ' + res.statusCode); return; }
+      const out = fs.createWriteStream(destination, { flags: received ? 'a' : 'w' });
       res.on('data', (chunk) => {
         total += chunk.length;
-        if (total > MAX_DOWNLOAD) { req.destroy(); fail('O instalador excede o limite permitido.'); }
+        if (total > MAX_DOWNLOAD) { req.destroy(); fail('O pacote excede o limite permitido.', out); }
       });
-      res.on('error', () => fail('Falha durante o download.'));
-      out.on('error', () => fail('Não foi possível salvar o instalador.'));
+      res.on('error', () => fail('Falha durante o download.', out));
+      out.on('error', () => fail('Não foi possível salvar o pacote.', out));
       res.pipe(out);
       out.on('finish', () => { if (!finished) { finished = true; out.close(); resolve({ ok:true, size:total }); } });
     });
