@@ -68,6 +68,26 @@
   .pi-item .pi-name { min-width: 0; overflow-wrap: anywhere; font-size: 12px; font-weight: 650; }
   .pi-item .pi-id { display: block; margin-top: 2px; color: #6e7681; font-size: 10px; font-weight: 400; }
   #protectEmpty { grid-column: 1 / -1; padding: 50px 12px; color: #8b949e; text-align: center; }
+  #pokemonOverlay { position: fixed; inset: 0; z-index: 480; display: none; align-items: center; justify-content: center; padding: 28px; background: rgba(3,7,12,.82); backdrop-filter: blur(3px); }
+  #pokemonOverlay.show { display: flex; }
+  #pokemonModal { width: min(1120px, 96vw); height: min(820px, 92vh); display: flex; flex-direction: column; overflow: hidden; background: #121820; border: 1px solid #3b4654; border-radius: 12px; box-shadow: 0 24px 70px rgba(0,0,0,.65); }
+  #pokemonModal .pi-head { display: flex; align-items: center; gap: 12px; padding: 15px 18px; border-bottom: 1px solid #30363d; }
+  #pokemonModal .pi-head h2 { flex: 1; font-size: 17px; }
+  #pokemonModal .pi-help { padding: 0 18px 12px; color: #9da7b3; font-size: 12px; line-height: 1.45; }
+  #pokemonModal .pi-tools { display: grid; grid-template-columns: minmax(180px, 1fr) 170px 140px 140px 170px auto; gap: 9px; padding: 0 18px 13px; }
+  #pokemonModal input, #pokemonModal select { min-width: 0; padding: 8px 10px; color: #e6edf3; background: #0d1117; border: 1px solid #30363d; border-radius: 7px; }
+  #pokemonModal input:focus, #pokemonModal select:focus { outline: none; border-color: #388bfd; }
+  #pokemonCount { align-self: center; color: #79c0ff; font-size: 12px; white-space: nowrap; }
+  #pokemonGrid { flex: 1; overflow: auto; padding: 4px 18px 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); align-content: start; gap: 8px; }
+  .pk-item { min-height: 70px; display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #171e27; border: 1px solid #30363d; border-radius: 8px; }
+  .pk-item:hover { border-color: #596579; background: #1c2530; }
+  .pk-item .pk-lock { margin-left: auto; flex: none; padding: 4px 5px; border: 0; border-radius: 6px; color: #f2c665; background: transparent; cursor: pointer; font-size: 16px; line-height: 1; }
+  .pk-item .pk-lock:hover { background: #263342; }
+  .pk-item.pk-busy { opacity: .65; pointer-events: none; }
+  .pk-item img { width: 58px; height: 58px; flex: none; object-fit: contain; image-rendering: pixelated; }
+  .pk-item .pk-name { min-width: 0; overflow-wrap: anywhere; font-size: 12px; font-weight: 650; }
+  .pk-item .pk-meta { display: block; margin-top: 3px; color: #8b949e; font-size: 10px; font-weight: 400; line-height: 1.45; }
+  #pokemonEmpty { grid-column: 1 / -1; padding: 50px 12px; color: #8b949e; text-align: center; }
   #layoutsOverlay { position:fixed; inset:0; z-index:470; display:none; align-items:center; justify-content:center; background:rgba(3,7,12,.82); }
   #layoutsOverlay.show { display:flex; }
   #layoutsModal { width:min(620px,92vw); max-height:88vh; overflow:auto; padding:18px; background:#121820; border:1px solid #3b4654; border-radius:12px; box-shadow:0 22px 65px rgba(0,0,0,.65); }
@@ -112,6 +132,9 @@
   .name { font-weight: 600; cursor: pointer; }
   .status { color: #8b949e; font-size: 11px; margin-right: auto; }
   .panel-header button { padding: 2px 8px; font-size: 11px; }
+  .panel-header .account-action { padding: 2px 6px; min-width: 26px; border: 1px solid #30363d; border-radius: 5px; background: #161b22; cursor: pointer; }
+  .panel-header .account-action:hover { background: #263241; border-color: #58a6ff; }
+  .panel-header .account-action.depot:hover { border-color: #3fb950; }
   .zpct { color: #8b949e; font-size: 11px; min-width: 32px; text-align: center; cursor: pointer; }
   .zpct:hover { color: #e6edf3; }
   webview { flex: 1; border: none; background: #000; }
@@ -558,6 +581,7 @@
     <button id="dock" title="Mostra ou esconde o menu de ícones do jogo. F2 alterna no painel em foco.">🎛 Menu do jogo</button>
     <button id="statsBtn" title="Resumo da conta em foco (gold/h, XP/h, bag, drops)">📊 Painel</button>
     <button id="protectItemsBtn" title="Escolha itens que nunca poderão ser vendidos">🔒 Proteger itens</button>
+    <button id="pokemonBtn" title="Mostra os Pokémon de todas as contas com filtros">🎴 Pokémons</button>
     <button id="cardsBtn" title="Dashboard ultra leve: esconde o jogo e mostra só os números">🃏 Cartas</button>
     <button id="ivsBtn" title="Abre ou fecha a calculadora de IV (JustPokédex) em todos os painéis"><svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fff"/><path d="M2 12h20" stroke="#8f1408" stroke-width="3"/><circle cx="12" cy="12" r="3.4" fill="#fff" stroke="#8f1408" stroke-width="2.5"/></svg>IV's</button>
     <button id="layoutsBtn" title="Escolha quais partes visuais do jogo serão modificadas">🎨 Layouts</button>
@@ -617,6 +641,23 @@
         <span id="protectCount">0 protegidos</span>
       </div>
       <div id="protectItemsGrid"><div id="protectEmpty">Entre em pelo menos um personagem para carregar todos os itens do jogo.</div></div>
+    </div>
+  </div>
+  <div id="pokemonOverlay">
+    <div id="pokemonModal" role="dialog" aria-modal="true" aria-labelledby="pokemonTitle">
+      <div class="pi-head"><h2 id="pokemonTitle">🎴 Pokémons de todas as contas</h2><button id="pokemonClose">Fechar</button></div>
+      <div class="pi-help">Lista todos os Pokémon armazenados nas contas conectadas. Use os filtros para localizar por conta, nome, IV, raridade ou shiny.</div>
+      <div class="pi-tools">
+        <input id="pokemonSearch" type="search" placeholder="Filtrar pelo nome…" autocomplete="off">
+        <select id="pokemonAccount"><option value="-1">Todas as contas</option></select>
+        <input id="pokemonIv" type="number" min="0" max="192" placeholder="IV ≥" title="IV mínimo">
+        <select id="pokemonType" title="Filtrar por tipo"><option value="">Todos os tipos</option><option value="normal">Normal</option><option value="fire">Fogo</option><option value="water">Água</option><option value="electric">Elétrico</option><option value="grass">Grama</option><option value="ice">Gelo</option><option value="fighting">Lutador</option><option value="poison">Veneno</option><option value="ground">Terra</option><option value="flying">Voador</option><option value="psychic">Psíquico</option><option value="bug">Inseto</option><option value="rock">Pedra</option><option value="ghost">Fantasma</option><option value="dragon">Dragão</option><option value="dark">Sombrio</option><option value="steel">Aço</option><option value="fairy">Fada</option></select>
+        <select id="pokemonRarity" title="Raridade mínima"><option value="0">Qualquer raridade</option><option value="1">Comum ou melhor</option><option value="1.3">Rara ou melhor</option><option value="1.5">Épica ou melhor</option><option value="1.7">Lendária ou melhor</option><option value="2">Mítica ou melhor</option><option value="3">Anciã ou melhor</option></select>
+        <label class="pi-inp" title="Somente shiny">✨ <input id="pokemonShiny" type="checkbox"></label>
+        <select id="pokemonSort" title="Ordenar Pokémon"><option value="iv-desc">IV mais alto</option><option value="iv-asc">IV mais baixo</option><option value="level-desc">Level mais alto</option><option value="level-asc">Level mais baixo</option><option value="name-asc">Nome A–Z</option></select>
+        <span id="pokemonCount">0 exibidos</span>
+      </div>
+      <div id="pokemonGrid"><div id="pokemonEmpty">Abra uma conta para carregar os Pokémon.</div></div>
     </div>
   </div>
   <div id="overlay">
@@ -874,6 +915,8 @@ const HOME_URL  = 'https://poke.idleworld.online/';
           <span class="dot"></span>
           <span class="name"></span>
           <span class="status"></span>
+          <button class="account-action depot" title="Abrir Baú desta conta" aria-label="Abrir Baú desta conta">📦</button>
+          <button class="account-action market" title="Abrir Market desta conta" aria-label="Abrir Market desta conta">🏪</button>
           <button class="zo">−</button>
           <span class="zpct"></span>
           <button class="zi">+</button>
@@ -933,6 +976,8 @@ const HOME_URL  = 'https://poke.idleworld.online/';
       zpct.onclick = () => setZoom(1);
       panel.querySelector('.zi').onclick = () => setZoom(zoom + 0.1);
       panel.querySelector('.zo').onclick = () => setZoom(zoom - 0.1);
+      panel.querySelector('.depot').onclick = e => { e.stopPropagation(); openCharacterDepot(i); };
+      panel.querySelector('.market').onclick = e => { e.stopPropagation(); openCharacterMarket(i); };
 
       wv.addEventListener('dom-ready', () => {
         if (!off[i] && !falhou) { dot.className = 'dot ok'; status.textContent = t('stOnline'); fails = 0; alertedDown = false; } // carregou DE VERDADE: zera o watchdog (a pagina de erro tambem emite dom-ready)
@@ -1043,6 +1088,13 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     [...grid.children].forEach(c => c.classList.remove('expanded')); // um por vez
     if (on) p.classList.add('expanded');
     ajustaProporcao(); // expandir/voltar muda o espaco do painel
+    focarJogo(i);
+  }
+  function maximizaPainel(i) {
+    const p = grid.children[i];
+    if (!p) return;
+    if (!p.classList.contains('expanded')) p.classList.add('expanded');
+    ajustaProporcao();
     focarJogo(i);
   }
 
@@ -1188,6 +1240,8 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
   // funcao, nao constante: o READ_STATE so e declarado mais abaixo; no dom-ready ja existe
   const PUSH_STATE = () => '(()=>{if(window.__pgPush)return;window.__pgPush=1;setInterval(()=>{try{const d=' + READ_STATE + ';if(d&&d.ok)console.log("__PGST__"+JSON.stringify(d))}catch(x){}},10000)})()';
   const stCache = {};
+  const bagIvCache = [];
+  const BAG_IV_CACHE_MS = 30000;
   // Depot por conta (pedido do Semai: "aparece o depot da familia?"). Busca preguicosa: so com o
   // Simples aberto e a secao de inventario visivel, no maximo a cada 2 min por conta. A resposta
   // vem de codigo injetado, entao e saneada: so chaves simples, quantidade > 0, teto de 500 itens.
@@ -1359,7 +1413,9 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
         });
       } catch (x) {}
     }
-    new MutationObserver(() => { dex(); mercado(); }).observe(document.body, { childList: true, subtree: true });
+    let pgObsTimer = 0;
+    const pgObsQueue = () => { if (pgObsTimer) return; pgObsTimer = setTimeout(() => { pgObsTimer = 0; dex(); mercado(); }, 120); };
+    new MutationObserver(pgObsQueue).observe(document.body, { childList: true, subtree: true });
   })()`;
 
   // ----- Fecha o popup de promoção (<div class="promo-overlay"> com <button class="promo-close">) -----
@@ -1399,7 +1455,12 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     const aplica = () => { const c = achaChat(); if (c) { c.dataset.pgchat = '1'; c.style.display = ${esconder} ? 'none' : ''; } };
     if (window.__chatObs) { window.__chatObs.disconnect(); window.__chatObs = null; }
     aplica();
-    if (${esconder}) { window.__chatObs = new MutationObserver(aplica); window.__chatObs.observe(document.documentElement, { childList: true, subtree: true }); }
+    if (${esconder}) {
+      let chatTimer = 0;
+      const agendaChat = () => { clearTimeout(chatTimer); chatTimer = setTimeout(aplica, 120); };
+      window.__chatObs = new MutationObserver(agendaChat);
+      window.__chatObs.observe(document.documentElement, { childList: true, subtree: true });
+    }
   })()`;
   const chatBtn = document.getElementById('chat');
   let chatHidden = lsGet('chatHidden') !== '0'; // fechado por padrao
@@ -1431,7 +1492,12 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
   const dockScript = (esconder) => `(() => {
     window.__dockHide = ${esconder};
     const set = () => { const d = document.querySelector('nav.game-dock'); if (d) d.style.display = window.__dockHide ? 'none' : ''; };
-    if (!window.__dockObs) { window.__dockObs = new MutationObserver(set); window.__dockObs.observe(document.documentElement, { childList: true, subtree: true }); }
+    if (!window.__dockObs) {
+      let dockTimer = 0;
+      const agendaDock = () => { clearTimeout(dockTimer); dockTimer = setTimeout(set, 120); };
+      window.__dockObs = new MutationObserver(agendaDock);
+      window.__dockObs.observe(document.documentElement, { childList: true, subtree: true });
+    }
     if (!window.__dockKey) {
       window.__dockKey = true;
       addEventListener('keydown', (e) => {
@@ -1459,7 +1525,7 @@ S.supBase=cur;if(S.picBase==null){S.picBase=now;}else{if(now>S.picBase){const do
     const ID = 'pg-clean'; let s = document.getElementById(ID);
     if (!${on}) { if (s) s.remove(); return; }
     if (!s) { s = document.createElement('style'); s.id = ID; document.head.appendChild(s); }
-    s.textContent = '.cap-panel{display:none !important}'
+    s.textContent = '.cap-panel,.kc-stack{display:none !important}'
       + '.ah-panel,.game-hud-tl,nav.game-dock{opacity:0 !important;transition:opacity .18s ease !important}'
       + '.ah-panel:hover,.game-hud-tl:hover,nav.game-dock:hover{opacity:1 !important}';
   })()`;
@@ -2106,8 +2172,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') sairDoFoco(); });
   window.pokeAPI?.onHotkey?.((k) => {
     if (k === 'mute') muteBtn.click();
+    else if (k === 'focus') focarJogo();
     else if (k === 'collapse') sairDoFoco();
-    else if (k.lastIndexOf('ctx', 0) === 0) { // clique direito no jogo: modo foco
+    else if (k.lastIndexOf('ctx', 0) === 0) { // Ctrl + clique direito: maximiza ou restaura a conta sob o cursor
       const id = +k.slice(3);
       const ix = webviews.findIndex(w => { try { return w && w.getWebContentsId() === id; } catch { return false; } });
       if (ix >= 0) toggleExpand(ix);
@@ -2263,7 +2330,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const bm = ws.balls;
     if (bm && bm.counts) {
       const byId = {}; (bm.catalog||[]).forEach(b => byId[b.id]=b);
-      const items = Object.keys(bm.counts).map(id => ({ id:'b'+id, name:(byId[id]||{}).name||('#'+id), qty:bm.counts[id] })).filter(x=>x.qty>0).sort((x,y)=>y.qty-x.qty);
+      const expires = bm.expires || {}, now = Date.now();
+      const items = Object.keys(bm.counts).map(id => { const b = byId[id] || {}, exp = expires[id] ? Date.parse(expires[id]) : 0, expired = exp && exp <= now, infinite = !!b.infinite; return { id:'b'+id, name:(b.name||('#'+id)) + (infinite ? ' ∞' : ''), qty:expired ? 0 : (infinite ? 999999 : bm.counts[id]), infinite }; }).filter(x=>x.qty>0).sort((x,y)=>y.qty-x.qty);
       if (items.length) bag.push({ label:'Pokébolas', total: items.reduce((s,x)=>s+x.qty,0), items });
     }
     const inv = (ws.inventory && ws.inventory.items) || [];
@@ -2277,14 +2345,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     });
     const groups = {};
     inv.forEach(it => { const m = cat[it.itemId] || {}; const c = m.category || 'outros'; (groups[c] = groups[c] || []).push({ id: 'i'+it.itemId, name: m.name || ('#'+it.itemId), qty: it.quantity }); });
-    const LABELS = { potion:'Heal', heal:'Heal', revive:'Revive', loot:'Loot', stone:'Stones', tm:'TMs', card:'Cartas', clan:'Clã', key:'Chaves', outros:'Outros' };
-    const ORDER = ['potion','heal','revive','loot','stone','tm','card','clan','key','outros'];
+    const LABELS = { potion:'Heal', heal:'Heal', revive:'Revive', loot:'Loot', stone:'Stones', tm:'TMs', card:'Cartas', clan:'Clã', berry:'Berries', held:'Held', addon:'Addons', key:'Chaves', misc:'Outros', outros:'Outros' };
+    const ORDER = ['potion','heal','revive','loot','stone','tm','card','clan','berry','held','addon','key','outros'];
     const done = {};
     const pushGrp = c => { const items = groups[c].sort((x,y)=>y.qty-x.qty); bag.push({ label: LABELS[c]||'Outros', total: items.reduce((s,x)=>s+x.qty,0), items }); done[c]=1; };
     ORDER.forEach(c => { if (groups[c]) pushGrp(c); });
     Object.keys(groups).forEach(c => { if (!done[c]) pushGrp(c); });
     const pokeList = ((ws.pokes && ws.pokes.list)||[]);
-    const team = pokeList.filter(p=>p.team).sort((x,y)=>(x.slot||0)-(y.slot||0)).map(p=>({name:p.name,level:p.level,shiny:!!p.shiny,t1:p.type1||'',t2:p.type2||'',ld:!!p.leader,q:nL(p.quality),ivt:p.ivTotal!=null?nL(p.ivTotal):null,dt:!!p.isDitto,sid:+p.speciesId||+p.pokeId||0,hp:+p.hp||0,hm:+p.maxHp||+p.hpMax||+p.totalHp||0,xpp:(p.expPercent!=null?+p.expPercent:(p.expPct!=null?+p.expPct:(p.exp!=null&&+p.expToNext>0?Math.round(+p.exp/+p.expToNext*100):(+p.xp>0&&+p.level>0?(X=>{const a=X(+p.level),b=X(+p.level+1);return b>a?Math.round((+p.xp-a)/(b-a)*100):null})(n=>n<=1?0:Math.round(50/3*(n**3-6*n**2+17*n-12))):null))))}));
+    const team = pokeList.filter(p=>p.team).sort((x,y)=>(x.slot||0)-(y.slot||0)).map(p=>({name:p.name,level:p.level,shiny:!!p.shiny,t1:p.type1||'',t2:p.type2||'',ld:!!p.leader,q:nL(p.quality),ivt:p.ivTotal!=null?nL(p.ivTotal):null,dt:!!p.isDitto,tms:(Array.isArray(p.tms)?p.tms:[]).slice(0,24).map(x=>String(x).toUpperCase().slice(0,12)),sid:+p.speciesId||+p.pokeId||0,hp:+p.hp||0,hm:+p.maxHp||+p.hpMax||+p.totalHp||0,xpp:(p.expPercent!=null?+p.expPercent:(p.expPct!=null?+p.expPct:(p.exp!=null&&+p.expToNext>0?Math.round(+p.exp/+p.expToNext*100):(+p.xp>0&&+p.level>0?(X=>{const a=X(+p.level),b=X(+p.level+1);return b>a?Math.round((+p.xp-a)/(b-a)*100):null})(n=>n<=1?0:Math.round(50/3*(n**3-6*n**2+17*n-12))):null))))}));
     const activeHud = document.querySelector('.phud-mon.active');
     const hudName = String(((activeHud&&activeHud.querySelector('.phud-name'))||{}).textContent||'').trim();
     const activeRaw = (hudName&&pokeList.find(p=>p&&p.team&&String(p.name||'').toLowerCase()===hudName.toLowerCase())) || pokeList.find(p=>p&&p.team&&(p.leader||p.active||p.isActive)) || pokeList.filter(p=>p&&p.team).sort((x,y)=>(x.slot||0)-(y.slot||0))[0] || null;
@@ -2299,8 +2367,8 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const activePoke = activeName ? { id:String((activeRaw&&activeRaw.id)||activeName), name:activeName, level:+((hudLevelMatch&&hudLevelMatch[0])||(activeRaw&&activeRaw.level)||0), expPct:Number.isFinite(expPct)?Math.max(0,Math.min(100,expPct)):null } : null;
     const bagPokes = pokeList.map(p => {
       const st = p.stats || {};
-      return { id:String(p.id||''), name:String(p.name||'?'), level:+p.level||0, quality:nL(p.quality), ivTotal:nL(p.ivTotal),
-        shiny:!!p.shiny, team:!!p.team, locked:!!p.locked,
+      return { id:String(p.id||''), sid:+p.speciesId||+p.pokeId||0, name:String(p.name||'?'), level:+p.level||0, quality:nL(p.quality), ivTotal:nL(p.ivTotal),
+        shiny:!!p.shiny, team:!!p.team, locked:!!p.locked, type1:String(p.type1||''), type2:String(p.type2||''),
         stats:{ hp:Math.floor(+(st.hp!=null?st.hp:p.hp)||0), atk:Math.floor(+(st.atk!=null?st.atk:p.atk)||0), def:Math.floor(+(st.def!=null?st.def:p.def)||0),
           spa:Math.floor(+(st.spAtk!=null?st.spAtk:(st.spa!=null?st.spa:(p.spAtk!=null?p.spAtk:p.spa)))||0),
           spd:Math.floor(+(st.spDef!=null?st.spDef:(st.spd!=null?st.spd:(p.spDef!=null?p.spDef:p.spd)))||0),
@@ -2311,10 +2379,10 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     hunt = hunt.replace(/[_-]+/g,' ').replace(/\\b\\w/g, m=>m.toUpperCase());
     const mail = ws['mail-badge'] || {};
     let sBalls = 0, sPot = 0, sRev = 0;
-    bag.forEach(g => { if (g.label === 'Pokébolas') sBalls = g.total; else if (g.label === 'Heal') sPot = g.total; else if (g.label === 'Revive') sRev = g.total; });
+    bag.forEach(g => { if (g.label === 'Pokébolas') sBalls = g.items.some(x => x.infinite) ? 999999 : g.total; else if (g.label === 'Heal') sPot = g.total; else if (g.label === 'Revive') sRev = g.total; });
     const invMap = {}; inv.forEach(it => invMap[it.itemId] = it.quantity);
-    const ballMap = {}; if (bm && bm.counts) for (const bk in bm.counts) ballMap[bk] = bm.counts[bk];
-    const ballList = (bm && bm.catalog ? bm.catalog : []).map(b => ({ id:String(b.id), name:b.name||('#'+b.id), qty:+ballMap[b.id]||0, price:+b.priceGold||+b.price||0 }));
+    const ballMap = {}; if (bm && bm.counts) { const ex = bm.expires || {}, nowB = Date.now(), byIdB = {}; (bm.catalog || []).forEach(b => byIdB[b.id] = b); for (const bk in bm.counts) { const exp = ex[bk] ? Date.parse(ex[bk]) : 0; ballMap[bk] = exp && exp <= nowB ? 0 : (byIdB[bk] && byIdB[bk].infinite ? 999999 : bm.counts[bk]); } }
+    const ballList = (bm && bm.catalog ? bm.catalog : []).map(b => ({ id:String(b.id), name:(b.name||('#'+b.id)) + (b.infinite ? ' ∞' : ''), qty:+ballMap[b.id]||0, infinite:!!b.infinite, price:+b.priceGold||+b.price||0 }));
     const supplyNames = new Set(['hyper potion','ultimate potion','revive','max revive']);
     const supplyList = (doc && doc.items ? doc.items : []).filter(it => supplyNames.has(String(it.name||'').toLowerCase())).map(it => ({ id:String(it.id), name:it.name, qty:+invMap[it.id]||0, price:+it.priceGold||+it.npcPrice||+it.price||0 }));
     const stoneList = (doc && doc.items ? doc.items : []).filter(it => String(it.category||'').toLowerCase()==='stone' && (+invMap[it.id]||0)>0).map(it => ({ id:String(it.id), name:String(it.name||('#'+it.id)), qty:+invMap[it.id]||0 }));
@@ -2376,17 +2444,17 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     }
   }
 
-  const BAGCOR = { 'Pokébolas':'#e3350d', 'Heal':'#f778ba', 'Revive':'#58a6ff', 'Loot':'#e0b458', 'Stones':'#bc8cff', 'TMs':'#7ee0a0', 'Cartas':'#ff7bce', 'Clã':'#79c0ff', 'Chaves':'#f2c665', 'Outros':'#7d8590' };
+  const BAGCOR = { 'Pokébolas':'#e3350d', 'Heal':'#f778ba', 'Revive':'#58a6ff', 'Loot':'#e0b458', 'Stones':'#bc8cff', 'TMs':'#7ee0a0', 'Cartas':'#ff7bce', 'Clã':'#79c0ff', 'Berries':'#a3e635', 'Held':'#f97316', 'Addons':'#22d3ee', 'Chaves':'#f2c665', 'Outros':'#7d8590' };
   // ----- Config modular do painel (ordem, visibilidade, itens fixados) -----
   const SECTIONS = ['kpis', 'session', 'gold', 'compare', 'drops', 'bag', 'pinned', 'target', 'team'];
-  const BAGCATS = ['Pokébolas', 'Heal', 'Revive', 'Loot', 'Stones', 'TMs', 'Cartas', 'Clã', 'Chaves', 'Outros'];
+  const BAGCATS = ['Pokébolas', 'Heal', 'Revive', 'Loot', 'Stones', 'TMs', 'Cartas', 'Clã', 'Berries', 'Held', 'Addons', 'Chaves', 'Outros'];
   const secLabel = (k) => ({ kpis: t('stKpis'), session: t('stSession'), gold: t('stGold'), compare: t('stCompare'), drops: t('stDrops'), bag: 'Bag', pinned: t('stPinned'), target: t('stTargetLabel'), team: t('stTeam') }[k] || k);
   function loadStatsCfg() {
     let c = {}; try { c = lsObj('statsCfg'); } catch {}
     c.order = Array.isArray(c.order) ? c.order.filter(x => SECTIONS.includes(x)) : [];
     SECTIONS.forEach(s => { if (!c.order.includes(s)) c.order.push(s); });
     c.bagOrder = Array.isArray(c.bagOrder) ? c.bagOrder.filter(x => BAGCATS.includes(x)) : [];
-    BAGCATS.forEach(s => { if (!c.bagOrder.includes(s)) c.bagOrder.push(s); });
+    BAGCATS.forEach(s => { if (c.bagOrder.includes(s)) return; const io = c.bagOrder.indexOf('Outros'); if (io >= 0 && s !== 'Outros') c.bagOrder.splice(io, 0, s); else c.bagOrder.push(s); });
     c.hide = c.hide || {};
     c.bagHide = c.bagHide || {};
     c.itemHide = c.itemHide || {};
@@ -3027,6 +3095,20 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   // ===== Modo Cartas: dashboard ultra leve (jogo invisivel a ~1fps, farm continua no servidor) =====
   const cardsEl = document.getElementById('cards');
   const cardsBtn = document.getElementById('cardsBtn');
+  // Depois de uma acao que nao edita um filtro, devolve o teclado ao jogo. Campos de
+  // texto/select continuam com foco para permitir edicao normal.
+  cardsEl.addEventListener('click', (e) => {
+    if (!cardsOn || e.target.closest('input,textarea,select,[contenteditable="true"]')) return;
+    setTimeout(() => { if (cardsOn && !campoDigitacaoAtivo(cardsEl)) focarJogo(); }, 0);
+  });
+  const appTemCampoAtivo = () => {
+    const ae = document.activeElement;
+    return !!(ae && (ae.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)));
+  };
+  window.addEventListener('focus', () => {
+    if (cardsOn || statsOpen || appTemCampoAtivo()) return;
+    setTimeout(() => { if (!cardsOn && !statsOpen && !appTemCampoAtivo()) focarJogo(); }, 30);
+  });
   let dhist = [];                      // amostras {t,g,x} da ultima hora pros sparklines
   let dsort = { k: 'gph', d: -1 };     // ordenacao da tabela
   // raridade pela qualidade: mesmos limites e cores da funcao qualityInfo do jogo
@@ -3195,6 +3277,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   let shinyTargets = {}; try { shinyTargets = lsObj('shinyTargets'); } catch {}
   const utBase = []; // baseline de tentativas por conta: o que veio antes da sessao nao conta no modo sessao
   let cardsCfg = { order: CDSECTS.slice(), hide: {}, w: {}, h: {} }, cardsCfgOpen = false, cdBusy = 0;
+  let depotPokeFilt = { acc: -1, name: '', iv: 0, q: 0, shiny: false };
   // larguras padrão (colunas de 12): linhas fecham certinho em tela cheia (12 | 12 | 4+4+4 | 6+3+3)
   // filtros das capturas: conta, nome, shiny, qualidade, IV e período.
   // Esse estado precisa existir antes de SB.catches e dos eventos do painel serem montados.
@@ -3698,7 +3781,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       }
       cardsOn = false;
       applyCards();
-      setTimeout(() => toggleExpand(i), 120);
+      setTimeout(() => maximizaPainel(i), 120);
     }).catch(e => window.alert('Não foi possível abrir o Market: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
   }
   function openCharacterDepotLegacy(i) {
@@ -3755,7 +3838,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (!result || !result.ok) return window.alert('Não foi possível abrir o Baú: ' + ((result && result.reason) || 'erro desconhecido') + '.');
       cardsOn = false;
       applyCards();
-      setTimeout(() => toggleExpand(i), 120);
+      setTimeout(() => maximizaPainel(i), 120);
     }).catch(e => window.alert('Não foi possível abrir o Baú: ' + (e && e.message ? e.message : 'erro desconhecido') + '.'));
   }
   function openCharacterDepot(i) {
@@ -3793,7 +3876,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if(!result||result.kind!=='click'||attempt>=4)return false;
       await clickReal(result.click);await delay(220);return run(attempt+1);
     };
-    openByHook().then(ok=>ok?true:run()).then(ok=>{if(!ok)return window.alert('Não foi possível abrir o Baú: o fluxo do Depot não foi concluído.');cardsOn=false;applyCards();setTimeout(()=>toggleExpand(i),120)}).catch(e=>window.alert('Não foi possível abrir o Baú: '+(e&&e.message?e.message:'erro desconhecido')+'.'));
+    openByHook().then(ok=>ok?true:run()).then(ok=>{if(!ok)return window.alert('Não foi possível abrir o Baú: o fluxo do Depot não foi concluído.');cardsOn=false;applyCards();setTimeout(()=>maximizaPainel(i),120)}).catch(e=>window.alert('Não foi possível abrir o Baú: '+(e&&e.message?e.message:'erro desconhecido')+'.'));
   }
   // base medida por conta e hunt: media (EWMA) do que CADA conta realmente fez ali (gold/h, xp/h, capturas/h).
   // amostra a taxa acumulada da sessao (ja e uma media) quando a hunt rodou tempo suficiente pra estabilizar.
@@ -3906,6 +3989,126 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   protectSearch.oninput = renderProtectedItems;
   protectFilter.onchange = renderProtectedItems;
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && protectOverlay.classList.contains('show')) { protectOverlay.classList.remove('show'); focarJogo(); } });
+  const pokemonOverlay = document.getElementById('pokemonOverlay');
+  const pokemonGrid = document.getElementById('pokemonGrid');
+  const pokemonSearch = document.getElementById('pokemonSearch');
+  const pokemonAccount = document.getElementById('pokemonAccount');
+  const pokemonIv = document.getElementById('pokemonIv');
+  const pokemonType = document.getElementById('pokemonType');
+  const pokemonRarity = document.getElementById('pokemonRarity');
+  const pokemonShiny = document.getElementById('pokemonShiny');
+  const pokemonSort = document.getElementById('pokemonSort');
+  const pokemonCount = document.getElementById('pokemonCount');
+  let pokemonRows = [], pokemonLoading = false;
+  const pokemonActionBusy = new Set();
+  const POKEMON_LOCK_ACTION = (id, locked) => `(()=>{try{const P=window.__poke;if(!P||!P.sock||P.sock.readyState!==1)return{ok:false,reason:'WebSocket do jogo indisponível'};const list=(P.ws&&P.ws.pokes&&P.ws.pokes.list)||[];const p=list.find(x=>String(x&&x.id)===String(${JSON.stringify(String(id))}));if(!p)return{ok:false,reason:'Pokémon não encontrado na conta'};const next=!!${locked?'true':'false'};P.sock.send(JSON.stringify({type:'poke-lock',pokeId:p.id,locked:next}));p.locked=next;return{ok:true,locked:next};}catch(e){return{ok:false,reason:e&&e.message||'Não foi possível alterar o cadeado'};}})()`;
+  const CHAT_POKEMON_ACTION = p => `(()=>{try{const id=${JSON.stringify(String(p.id||''))};if(!id)return{ok:false,reason:'Pokémon sem identificador válido'};const msg='[poke:'+id+'] ';const all=[...document.querySelectorAll('input,textarea')];let input=all.find(x=>x.closest('.chat-box')&&/Falar em|Talk in/i.test(x.placeholder||''));if(!input)input=all.find(x=>/Falar em|Talk in/i.test(x.placeholder||'')&&!/Message to|Mensagem para/i.test(x.placeholder||''));if(!input)return{ok:false,reason:'Campo público do chat não encontrado'};const proto=input instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')&&Object.getOwnPropertyDescriptor(proto,'value').set;if(setter)setter.call(input,msg);else input.value=msg;input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:msg}));input.dispatchEvent(new Event('change',{bubbles:true}));input.focus();return{ok:true,prepared:true};}catch(e){return{ok:false,reason:e&&e.message||'Não foi possível preparar o Pokémon no chat'};}})()`;
+  const pokemonFilters = () => ({
+    name: String(pokemonSearch.value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+    account: +pokemonAccount.value || -1, iv: Math.max(0, Math.min(192, +pokemonIv.value || 0)),
+    quality: +pokemonRarity.value || 0, type: String(pokemonType.value || '').toLowerCase(), shiny: !!pokemonShiny.checked, sort: pokemonSort.value || 'iv-desc'
+  });
+  function renderPokemonDepot() {
+    const f = pokemonFilters();
+    const contas = [...new Map(pokemonRows.map(x => [x.accountId, x.accountName])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+    pokemonAccount.innerHTML = '<option value="-1">Todas as contas</option>' + contas.map(x => '<option value="' + x[0] + '">' + esc(x[1]) + '</option>').join('');
+    pokemonAccount.value = String(f.account);
+    const list = pokemonRows.filter(p => {
+      const n = String(p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const tipos = [p.type1, p.type2].map(x => String(x || '').toLowerCase()).filter(Boolean);
+      return (f.account < 0 || p.accountId === f.account) && (!f.name || n.includes(f.name)) && (+p.ivTotal || 0) >= f.iv && (+p.quality || 0) >= f.quality && (!f.type || tipos.includes(f.type)) && (!f.shiny || !!p.shiny);
+    }).sort((a, b) => {
+      if (f.sort === 'iv-asc') return ((+a.ivTotal || 0) - (+b.ivTotal || 0)) || String(a.name || '').localeCompare(String(b.name || ''));
+      if (f.sort === 'level-desc') return ((+b.level || 0) - (+a.level || 0)) || ((+b.ivTotal || 0) - (+a.ivTotal || 0));
+      if (f.sort === 'level-asc') return ((+a.level || 0) - (+b.level || 0)) || ((+b.ivTotal || 0) - (+a.ivTotal || 0));
+      if (f.sort === 'name-asc') return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
+      return ((+b.ivTotal || 0) - (+a.ivTotal || 0)) || String(a.name || '').localeCompare(String(b.name || ''));
+    });
+    pokemonCount.textContent = list.length + (list.length === 1 ? ' exibido' : ' exibidos') + (pokemonLoading ? ' · atualizando…' : '');
+    if (!list.length) { pokemonGrid.innerHTML = '<div id="pokemonEmpty">Nenhum Pokémon encontrado com estes filtros.</div>'; return; }
+    pokemonGrid.innerHTML = list.map(p => {
+      const rare = RARO(+p.quality || 0), sid = dexId(+p.sid || 0);
+      const src = sid > 0 ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (p.shiny ? 'shiny/' : '') + sid + '.png' : '';
+      const lock = p.locked ? '🔒' : '🔓';
+      return '<div class="pk-item cd-iv-poke" data-poke-id="' + esc(p.id) + '" data-iv-source="' + esc(p.accountId) + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + esc(p.level) + '" data-shared-iv="' + esc(p.ivTotal) + '" data-shared-quality="' + esc(p.quality) + '" data-shared-power="' + esc(p.power || 0) + '" title="Shift + clique envia ao chat · mantenha os dois botões do mouse pressionados para abrir a calculadora de IV">' + (src ? '<img src="' + src + '" alt="" onerror="this.style.visibility=\'hidden\'">' : '')
+        + '<span class="pk-name">' + (p.shiny ? '✨ ' : '') + esc(p.name) + '<small class="pk-meta">' + esc(p.accountName) + ' · Lv' + nf(p.level) + '<br><b style="color:#55e6d3">IV ' + nf(p.ivTotal) + '/192</b> · <span style="color:' + rare[1] + '">' + rare[0] + ' ×' + (+p.quality || 0).toFixed(2) + '</span></small></span><button type="button" class="pk-lock" data-poke-lock="1" title="' + (p.locked ? 'Desbloquear Pokémon' : 'Bloquear Pokémon') + '">' + lock + '</button></div>';
+    }).join('');
+    pokemonGrid.querySelectorAll('.cd-iv-poke').forEach(el => {
+      el.addEventListener('mouseenter', () => ivRecebeSimples(el));
+      el.addEventListener('click', e => {
+        if (e.target.closest('[data-poke-lock]')) return;
+        if (!e.shiftKey) return;
+        e.preventDefault(); e.stopPropagation();
+        const p = pokemonRows.find(x => String(x.id) === String(el.dataset.pokeId) && +x.accountId === +el.dataset.ivSource);
+        if (p) sharePokemonInChat(p);
+      });
+      const lockBtn = el.querySelector('[data-poke-lock]');
+      if (lockBtn) lockBtn.addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        const p = pokemonRows.find(x => String(x.id) === String(el.dataset.pokeId) && +x.accountId === +el.dataset.ivSource);
+        if (p) togglePokemonLock(p);
+      });
+      el.addEventListener('mousedown', e => {
+        ivMouseButtons |= e.button === 0 ? 1 : e.button === 2 ? 2 : 0;
+        if (ivMouseButtons === 3) { e.preventDefault(); ivRecebeSimples(el, true); }
+      });
+      el.addEventListener('mouseup', e => { ivMouseButtons &= e.button === 0 ? ~1 : e.button === 2 ? ~2 : ~0; });
+      el.addEventListener('contextmenu', e => { if (ivMouseButtons === 3) e.preventDefault(); });
+    });
+  }
+  async function togglePokemonLock(p) {
+    const key = p.accountId + ':' + p.id;
+    if (pokemonActionBusy.has(key)) return;
+    pokemonActionBusy.add(key);
+    try {
+      const r = await webviews[p.accountId].executeJavaScript(POKEMON_LOCK_ACTION(p.id, !p.locked));
+      if (!r || !r.ok) throw new Error(r && r.reason || 'Não foi possível alterar o cadeado');
+      p.locked = !!r.locked;
+      renderPokemonDepot();
+    } catch (e) { try { window.pokeAPI.notify('Pokémons', e.message || 'Falha ao alterar o cadeado'); } catch {} }
+    finally { pokemonActionBusy.delete(key); }
+  }
+  async function sharePokemonInChat(p) {
+    const key = 'chat:' + p.accountId + ':' + p.id;
+    if (pokemonActionBusy.has(key)) return;
+    pokemonActionBusy.add(key);
+    try {
+      const r = await webviews[p.accountId].executeJavaScript(CHAT_POKEMON_ACTION(p));
+      if (!r || !r.ok) throw new Error(r && r.reason || 'Não foi possível citar o Pokémon no chat');
+    } catch (e) { try { window.pokeAPI.notify('Pokémons', e.message || 'Falha ao preparar o Pokémon no chat'); } catch {} }
+    finally { pokemonActionBusy.delete(key); }
+  }
+  async function openPokemonDepot() {
+    pokemonOverlay.classList.add('show');
+    pokemonSearch.focus();
+    renderPokemonDepot();
+    if (pokemonLoading) return;
+    pokemonLoading = true; renderPokemonDepot();
+    const novos = [];
+    for (let i = 0; i < count; i++) {
+      if (off[i] || !webviews[i]) continue;
+      try {
+        const d = await webviews[i].executeJavaScript(READ_STATE);
+        if (!d || !d.ok || !Array.isArray(d.bagPokes)) continue;
+        const accountName = String(d.name || tabNames[i] || stName(i));
+        d.bagPokes.forEach(p => novos.push(Object.assign({ accountId: i, accountName }, p)));
+      } catch {}
+    }
+    pokemonRows = novos;
+    pokemonLoading = false;
+    renderPokemonDepot();
+  }
+  document.getElementById('pokemonBtn').onclick = openPokemonDepot;
+  document.getElementById('pokemonClose').onclick = () => { pokemonOverlay.classList.remove('show'); focarJogo(); };
+  pokemonOverlay.onclick = e => { if (e.target === pokemonOverlay) { pokemonOverlay.classList.remove('show'); focarJogo(); } };
+  pokemonSearch.oninput = renderPokemonDepot;
+  pokemonAccount.onchange = renderPokemonDepot;
+  pokemonIv.onchange = renderPokemonDepot;
+  pokemonType.onchange = renderPokemonDepot;
+  pokemonRarity.onchange = renderPokemonDepot;
+  pokemonShiny.onchange = renderPokemonDepot;
+  pokemonSort.onchange = renderPokemonDepot;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && pokemonOverlay.classList.contains('show')) { pokemonOverlay.classList.remove('show'); focarJogo(); } });
   async function refreshItemsCatalog(showMessage) {
     itensCache = null; itensCacheT = Date.now();
     let loaded = null;
@@ -4125,8 +4328,16 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       if (pc && Date.now() - pc.t < 30000) d = pc.d;
       else try { d = await webviews[i].executeJavaScript(READ_STATE); } catch {}
       if (!d || !d.ok) { rows.push({ i, dot, cid:recentHuntSlots[i] || '', name: nm0, st: 'wait' }); continue; }
+      const depotPokes = Array.isArray(d.bagPokes) ? d.bagPokes : [];
       if (!cardsCfg.hide.bagIv) {
-        try { d.bagPokes = await webviews[i].executeJavaScript(READ_BAG_IV); } catch { d.bagPokes = []; }
+        const bc = bagIvCache[i];
+        if (bc && Date.now() - bc.t < BAG_IV_CACHE_MS) d.bagPokes = bc.v;
+        else {
+          try {
+            d.bagPokes = await webviews[i].executeJavaScript(READ_BAG_IV);
+            bagIvCache[i] = { t: Date.now(), v: Array.isArray(d.bagPokes) ? d.bagPokes : [] };
+          } catch { d.bagPokes = []; }
+        }
       }
       if (!cardsCfg.hide.pokedexTp && i === dexAccSel) {
         try { d.dexList = await webviews[i].executeJavaScript(READ_POKEDEX_DOM); } catch { d.dexList = []; }
@@ -4153,7 +4364,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         }
       });
       if (d.usedList && d.usedList.length) (utBase[i] || (utBase[i] = { init: 0 })).init = 1; // a partir daqui, especie inedita = tentativa da sessao
-      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, gold: +d.gold || 0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
+      rows.push({ i, dot, cid: d.cid || '', name: d.name || nm0, gold: +d.gold || 0, st: 'on', hunt: d.hunt || '', huntSlug: d.huntSlug || '', secs: a.seconds || 0, gph: a.gph || 0, xph: a.xph || 0, kph: a.kph || 0, caps: a.captures || 0, sh: a.shinyFound || 0, best, last, since: a.sinceCatch || 0, balls: d.ballList || [], supplies: d.supplyList || [], stones: d.stoneList || [], bagPokes: d.bagPokes || [], depotPokes, dexList: d.dexList || [], lead: (d.team || []).find(p => p.ld) || (d.team || [])[0] || null, shares: d.chatShares || [], team: d.team || [], inv: d.invMap || {}, tlv: +d.level || 0, ballTotal: +d.balls || 0, pots: +d.potions || 0, aBalls: a.ballsUsed || 0, aPots: a.potsUsed || 0 });
     }
     dhist.push({ t: Date.now(), g: sumG, x: sumX });
     dhist = dhist.filter(p => p.t > Date.now() - 3600e3);
@@ -4282,6 +4493,34 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       });
       return s + '</div>';
     };
+    SB.depotPokes = () => {
+      const f = depotPokeFilt;
+      const accountOptions = ['<option value="-1"' + (f.acc < 0 ? ' selected' : '') + '>Todas as contas</option>']
+        .concat(on.map(r => '<option value="' + r.i + '"' + (f.acc === r.i ? ' selected' : '') + '>' + esc(r.name) + '</option>')).join('');
+      const rarityOptions = [[0, 'Qualquer raridade'], [1, 'Comum ou melhor'], [1.3, 'Rara ou melhor'], [1.5, 'Épica ou melhor'], [1.7, 'Lendária ou melhor'], [2, 'Mítica ou melhor'], [3, 'Anciã ou melhor']]
+        .map(x => '<option value="' + x[0] + '"' + (f.q === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('');
+      const lista = on.flatMap(r => (r.depotPokes || []).map(p => Object.assign({ account: r }, p))).filter(x =>
+        (f.acc < 0 || x.account.i === f.acc) && (!f.name || String(x.name || '').toLowerCase().includes(f.name)) &&
+        (+x.ivTotal || 0) >= f.iv && (+x.quality || 0) >= f.q && (!f.shiny || !!x.shiny)
+      ).sort((a, b) => ((+b.ivTotal || 0) - (+a.ivTotal || 0)) || String(a.name || '').localeCompare(String(b.name || '')));
+      let s = '<div class="cd-sec"><div class="cd-h">Pokémon do depot · todas as contas <span style="font-size:10px;color:#6e7681;text-transform:none">(' + nf(lista.length) + ' exibidos)</span></div>'
+        + '<div class="cd-cfg-row" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">'
+        + '<select id="cdDpAcc" class="cd-inp" title="Conta">' + accountOptions + '</select>'
+        + '<input id="cdDpName" type="text" class="cd-inp" style="width:105px" placeholder="🔎 Pokémon" value="' + esc(f.name) + '">'
+        + '<input id="cdDpIv" type="number" min="0" max="192" class="cd-inp" style="width:58px" title="IV mínimo" placeholder="IV ≥" value="' + (f.iv || '') + '">'
+        + '<select id="cdDpQ" class="cd-inp" title="Raridade">' + rarityOptions + '</select>'
+        + '<label class="cd-inp" style="cursor:pointer" title="Somente shiny">✨<input id="cdDpShiny" type="checkbox" style="margin-left:3px"' + (f.shiny ? ' checked' : '') + '></label></div>';
+      if (!lista.length) return s + '<div class="cd-empty">Nenhum Pokémon atende aos filtros.</div></div>';
+      s += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">';
+      lista.forEach(p => {
+        const rare = RARO(+p.quality || 0), sid = dexId(+p.sid || 0);
+        const sprite = sid > 0 ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + (p.shiny ? 'shiny/' : '') + sid + '.png' : '';
+        s += '<div class="cd-row cd-iv-poke" data-iv-source="' + p.account.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivTotal || 0) + '" data-shared-quality="' + (+p.quality || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="' + esc(p.account.name) + ' · Pokémon do depot" style="padding:6px 7px;border:1px solid #263241;border-radius:8px;background:#101820">'
+          + (sprite ? '<img src="' + sprite + '" alt="" style="width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex:none" onerror="this.style.visibility=\'hidden\'">' : '')
+          + '<span class="rn"><b>' + (p.shiny ? '✨ ' : '') + esc(p.name) + '</b><br><span style="color:#adbac7">' + esc(p.account.name) + ' · Lv' + nf(p.level) + '</span><br><span style="color:#55e6d3">IV ' + nf(p.ivTotal) + '/192</span> <span style="color:' + rare[1] + '">' + rare[0] + ' ×' + (+p.quality || 0).toFixed(2) + '</span></span></div>';
+      });
+      return s + '</div></div>';
+    };
     SB.sellItems = () => {
       let s = '<div class="cd-sec"><div class="cd-h">Venda protegida · Pokémon: somente IV menor que 150 e até Épico; nunca vende Lendário ou superior</div>';
       rows.forEach(r => {
@@ -4354,7 +4593,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-h" style="margin-bottom:4px"><span class="cd-dot" style="background:' + r.dot + '"></span>' + esc(r.name) + '</div>'
         + (r.team || []).map(p => {
           const pw = poder(p);
-          return '<div class="cd-row cd-iv-poke" data-iv-source="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivt || 0) + '" data-shared-quality="' + (+p.q || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Passe o mouse para ver este Pokémon na calculadora de IV" style="flex-wrap:wrap"><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
+          return '<div class="cd-row cd-iv-poke cd-team-poke" data-iv-source="' + r.i + '" data-hunt-account="' + r.i + '" data-shared-name="' + esc(p.name) + '" data-shared-level="' + (+p.level || 0) + '" data-shared-iv="' + (+p.ivt || 0) + '" data-shared-quality="' + (+p.q || 1) + '" data-shared-power="0" data-shared-shiny="' + (p.shiny ? '1' : '0') + '" title="Duplo clique para preencher no PIW Tools Hunt" style="flex-wrap:wrap"><span class="rn">' + (p.ld ? '⭐ ' : '') + (p.shiny ? '✨ ' : '') + esc(p.name) + ' <b style="color:#adbac7">Lv' + nf(p.level) + '</b></span>'
             + (p.ivt != null ? '<span style="color:#55e6d3">' + nf(p.ivt) + '/192</span>' : '')
             + (+p.q ? '<span style="color:#f2c665">×' + (+p.q).toFixed(2) + '</span>' : '')
             + (pw ? '<span style="color:#3fb950" title="' + t('ivcPower') + '">' + nf(pw.agora) + '</span><span style="color:#8ab4ff" title="Lv' + alvo + '">→' + nf(pw.proj) + '</span>' : '')
@@ -4558,6 +4797,17 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       el.addEventListener('mouseup', e => { ivMouseButtons &= e.button === 0 ? ~1 : e.button === 2 ? ~2 : ~0; });
       el.addEventListener('contextmenu', e => { if (ivMouseButtons === 3) e.preventDefault(); });
     });
+    cardsEl.querySelectorAll('.cd-team-poke').forEach(el => el.addEventListener('dblclick', async () => {
+      const r = ordered.find(x => x.i === +el.dataset.huntAccount);
+      const nome = String(el.dataset.sharedName || '').trim();
+      const nivel = +el.dataset.sharedLevel || 0;
+      const p = r && (r.team || []).find(x => String(x.name || '').toLowerCase() === nome.toLowerCase() && (+x.level || 0) === nivel);
+      const b = r && (r.bagPokes || []).find(x => String(x.name || '').toLowerCase() === nome.toLowerCase() && (+x.level || 0) === nivel);
+      const st = b && b.stats || {};
+      if (!window.pokeAPI || !p || !nome || !(nivel > 0)) return;
+      const opened = await window.pokeAPI.openHuntTool({ pokemon: nome, level: nivel, routeTarget: Math.max(nivel, +r.tlv || 300), hp: st.hp, atk: st.atk, def: st.def, spatk: st.spa, spdef: st.spd, speed: st.vel });
+      if (opened && window.pokeAPI.notify) window.pokeAPI.notify('PIW Tools', nome + ' foi preenchido na calculadora Hunt.');
+    }));
 
     // config: engrenagem, checkboxes e arraste pra reordenar seções
     const gear = cardsEl.querySelector('#cdGear'); if (gear) gear.onclick = () => { cardsCfgOpen = !cardsCfgOpen; refreshCards(true); };
@@ -4572,6 +4822,11 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const fcSh = cardsEl.querySelector('#cdFcSh'); if (fcSh) fcSh.onchange = () => { cdFC.sh = fcSh.checked ? 1 : 0; fcSave(); };
     const pjLv = cardsEl.querySelector('#cdPjLv'); if (pjLv) pjLv.onchange = () => { try { lsSet('cdPjLv', String(Math.max(1, Math.min(500, +pjLv.value || 500)))); } catch {} pjLv.blur(); cdHtmlAnt = ''; refreshCards(true); };
     const invF = cardsEl.querySelector('#cdInvF'); if (invF) invF.onchange = () => { try { lsSet('cdInvF', String(invF.value || '').slice(0, 30)); } catch {} invF.blur(); cdHtmlAnt = ''; refreshCards(true); };
+    const dpAcc = cardsEl.querySelector('#cdDpAcc'); if (dpAcc) dpAcc.onchange = () => { depotPokeFilt.acc = +dpAcc.value; refreshCards(true); };
+    const dpName = cardsEl.querySelector('#cdDpName'); if (dpName) dpName.onchange = () => { depotPokeFilt.name = String(dpName.value || '').trim().slice(0, 30).toLowerCase(); dpName.blur(); refreshCards(true); };
+    const dpIv = cardsEl.querySelector('#cdDpIv'); if (dpIv) dpIv.onchange = () => { depotPokeFilt.iv = Math.max(0, Math.min(192, numLivre(dpIv.value))); dpIv.blur(); refreshCards(true); };
+    const dpQ = cardsEl.querySelector('#cdDpQ'); if (dpQ) dpQ.onchange = () => { depotPokeFilt.q = Math.max(0, +dpQ.value || 0); refreshCards(true); };
+    const dpShiny = cardsEl.querySelector('#cdDpShiny'); if (dpShiny) dpShiny.onchange = () => { depotPokeFilt.shiny = !!dpShiny.checked; refreshCards(true); };
     // secao Hoje: metas e exportar CSV
     const gg = cardsEl.querySelector('#cdGoalG'); if (gg) gg.onchange = () => { goals.g = Math.max(0, +gg.value || 0); saveGoals(); gg.blur(); refreshCards(true); };
     const gc = cardsEl.querySelector('#cdGoalC'); if (gc) gc.onchange = () => { goals.c = Math.max(0, +gc.value || 0); saveGoals(); gc.blur(); refreshCards(true); };
@@ -5087,7 +5342,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     o: () => menu.classList.toggle('show')                 // Opcoes
   };
   document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.altKey || e.metaKey) return; // combos (Ctrl+M etc) seguem intactos
+    if (e.key === 'F6') { e.preventDefault(); focarJogo(); return; }
+    if (cardsOn || statsOpen) return; // enquanto o dashboard esta aberto, nenhuma tecla e atalho do app
+    if (!e.ctrlKey && !e.altKey && !e.metaKey) return; // teclas soltas pertencem ao jogo
     const ae = document.activeElement;
     if (ae && (ae.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) return;
     const fn = TECLAS_ATALHO[String(e.key || '').toLowerCase()];

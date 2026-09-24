@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('pokeAPI', {
   clearAccount: (i) => ipcRenderer.invoke('conta:limpar', i),
   fetchUserScript: (url) => ipcRenderer.invoke('userscript:fetch', url),
   applyOfficialUpdate: () => ipcRenderer.invoke('updater:apply'),
+  openHuntTool: (data) => ipcRenderer.invoke('hunt:open', data),
   // versao do app: vem do processo principal (a UA nao carrega mais o token pokegrid/x, e o
   // preload roda em sandbox, entao require de arquivo local nao e confiavel)
   appVersion: (() => { try { return ipcRenderer.sendSync('app:version'); } catch { return ''; } })()
