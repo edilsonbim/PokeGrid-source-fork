@@ -213,7 +213,11 @@ async function downloadAndInstall({ release, appPid, targetPath, portable, tempR
   const hash = crypto.createHash('sha256').update(fs.readFileSync(packageFile)).digest('hex');
   const mode = release.asset.kind === 'asar' || /\.asar$/i.test(release.asset.name) ? 'asar' : 'installer';
   const script = writeInstallScript({ packageFile, targetPath, appPath:process.execPath, mode, portable, pid:appPid, tempDir });
-  const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], { detached:true, windowsHide:true, stdio:'ignore' });
+  const powershell = process.env.SystemRoot
+    ? path.join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+    : 'powershell.exe';
+  const child = spawn(powershell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], { detached:true, windowsHide:true, stdio:'ignore' });
+  child.on('error', (error) => { try { fs.appendFileSync(path.join(tempDir, 'atualizacao.log'), new Date().toISOString() + ' falha ao iniciar PowerShell: ' + error.message + '\r\n'); } catch {} });
   child.unref();
   return { ok:true, restarting:true, version:release.version, asset:release.asset.name, sha256:hash };
 }

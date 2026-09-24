@@ -208,7 +208,9 @@ ipcMain.handle('release:update-install', async (e) => {
     });
     if (result.ok) {
       logErro('atualizador-release', 'preparado: ' + result.version + ' [' + result.asset + '] sha256=' + result.sha256);
-      setTimeout(() => app.exit(0), 250);
+      // Dê tempo ao processo auxiliar destacado para iniciar antes de encerrar
+      // o Electron; em alguns Windows 11, 250 ms fazia o filho morrer junto.
+      setTimeout(() => app.exit(0), 1200);
     }
     return result;
   } finally { releaseUpdateRunning = false; }
