@@ -104,12 +104,14 @@ function download(url, destination, redirects = 0, received = 0) {
   return new Promise((resolve) => {
     const u = validUrl(url);
     if (!u || redirects > 4) { resolve({ ok:false, error:'Download fora dos domínios permitidos.' }); return; }
+    const partial = destination + '.part';
     let total = received;
     let finished = false;
     const fail = (error, out) => {
       if (finished) return;
       finished = true;
-      try { if (out) out.close(); fs.unlinkSync(destination); } catch {}
+      try { if (out) out.close(); } catch {}
+      try { fs.unlinkSync(partial); } catch {}
       resolve({ ok:false, error });
     };
     const req = https.get(u, { headers:{ 'User-Agent':'PokeGrid updater', Accept:'application/octet-stream' } }, (res) => {
@@ -123,7 +125,7 @@ function download(url, destination, redirects = 0, received = 0) {
         return;
       }
       if (res.statusCode !== 200) { res.resume(); fail('GitHub respondeu HTTP ' + res.statusCode); return; }
-      const out = fs.createWriteStream(destination, { flags: received ? 'a' : 'w' });
+      const out = fs.createWriteStream(partial, { flags: received ? 'a' : 'w' });
       res.on('data', (chunk) => {
         total += chunk.length;
         if (total > MAX_DOWNLOAD) { req.destroy(); fail('O pacote excede o limite permitido.', out); }
@@ -131,7 +133,15 @@ function download(url, destination, redirects = 0, received = 0) {
       res.on('error', () => fail('Falha durante o download.', out));
       out.on('error', () => fail('Não foi possível salvar o pacote.', out));
       res.pipe(out);
-      out.on('finish', () => { if (!finished) { finished = true; out.close(); resolve({ ok:true, size:total }); } });
+      out.on('finish', () => {
+        if (finished) return;
+        try {
+          out.close();
+          fs.renameSync(partial, destination);
+          finished = true;
+          resolve({ ok:true, size:total });
+        } catch { fail('Não foi possível finalizar o pacote.', out); }
+      });
     });
     req.setTimeout(180000, () => req.destroy(new Error('timeout')));
     req.on('error', () => fail('Download interrompido.'));
