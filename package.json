@@ -3,7 +3,7 @@
   "version": "1.5.26",
   "description": "Rode 4 contas de Poke Idle World ao mesmo tempo, em uma janela so / Run 4 Poke Idle World accounts at once, in a single window",
   "main": "main.js",
-  "author": "leodantas70",
+  "author": "edilsonbim",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win portable",

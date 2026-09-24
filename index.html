@@ -452,12 +452,18 @@
   .cd-ball-cell { display: flex; align-items: center; gap: 7px; }
   .cd-item-price { display: block; margin-top: 2px; color: #f2c665; font-size: 9px; font-weight: 500; white-space: nowrap; }
   .cd-account-gold { margin-left: 5px; color: #f2c665; font-size: 10px; white-space: nowrap; }
-  .cd-team-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:9px 0 5px; color:#adbac7; font-size:12px; }
-  .cd-team-main { display:flex; align-items:center; gap:5px; min-width:190px; }
+  .cd-team-head { display:flex; align-items:flex-start; gap:8px; flex-wrap:nowrap; margin:9px 0 5px; color:#adbac7; font-size:12px; }
+  .cd-team-main { display:flex; flex-direction:column; align-items:flex-start; gap:5px; min-width:0; flex:1 1 auto; }
+  .cd-team-identity { display:flex; align-items:center; gap:5px; min-width:0; }
+  .cd-team-identity b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cd-team-nav { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
   .cd-team-balance { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:600; white-space:nowrap; }
   .cd-team-balance .cd-dollar { color:#f2c665; }
   .cd-team-balance .cd-diamond { color:#79c0ff; }
   .cd-team-actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:1 1 360px; flex-wrap:wrap; }
+  .cd-team-sales { flex:0 0 auto; flex-direction:column; align-items:flex-end; gap:4px; }
+  .cd-team-sales button { width:max-content; max-width:100%; }
+  .cd-team-actions .cd-sell-stones { margin-left:auto; }
   .cd-team-slot { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex:none; border:1px solid #3b4654; border-radius:4px; color:#8b949e; font-size:10px; font-weight:700; }
   .cd-team-empty { opacity:.55; cursor:default; }
   #simpleChatDock { display:none; position:fixed; right:18px; bottom:18px; z-index:1200; width:min(390px,calc(100vw - 36px)); height:330px; flex-direction:column; background:#111820; border:1px solid #344454; border-radius:10px; box-shadow:0 12px 34px rgba(0,0,0,.5); overflow:hidden; }
@@ -2209,9 +2215,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
   });
 
   document.getElementById('reloadAll').onclick = () => webviews.forEach((w, i) => { if (!off[i]) { try { w.reloadIgnoringCache(); } catch { w.reload(); } } });
-  document.getElementById('faqBtn').onclick = () => window.open('https://github.com/leodantas70/idle/blob/master/FAQ.md');
+  document.getElementById('faqBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/FAQ.md');
   document.getElementById('reloadUi').onclick = () => location.reload();
-  document.getElementById('manBtn').onclick = () => window.open('https://github.com/leodantas70/idle/blob/master/MANUAL.md');
+  document.getElementById('manBtn').onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom/blob/main/MANUAL.md');
   // versao aberta, lida da propria UA (o Electron poe PokeGrid/x.y.z nela; zero IPC)
   try {
     const vAtual = window.pokeAPI && window.pokeAPI.appVersion;
@@ -2228,13 +2234,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       a2.id = 'appVerNew'; a2.textContent = ' \u2192 v' + limpa;
       a2.style.cssText = 'color:#f2c665;cursor:pointer';
       a2.title = t('verNova');
-      a2.onclick = () => window.open('https://github.com/leodantas70/idle');
+      a2.onclick = () => window.open('https://github.com/edilsonbim/PokeGrid-custom');
       elVer.appendChild(a2);
     };
     const cacheV = lsObj('verNova');
     if (cacheV.tag) vMostra(cacheV.tag);
     if (vAtual && Date.now() - (+cacheV.t || 0) > 22 * 3600e3) setTimeout(() => {
-      fetch('https://api.github.com/repos/leodantas70/idle/releases/latest').then(r => r.json()).then(j => {
+      fetch('https://api.github.com/repos/edilsonbim/PokeGrid-custom/releases/latest').then(r => r.json()).then(j => {
         const tag = j && typeof j.tag_name === 'string' ? j.tag_name : '';
         lsSet('verNova', JSON.stringify({ t: Date.now(), tag: /^v?[\d.]{1,12}$/.test(tag) ? tag : '' }));
         vMostra(tag);
@@ -4495,6 +4501,9 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     const on = rows.filter(r => r.st === 'on');
     on.sort((p, q) => { const a2 = valOf(p, dsort.k), b2 = valOf(q, dsort.k); return (a2 > b2 ? 1 : a2 < b2 ? -1 : 0) * dsort.d; });
     const ordered = on.concat(rows.filter(r => r.st !== 'on'));
+    // A seção visual de Times e IV segue sempre as contas físicas: primeira, segunda, terceira...
+    // A tabela continua podendo ser ordenada sem alterar essa sequência dos cartões.
+    const accountOrdered = rows.slice().sort((p, q) => p.i - q.i);
     const lost = Math.max(0, sumSF - sumSC);
     carregaHunts(); carregaItens(); // carrega o mapa id→nome sempre, pra resolver o nome do shiny mesmo com o ranking escondido
 
@@ -4597,12 +4606,13 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
         return ['Fraco', '#f05a62'];
       };
       let s = '<div class="cd-sec"><div class="cd-h">Times e IV · venda protegida por personagem · itens permitidos, Pokémon com IV &lt; 150 e Stones selecionadas</div>';
-      on.forEach(r => {
+      accountOrdered.forEach(r => {
         const balance = '<span class="cd-team-balance"><span class="cd-dollar">💲' + nf(r.gold) + '</span><span class="cd-diamond">💎' + nf(r.diamonds) + '</span></span>';
         const actions = r.st === 'on'
-          ? '<span class="cd-team-actions"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button><button class="cd-open-market" data-i="' + r.i + '">Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>'
+          ? '<span class="cd-team-actions cd-team-sales"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button></span>'
           : '<span class="rt">—</span>';
-        s += '<div class="cd-team-head"><span class="cd-team-main"><span class="cd-dot" style="background:' + r.dot + '"></span>' + balance + '<b>' + esc(r.name) + '</b> · ' + nf((r.bagPokes || []).length) + ' Pokémon</span>' + actions + '</div>';
+        const nav = r.st === 'on' ? '<span class="cd-team-nav"><button class="cd-open-market" data-i="' + r.i + '">Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>' : '';
+        s += '<div class="cd-team-head"><span class="cd-team-main"><span class="cd-team-identity"><span class="cd-dot" style="background:' + r.dot + '"></span><b>' + esc(r.name) + '</b>' + balance + ' · ' + nf((r.bagPokes || []).length) + ' Pokémon</span>' + nav + '</span>' + actions + '</div>';
         if (r.st === 'on') {
           const selected = stoneSelected[r.cid] || {};
           s += '<div class="cd-team-actions" style="justify-content:flex-start;margin:0 0 8px 24px">'
@@ -4699,7 +4709,7 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
     SB.team = () => {
       const M = window.PokeGridIvMath;
       const alvo = Math.max(1, Math.min(500, +(lsGet('cdPjLv') || 500)));
-      const cols = ordered.filter(r => r.st === 'on');
+      const cols = accountOrdered.filter(r => r.st === 'on');
       const poder = (p) => { // mesmo modulo do card de IV; sem base/qualidade/IV nao inventa numero
         const b = basesByName[String(p.name || '').toLowerCase()];
         if (!M || !b || !(+p.q > 0) || !(+p.ivt > 0) || !(+p.level > 0)) return null;
@@ -4708,13 +4718,14 @@ return {live,hasBalls,hasInv,balls,potions,revives,prevHunt:resumo(P.prev),shiny
       };
       const inner = cols.length ? '<div style="display:grid;grid-template-columns:repeat(' + Math.min(4, cols.length) + ',1fr);gap:12px">' + cols.map(r => {
         const balance = '<span class="cd-team-balance"><span class="cd-dollar">💲' + nf(r.gold) + '</span><span class="cd-diamond">💎' + nf(r.diamonds) + '</span></span>';
-        const actions = '<span class="cd-team-actions"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button><button class="cd-open-market" data-i="' + r.i + '">🏪 Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>';
+        const actions = '<span class="cd-team-actions cd-team-sales"><button class="cd-sell-safe" data-i="' + r.i + '">Vender todos os itens permitidos</button><button class="cd-sell-pokes" data-i="' + r.i + '">Vender Pokémon IV &lt; 150</button></span>';
+        const nav = '<span class="cd-team-nav"><button class="cd-open-market" data-i="' + r.i + '">🏪 Abrir Market</button><button class="cd-open-depot" data-i="' + r.i + '">📦 Abrir Baú</button></span>';
         const selected = stoneSelected[r.cid] || {};
         const stones = '<div class="cd-team-actions" style="justify-content:flex-start;margin:0 0 7px 2px">'
           + ((r.stones || []).length ? r.stones.map(x => '<label class="cd-stone-pick"><input class="cd-stone-check" type="checkbox" data-cid="' + esc(r.cid) + '" data-id="' + esc(x.id) + '"' + (selected[x.id] ? ' checked' : '') + '> ' + esc(x.name) + ' <b>×' + nf(x.qty) + '</b></label>').join('') : '<span class="cd-empty">Nenhuma Stone na bolsa</span>')
           + ((r.stones || []).length ? '<button class="cd-sell-stones" data-i="' + r.i + '" data-cid="' + esc(r.cid) + '">Vender Stones selecionadas</button>' : '') + '</div>';
         const slots = Array.from({ length: 6 }, (_, slot) => (r.team || [])[slot] || null);
-         return '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-team-head" style="margin:0 0 5px"><span class="cd-team-main"><span class="cd-dot" style="background:' + r.dot + '"></span><b>' + esc(r.name) + '</b>' + balance + '</span>' + actions + '</div>' + stones
+         return '<div class="cd-team-col" style="--team-color:' + r.dot + '"><div class="cd-team-head" style="margin:0 0 5px"><span class="cd-team-main"><span class="cd-team-identity"><span class="cd-dot" style="background:' + r.dot + '"></span><b>' + esc(r.name) + '</b>' + balance + '</span>' + nav + '</span>' + actions + '</div>' + stones
         + slots.map((p, slot) => {
           if (!p) return '<div class="cd-row cd-team-empty"><span class="cd-team-slot">' + (slot + 1) + '</span><span class="cd-empty">Slot vazio</span></div>';
           const pw = poder(p);
