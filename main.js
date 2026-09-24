@@ -191,7 +191,8 @@ ipcMain.handle('release:update-install', async (e) => {
       portable: !!process.env.PORTABLE_EXECUTABLE_FILE
     });
     if (!release.ok || !release.updateAvailable) return release.ok ? { ok:false, kind:'current', message:'O PokeGrid já está atualizado.' } : release;
-    const targetPath = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+    const asarUpdate = release.asset && release.asset.kind === 'asar';
+    const targetPath = asarUpdate ? path.join(process.resourcesPath, 'app.asar') : (process.env.PORTABLE_EXECUTABLE_FILE || process.execPath);
     const result = await downloadAndInstall({
       release, appPid:process.pid, targetPath,
       portable:!!process.env.PORTABLE_EXECUTABLE_FILE,

@@ -67,11 +67,14 @@ function requestJson(url, redirects = 0) {
 
 function chooseAsset(release, portable) {
   const assets = Array.isArray(release && release.assets) ? release.assets : [];
+  const appAsar = assets.find((a) => a && typeof a.name === 'string' && /\.asar$/i.test(a.name) && validUrl(a.browser_download_url));
+  if (appAsar) return { ...appAsar, kind:'asar' };
   const executables = assets.filter((a) => a && typeof a.name === 'string' && /\.exe$/i.test(a.name) && validUrl(a.browser_download_url));
   const wanted = portable
     ? executables.find((a) => /portable/i.test(a.name))
     : executables.find((a) => /setup|installer/i.test(a.name));
-  return wanted || executables.find((a) => /x64|win/i.test(a.name)) || executables[0] || null;
+  const installer = wanted || executables.find((a) => /x64|win/i.test(a.name)) || executables[0] || null;
+  return installer ? { ...installer, kind:'installer' } : null;
 }
 
 async function checkLatestRelease({ currentVersion, packaged, portable = false } = {}) {
@@ -87,13 +90,13 @@ async function checkLatestRelease({ currentVersion, packaged, portable = false }
     return { ok:true, updateAvailable:false, repo:RELEASE_REPO, version:release.tag_name };
   }
   const asset = chooseAsset(release, portable);
-  if (!asset) return { ok:false, kind:'asset-missing', message:'A nova versão foi publicada sem instalador compatível.' };
+  if (!asset) return { ok:false, kind:'asset-missing', message:'A nova versão foi publicada sem pacote compatível.' };
   return {
     ok:true, updateAvailable:true, repo:RELEASE_REPO, version:release.tag_name,
     name:String(release.name || release.tag_name).slice(0, 120),
     notes:String(release.body || '').slice(0, 4000),
     publishedAt:release.published_at || '',
-    asset:{ name:asset.name, url:asset.browser_download_url, size:+asset.size || 0 }
+    asset:{ name:asset.name, url:asset.browser_download_url, size:+asset.size || 0, kind:asset.kind || 'installer' }
   };
 }
 
@@ -132,7 +135,7 @@ function download(url, destination, redirects = 0, received = 0) {
   });
 }
 
-function writeInstallScript({ packageFile, targetPath, portable, pid, tempDir }) {
+function writeInstallScript({ packageFile, targetPath, appPath, mode, portable, pid, tempDir }) {
   const script = path.join(tempDir, 'aplicar-atualizacao.ps1');
   const q = (value) => "'" + String(value).replace(/'/g, "''") + "'";
   const logFile = path.join(tempDir, 'atualizacao.log');
@@ -150,7 +153,17 @@ function writeInstallScript({ packageFile, targetPath, portable, pid, tempDir })
     'if (Get-Process -Id $pidAlvo -ErrorAction SilentlyContinue) { Registrar "tempo limite aguardando o PokeGrid; encerrando o processo"; Stop-Process -Id $pidAlvo -Force; Start-Sleep -Milliseconds 500 }',
     'Registrar "iniciando instalacao"'
   ];
-  if (portable) {
+  if (mode === 'asar') {
+    lines.push(
+      '$backup = $alvo + ".old"',
+      'Remove-Item -LiteralPath $backup -Force -ErrorAction SilentlyContinue',
+      'Move-Item -LiteralPath $alvo -Destination $backup -Force',
+      'Move-Item -LiteralPath $pacote -Destination $alvo -Force',
+      'Registrar "app.asar substituido"',
+      'Start-Process -FilePath ' + q(appPath),
+      'Registrar "PokeGrid reiniciado"'
+    );
+  } else if (portable) {
     lines.push(
       '$backup = $alvo + ".old"',
       'Remove-Item -LiteralPath $backup -Force -ErrorAction SilentlyContinue',
@@ -185,10 +198,11 @@ async function downloadAndInstall({ release, appPid, targetPath, portable, tempR
   const got = await download(release.asset.url, packageFile);
   if (!got.ok) { try { fs.rmSync(tempDir, { recursive:true, force:true }); } catch {} return { ok:false, kind:'network', message:got.error }; }
   const hash = crypto.createHash('sha256').update(fs.readFileSync(packageFile)).digest('hex');
-  const script = writeInstallScript({ packageFile, targetPath, portable, pid:appPid, tempDir });
+  const mode = release.asset.kind === 'asar' || /\.asar$/i.test(release.asset.name) ? 'asar' : 'installer';
+  const script = writeInstallScript({ packageFile, targetPath, appPath:process.execPath, mode, portable, pid:appPid, tempDir });
   const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], { detached:true, windowsHide:true, stdio:'ignore' });
   child.unref();
   return { ok:true, restarting:true, version:release.version, asset:release.asset.name, sha256:hash };
 }
 
-module.exports = { RELEASE_REPO, RELEASE_API, checkLatestRelease, downloadAndInstall, _test:{ parseVersion, compareVersions, chooseAsset } };
+module.exports = { RELEASE_REPO, RELEASE_API, checkLatestRelease, downloadAndInstall, _test:{ parseVersion, compareVersions, chooseAsset, writeInstallScript } };

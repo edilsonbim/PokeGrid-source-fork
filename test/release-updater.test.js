@@ -16,4 +16,10 @@ const release = { assets: [
 ] };
 assert.equal(_test.chooseAsset(release, false).name, 'PokeGrid-1.5.27-setup-x64.exe');
 assert.equal(_test.chooseAsset(release, true).name, 'PokeGrid-1.5.27-portable-x64.exe');
+const asarRelease = { assets: [
+  { name:'PokeGrid-1.5.29.asar', browser_download_url:'https://github.com/edilsonbim/PokeGrid-source-fork/releases/download/v1.5.29/PokeGrid-1.5.29.asar' },
+  ...release.assets
+] };
+assert.equal(_test.chooseAsset(asarRelease, false).name, 'PokeGrid-1.5.29.asar');
+assert.equal(_test.chooseAsset(asarRelease, false).kind, 'asar');
 console.log('Atualizador de releases: tudo certo');
